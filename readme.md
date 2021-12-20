@@ -3,7 +3,7 @@ Acumulus for WHMCS connector
 
 @author: [Buro RaDer](https://burorader.com/) based on the addon by [Remline ict-diensten](https://remline.nl/)  
 @copyright: [SIEL BV](https://www.siel.nl/acumulus/)  
-@license: [GPLv3](http://www.gnu.org/licenses/gpl.html)  
+@license: [GPLv3](http://www.gnu.org/licenses/gpl-3.0.html)  
 @support: [Webkoppelingen - Acumulus Forum](https://forum.acumulus.nl/index.php?board=17.0)  
 @source: [Acumulus web service API client library](https://github.com/SIELOnline/libAcumulus)  
 @support: [whmcs@acumulus.nl](mailto:whmcs@acumulus.nl)  

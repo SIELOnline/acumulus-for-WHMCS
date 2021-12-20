@@ -185,7 +185,7 @@ function acumulus_connect_sidebar($vars)
                 <li><a href="#">' . $LANG['Version'] . ': ' . $version . '</a></li>';
 
     if (isset($_SESSION['acumulus_connect_newversion'])) {
-        $sidebar .= '<li><a STYLE="color: #FF0000; font-weight: bold;" href="https://forum.acumulus.nl/index.php/topic,4183.0.html" target="_blank">' . $LANG['update availible'] . '</a></li>';
+        $sidebar .= '<li><a STYLE="color: #FF0000; font-weight: bold;" href="https://forum.acumulus.nl/index.php/topic,4183.0.html" target="_blank">' . $LANG['update available'] . '</a></li>';
     }
 
     $sidebar .= '</ul>';
@@ -958,5 +958,3 @@ function acumulus_connect_invoicesummary($invoices, $vars)
 
     return $summary;
 }
-
-?>

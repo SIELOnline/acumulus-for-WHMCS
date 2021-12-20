@@ -1,12 +1,15 @@
 <?php
-if (!defined("WHMCS")) {
-    die("This file cannot be accessed directly");
-}
 
 // *************************************************************************
 // * Helper Functions                                                      *
 // *************************************************************************
-
+/**
+ * Returns the License text (GPLv3)/
+ *
+ * @return string
+ *
+ * @todo: is this used no: remove, yes: use license.txt?
+ */
 function invoice2acumulus_get_gpl_license()
 {
     return
@@ -686,5 +689,3 @@ Public License instead of this License.  But first, please read
 <http://www.gnu.org/philosophy/why-not-lgpl.html>.
 ';
 }
-
-?>

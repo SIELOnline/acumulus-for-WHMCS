@@ -1,8 +1,4 @@
 <?php
-if (!defined("WHMCS")) {
-    die("This file cannot be accessed directly");
-}
-
 //use Database Namespace
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -1615,6 +1611,3 @@ function acumulus_connect_InvoiceCanceled($CONFIG, $invoiceid)
         $results = localAPI($command, $values, $adminuser);
     }
 }
-
-
-

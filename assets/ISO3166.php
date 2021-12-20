@@ -1,4 +1,11 @@
 <?php
+/** @noinspection PhpIllegalPsrClassPathInspection */
+
+/**
+ * Class ISO3166 defines iso 3166 codes for all known countries.
+ *
+ * @todo: replace with library/API features
+ */
 class ISO3166
 {
 

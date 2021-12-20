@@ -1,9 +1,9 @@
 <?php
 
 $_ADDONLANG['Version'] = "Versie";
-$_ADDONLANG['update availible'] = "Een update is beschikbaar!";
-$_ADDONLANG['License Information'] = "Licentie Informatie";
-$_ADDONLANG['License Information text']  = "Op deze koppeling is de <a href=\"http://www.gnu.org/copyleft/gpl.html\" target=\"_blank\">GPLv3</a> Licentie van toepassing<br>Hulpvragen kunt u stellen op het <a href=\"https://forum.acumulus.nl/\" target=\"_blank\">Acumulus&reg; forum</a> of voor uitgebreide support kunt u contact opnemen met";
+$_ADDONLANG['update available'] = "Een update is beschikbaar!";
+$_ADDONLANG['License Information'] = "Licentie-informatie";
+$_ADDONLANG['License Information text'] = "Op deze koppeling is de <a href=\"http://www.gnu.org/licenses/gpl-3.0.html\" target=\"_blank\">GPLv3</a> licentie van toepassing.<br>Hulpvragen kunt u stellen op het <a href=\"https://forum.acumulus.nl/index.php?board=17.0\" target=\"_blank\">Acumulus&reg; forum</a> of voor uitgebreide ondersteuning kunt u contact opnemen met";
 $_ADDONLANG['Submit invoices'] = "Verstuur facturen";
 $_ADDONLANG['Date Range'] = "Datum van";
 $_ADDONLANG['to'] = "tot";
@@ -15,10 +15,10 @@ $_ADDONLANG['Send multiple invoices header'] = "Verstuur meerdere facturen naar 
 $_ADDONLANG['Invoice ID'] = "Factuur ID";
 $_ADDONLANG['Invoice No'] = "Factuurnummer";
 $_ADDONLANG['Search on'] = "Zoek op";
-$_ADDONLANG['Single invoice detail text'] = "Voer het Factuur ID nummer in en druk op de knop om de factuur naar Acumulus&reg; te versturen.";
+$_ADDONLANG['Single invoice detail text'] = "Voer het Factuurnummer in en druk op de knop om de factuur naar Acumulus&reg; te versturen.";
 $_ADDONLANG['Single invoice "title'] = "Verstuur een individuele factuur naar Acumulus&reg;";
 $_ADDONLANG['Sent Invoice'] = "Verstuur factuur";
-$_ADDONLANG['Sent invoice summery'] = "Hieronder staat een samenvatting van de facturen welke verzonden zullen worden naar Acumulus&reg;";
+$_ADDONLANG['Sent invoice summery'] = "Hieronder staat een samenvatting van de facturen die verzonden zullen worden naar Acumulus&reg;";
 $_ADDONLANG['Records Found'] = "Gevonden facturen";
 $_ADDONLANG['Invoice'] = "Factuur";
 $_ADDONLANG['Client Name'] = "Klantnaam";

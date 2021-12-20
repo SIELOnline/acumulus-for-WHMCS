@@ -1,9 +1,9 @@
 <?php
 
 $_ADDONLANG['Version'] = "Version";
-$_ADDONLANG['update availible'] = "An update is available!";
+$_ADDONLANG['update available'] = "An update is available!";
 $_ADDONLANG['License Information'] = "License Information";
-$_ADDONLANG['License Information text']  = "This module is licenced by <a href=\"http://www.gnu.org/copyleft/gpl.html\" target=\"_blank\">GPLv3</a><br>Support questions can be asked on the <a href=\"https://forum.acumulus.nl/\" target=\"_blank\">Acumulus&reg; forum</a> or for extended support you can contact";
+$_ADDONLANG['License Information text']  = "This module is licenced under the <a href=\"http://www.gnu.org/licenses/gpl-3.0.html\" target=\"_blank\">GPLv3</a> license.<br>Support questions can be asked on the <a href=\"https://forum.acumulus.nl/index.php?board=17.0\" target=\"_blank\">Acumulus&reg; forum</a> or for extended support you can contact";
 $_ADDONLANG['Submit invoices'] = "Submit invoices";
 $_ADDONLANG['Date Range'] = "Date Range";
 $_ADDONLANG['to'] = "to";
@@ -32,7 +32,7 @@ $_ADDONLANG['Cancelled'] = "Cancelled";
 $_ADDONLANG['Sent Invoices'] = "Sent Invoices";
 $_ADDONLANG['Confirm Send'] = "Are you sure you want to send these invoices to Acumulus&reg;?";
 $_ADDONLANG['Return'] = "Return";
-$_ADDONLANG['Sent Above Invoices'] = "Sent Invoices lited above?";
+$_ADDONLANG['Sent Above Invoices'] = "Sent Invoices listed above?";
 $_ADDONLANG['Resent Invoice'] = "Resent Invoice";
 $_ADDONLANG['Submit Invoice'] = "Submit Invoice";
 $_ADDONLANG['Confirm Send single'] = "Are you sure you want to send this invoice to Acumulus&reg; ?";
