@@ -1,17 +1,4 @@
 <?php
-/**
- * Addon Module acumulus_connect
- *
- * This connect module allows you to send invoices and contacts to Acumulus�.
- *  *
- *
- * @package    acumulus_connect
- * @author     Remline ict-diensten <support@remline.nl>
- * @copyright  GPLv3  Remline ict-diensten
- * @version    3.2 April ,2021
- * @link       https://www.remline.nl
- */
-
 if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }

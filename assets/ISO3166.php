@@ -1,18 +1,4 @@
 <?php
-
-/**
- * Addon Module acumulus_connect
- *
- * This addon module copies invoices to Acumulus.
- *  *
- *
- * @package    acumulus_connect
- * @author     Remline ict-diensten <support@remline.nl>
- * @copyright  GPLv3  Remline ict-diensten
- * @version    2.3 June 13 ,2017
- * @link       https://www.remline.nl
- */
-
 class ISO3166
 {
 

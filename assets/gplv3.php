@@ -1,17 +1,4 @@
 <?php
-/**
- * Addon Module Invoice2Acumulus
- *
- * This addon module copies paid invoices to Acumulus.
- *  *
- *
- * @package    Invoice2Acumulus
- * @author     Remline ict-diensten <support@remline.nl>
- * @copyleft   GPLv3  Remline ict-diensten
- * @version    2.3 June 13 ,2017
- * @link       https://www.remline.nl
- */
-
 if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }

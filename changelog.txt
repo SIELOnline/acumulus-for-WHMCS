@@ -39,7 +39,7 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
                      - Replace username,password,code with * in the debug module logging.
                      - Renamed several fuctions to make sure they stay unique.
                      - Added extra module logging for troubleshooting.
-		     - Added function to summarize invoicelines	
+		     - Added function to summarize invoicelines
                      - Improved update check.
                      - Fixed Screen layout if new verion is found.
  1.0.6  2015 Sep 26  - fixed email on error and email on warning being wrong at create invoice. (no public release)
@@ -108,3 +108,6 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
 3.2     2021 Apr 25
         - Fixed a Vatrate warning when a invoice was sent to a person in a non EU country.
         - Fixed: Company name was filled with person name if the customer was not a company.
+3.3     2021 Dec ??
+        - Addon is now maintained by Buro RaDer.
+        - Refactored: code style (PSR-2) code formatting, licences, readme, variable naming
