@@ -5,6 +5,7 @@
  *
  * This addon module copies invoices to Acumulus.
  *  *
+ *
  * @package    acumulus_connect
  * @author     Remline ict-diensten <support@remline.nl>
  * @copyright  GPLv3  Remline ict-diensten
@@ -14,16 +15,18 @@
 
 class ISO3166
 {
+
     const KEY_ALPHA2 = 'alpha2';
 
     public function getByAlpha2($alpha2)
     {
         if (!preg_match('/^[a-zA-Z]{2}$/', $alpha2)) {
-            throw new \DomainException('Not a valid alpha2: ' . $alpha2);
+            throw new DomainException('Not a valid alpha2: ' . $alpha2);
         }
 
         return $this->getBy(self::KEY_ALPHA2, $alpha2);
     }
+
     private function getBy($key, $value)
     {
         foreach ($this->countries as $country) {
@@ -31,8 +34,9 @@ class ISO3166
                 return $country;
             }
         }
-        throw new \OutOfBoundsException('ISO 3166-1 does not contain: ' . $value);
+        throw new OutOfBoundsException('ISO 3166-1 does not contain: ' . $value);
     }
+
     protected $countries = [
         [
             'name' => 'Afghanistan',

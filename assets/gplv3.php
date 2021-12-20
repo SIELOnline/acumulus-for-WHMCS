@@ -4,6 +4,7 @@
  *
  * This addon module copies paid invoices to Acumulus.
  *  *
+ *
  * @package    Invoice2Acumulus
  * @author     Remline ict-diensten <support@remline.nl>
  * @copyleft   GPLv3  Remline ict-diensten
@@ -11,16 +12,18 @@
  * @link       https://www.remline.nl
  */
 
-if (!defined("WHMCS"))
-	die("This file cannot be accessed directly");
+if (!defined("WHMCS")) {
+    die("This file cannot be accessed directly");
+}
 
 // *************************************************************************
 // * Helper Functions                                                      *
 // *************************************************************************
 
-function invoice2acumulus_get_gpl_license(){
- return
-'                    GNU GENERAL PUBLIC LICENSE
+function invoice2acumulus_get_gpl_license()
+{
+    return
+        '                    GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
@@ -695,5 +698,6 @@ the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <http://www.gnu.org/philosophy/why-not-lgpl.html>.
 ';
-};
+}
+
 ?>
