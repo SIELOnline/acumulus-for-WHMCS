@@ -4,6 +4,7 @@
  * @noinspection PhpMultipleClassesDeclarationsInOneFile
  * @noinspection PhpFullyQualifiedNameUsageInspection
  * @noinspection PhpInconsistentReturnPointsInspection
+ * @noinspection PhpReturnDocTypeMismatchInspection
  * @noinspection SpellCheckingInspection
  *
  * This stub will never be compiled and is thus only used at development time.
@@ -58,6 +59,18 @@ function logActivity(string $message, int $userId = 0) {}
  *  - message: string: error message
  */
 function localAPI(string $command, array $values, string $adminUserName = ''): array {}
+
+/**
+ * Register hook function call.
+ *
+ * @param string $hookPoint The hook point to call
+ * @param integer $priority The priority for the given hook function
+ * @param callable $function Function name to call or anonymous function.
+ *
+ * @return mixed
+ *   Depends on hook function point.
+ */
+function add_hook(string $hookPoint, int $priority, callable $function) {}
 
 /**
  * Converts a date entered in the system setting format to a MySQL Date/Timestamp

@@ -1017,12 +1017,11 @@ function acumulus_connect_XMLPrepairCustomerDetails(array $config, array $invoic
  * @param array $config
  * @param array $invoice
  * @param array $client
- * @param bool $isbulkimport
  * @param bool $iscredit
  *
  * @return array
  */
-function acumulus_connect_XMLPrepairInvoiceDetails(array $config, array $invoice, array $client, bool $isbulkimport = false, bool $iscredit = false): array
+function acumulus_connect_XMLPrepairInvoiceDetails(array $config, array $invoice, array $client, bool $iscredit = false): array
 {
     // Format: yyyy-mm-dd.
     $invoiceDetails['issuedate'] = $invoice['date'];
@@ -1038,7 +1037,7 @@ function acumulus_connect_XMLPrepairInvoiceDetails(array $config, array $invoice
     $invoiceDetails['template'] = $config['acumulus_invoice_templateid'];
 
     // If ["acumulus_use_acumulus_invoice_numbering"] is disabled or bulk import is enabled use the WHMCS invoice number
-    if ($config['acumulus_use_acumulus_invoice_numbering'] !== 'on' or $isbulkimport) {
+    if ($config['acumulus_use_acumulus_invoice_numbering'] !== 'on') {
         // check if invoice number exists or uses the invoice id instead
         if ($invoice['invoicenum'] == '') {
             $invoice['invoicenum'] = $invoice['invoiceid'];
@@ -1046,16 +1045,13 @@ function acumulus_connect_XMLPrepairInvoiceDetails(array $config, array $invoice
         $invoiceDetails['number'] = $invoice['invoicenum'];
     }
     // Overall description of the invoice, invoice title.
-    $invoiceDetails['description'] = acumulus_connect_replaceVarsInText($config['acumulus_invoice_description'], $invoice,
-        $client);
+    $invoiceDetails['description'] = acumulus_connect_replaceVarsInText($config['acumulus_invoice_description'], $invoice, $client);
     // Multiline field for extended description of the invoice. Content will appear on invoice and associated emails. Use \n for newlines. Tabs are not supported.
     $invoiceDetails['descriptiontext'] = str_replace("\n", "\\n",
-        acumulus_connect_replaceVarsInText($config['acumulus_invoice_descriptiontext'], $invoice,
-            $client));
+        acumulus_connect_replaceVarsInText($config['acumulus_invoice_descriptiontext'], $invoice, $client));
     // Multiline field for additional remarks. Use \n for newlines and \t for tabs. Contents is placed in notes/comments section of the invoice. Content will not appear on the actual invoice or associated emails.
     $invoiceDetails['invoicenotes'] = str_replace("{TAB}", "\\t", str_replace("\n", "\\n",
-        acumulus_connect_replaceVarsInText($config['acumulus_invoice_invoicenotes'], $invoice,
-            $client)));
+        acumulus_connect_replaceVarsInText($config['acumulus_invoice_invoicenotes'], $invoice, $client)));
 
     // When omitted, or when no match has been made possible, the first available accountnumber in the contract will be selected
     $invoiceDetails['accountnumber'] = $config['account_numbers'][$invoice['paymentmethod']]['id'];
@@ -1064,8 +1060,7 @@ function acumulus_connect_XMLPrepairInvoiceDetails(array $config, array $invoice
     // Credit Invoice adjustments.
     if ($iscredit) {
         // Overall description of the invoice, invoice title.
-        $invoiceDetails['description'] = acumulus_connect_replaceVarsInText($config['acumulus_creditinvoice_description'], $invoice,
-            $client);
+        $invoiceDetails['description'] = acumulus_connect_replaceVarsInText($config['acumulus_creditinvoice_description'], $invoice, $client);
         $invoiceDetails['paymentstatus'] = 2;
         $invoiceDetails['paymentdate'] = date("Y-m-d");
     }
@@ -1076,38 +1071,38 @@ function acumulus_connect_XMLPrepairInvoiceDetails(array $config, array $invoice
         // Add total taxed items
         if (!empty($invoice['custom']['subtotal_taxedItems_exclTax'])) {
             $invoiceDetails['invoicelines'][] = [
+                // non-mandatory, If set, this number will precede the product description (product).
                 'itemnumber' => null,
-                // non mandatory, If set, this number will precede the product description (product).
+                // non-mandatory, Product or service description.
                 'product' => acumulus_connect_replaceVarsInText($config['acumulus_summarization_text_taxed'], $invoice, $client),
-                // non mandatory, Product or service description.
+                // non-mandatory,  'Product'( default ), 'Service'
                 'nature' => $config['acumulus_invoice_default_nature'],
-                // non mandatory,  'Product'( default ), 'Service'
+                // non-mandatory,  Unit price without VAT. Decimal separator is a point. No thousand separators. 4 decimals precision. E.g. 12.95 or 1200.50 or 12.6495. Will be rounded if provided with more than 4 decimals.
                 'unitprice' => $invoice['custom']['subtotal_taxedItems_exclTax'],
-                // non mandatory,  Unit price without VAT. Decimal separator is a point. No thousand separators. 4 decimals precision. E.g. 12.95 or 1200.50 or 12.6495. Will be rounded if provided with more than 4 decimals.
-                'vatrate' => $invoice['custom']['taxrate'],
                 // mandatory,  Applicable vatrate for the product. Defaults to "21".
+                'vatrate' => $invoice['custom']['taxrate'],
+                // non-mandatory, Number of products/services. Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 1 or 1.5 or 12.64. Default is 1.
                 'quantity' => "1",
-                // non mandatory, Number of products/services. Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 1 or 1.5 or 12.64. Default is 1.
+                // non-mandatory, Use in case of margin vat (marge-regeling). Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 12.95 or 1200.50
                 'costprice' => null,
-                // non mandatory, Use in case of margin vat (marge-regeling). Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 12.95 or 1200.50
             ];
         }
         // Add total untaxed items
         if (!empty($invoice['custom']['subtotal_untaxedItems'])) {
             $invoiceDetails['invoicelines'][] = [
-                // non mandatory, If set, this number will precede the product description (product).
+                // non-mandatory, If set, this number will precede the product description (product).
                 'itemnumber' => null,
-                // non mandatory, Product or service description.
+                // non-mandatory, Product or service description.
                 'product' => acumulus_connect_replaceVarsInText($config['acumulus_summarization_text_untaxed'], $invoice, $client),
-                // non mandatory,  'Product'( default ), 'Service'
+                // non-mandatory,  'Product'( default ), 'Service'
                 'nature' => $config['acumulus_invoice_default_nature'],
-                // non mandatory,  Unit price without VAT. Decimal separator is a point. No thousand separators. 4 decimals precision. E.g. 12.95 or 1200.50 or 12.6495. Will be rounded if provided with more than 4 decimals.
+                // non-mandatory,  Unit price without VAT. Decimal separator is a point. No thousand separators. 4 decimals precision. E.g. 12.95 or 1200.50 or 12.6495. Will be rounded if provided with more than 4 decimals.
                 'unitprice' => $invoice['custom']['subtotal_untaxedItems'],
                 // mandatory,  Applicable vatrate for the product. Defaults to "21".
                 'vatrate' => "-1",
-                // non mandatory, Number of products/services. Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 1 or 1.5 or 12.64. Default is 1.
+                // non-mandatory, Number of products/services. Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 1 or 1.5 or 12.64. Default is 1.
                 'quantity' => "1",
-                // non mandatory, Use in case of margin vat (marge-regeling). Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 12.95 or 1200.50
+                // non-mandatory, Use in case of margin vat (marge-regeling). Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 12.95 or 1200.50
                 'costprice' => null,
             ];
         }
@@ -1142,16 +1137,15 @@ function acumulus_connect_XMLPrepairInvoiceDetails(array $config, array $invoice
  * @param array $config
  * @param array $invoice
  * @param array $client
- * @param bool $isbulkimport
  * @param bool $iscredit
  *
  * @return \SimpleXMLElement
  */
-function acumulus_connect_generatexml(array $config, array $invoice, array $client, bool $isbulkimport, bool $iscredit = false): SimpleXMLElement
+function acumulus_connect_generatexml(array $config, array $invoice, array $client, bool $iscredit = false): SimpleXMLElement
 {
     // Create the basic XML.
     $customerDetails = acumulus_connect_XMLPrepairCustomerDetails($config, $invoice, $client);
-    $invoiceDetails = acumulus_connect_XMLPrepairInvoiceDetails($config, $invoice, $client, $isbulkimport, $iscredit);
+    $invoiceDetails = acumulus_connect_XMLPrepairInvoiceDetails($config, $invoice, $client, $iscredit);
 
     // Create The XML file.
     $xml = acumulus_connect_basicXML();
@@ -1342,10 +1336,17 @@ function acumulus_connect_generatexml(array $config, array $invoice, array $clie
     return $xml;
 }
 
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-   Functions called by Hooks
-  ----------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-function acumulus_connect_sendInvoice($config, $invoiceid, $isbulkimport = false)
+/*
+ * Functions called by Hooks
+ */
+
+/**
+ * Sends the data of an invoice to Acumulus.
+ *
+ * @param array $config
+ * @param int $invoiceid
+ */
+function acumulus_connect_sendInvoice(array $config, int $invoiceid): void
 {
     $adminuser = $config['acumulus_whmcs_admin'];
 
@@ -1354,7 +1355,7 @@ function acumulus_connect_sendInvoice($config, $invoiceid, $isbulkimport = false
     $client = acumulus_connect_getclient($invoice['userid'], $adminuser);
 
     //Make the xml file
-    $xml = acumulus_connect_generatexml($config, $invoice, $client, $isbulkimport);
+    $xml = acumulus_connect_generatexml($config, $invoice, $client);
 
     //Send xml to Acumulus
     acumulus_connect_sendInvoicetoAccumulus($config, $invoice, $client, $xml);
@@ -1555,7 +1556,7 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
             $negativeInvoice = acumulus_connect_expandInvoiceWithCustoms($negativeInvoice, $client);
 
             // Make the xml file.
-            $xml = acumulus_connect_generatexml($config, $negativeInvoice, $client, false, true);
+            $xml = acumulus_connect_generatexml($config, $negativeInvoice, $client, true);
 
             //Send new credit invoice (xml) to Acumulus.
             acumulus_connect_sendInvoicetoAccumulus($config, $negativeInvoice, $client, $xml);
