@@ -1,7 +1,7 @@
 <?php
 /**
- * @noinspection DuplicatedCode  @todo: remove at a later stage and extract
- *   those duplicates into helper functions.
+ * @noinspection DuplicatedCode  @todo: remove this noinspection at a later
+ *   stage and extract those duplicates into helper functions.
  */
 
 use WHMCS\Database\Capsule;
@@ -874,10 +874,10 @@ function acumulus_connect_basicXML(bool $includeWarnings = true): SimpleXMLEleme
     // The connector feedback code.
     $connector = $xml->addChild('connector');
     $connector->addChild('application', 'WHMCS ' . acumulus_connect_getWHMCSVersion());
-    $connector->addChild('webkoppel', 'WHMCS for Acumulus (acumulus_connect) versie ' . $config["version"]);
-    $connector->addChild('development', 'SIEL - Remline');
-    $connector->addChild('remark', 'development');
-    $connector->addChild('sourceuri', 'https://www.siel.nl');
+    $connector->addChild('webkoppel', 'Acumulus ' . $config["version"]);
+    $connector->addChild('development', 'SIEL - Buro RaDer');
+    $connector->addChild('remark', 'PHP ' . phpversion());
+    $connector->addChild('sourceuri', 'https://github.com/SIELOnline/acumulus-for-WHMCS');
 
     return $xml;
 }
@@ -891,7 +891,7 @@ function acumulus_connect_basicXML(bool $includeWarnings = true): SimpleXMLEleme
  *
  * @return array
  */
-function acumulus_connect_XMLPrepairCustomerDetails(array $config, array $invoice, array $client): array
+function acumulus_connect_XMLPrepareCustomerDetails(array $config, array $invoice, array $client): array
 {
     // Convert country code to country name.
     /** @noinspection PhpIncludeInspection  false positive */
@@ -1010,9 +1010,7 @@ function acumulus_connect_XMLPrepairCustomerDetails(array $config, array $invoic
 }
 
 /**
- * Helper function to prepair the invoice data for the XML.
- *
- * if $isbulkimport is set to true then invoice numbering from acumulus is being ignored.
+ * Helper function to prepare the invoice data for the XML.
  *
  * @param array $config
  * @param array $invoice
@@ -1021,7 +1019,7 @@ function acumulus_connect_XMLPrepairCustomerDetails(array $config, array $invoic
  *
  * @return array
  */
-function acumulus_connect_XMLPrepairInvoiceDetails(array $config, array $invoice, array $client, bool $iscredit = false): array
+function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice, array $client, bool $iscredit = false): array
 {
     // Format: yyyy-mm-dd.
     $invoiceDetails['issuedate'] = $invoice['date'];
@@ -1031,20 +1029,20 @@ function acumulus_connect_XMLPrepairInvoiceDetails(array $config, array $invoice
     $invoiceDetails['paymentstatus'] = ($invoice['status'] === 'Paid' ? '2' : '1');
     // Change the format from  yyyy-mm-dd hh:mm:ss   to  yyyy-mm-dd.  and unset var if eq 0000-00-00.
     // Format: yyyy-mm-dd.
-    $invoiceDetails['paymentdate'] = (explode(' ', $invoice['datepaid'])[0] == '0000-00-00' ? null : explode(' ',
-        $invoice['datepaid'])[0]);
+    $invoiceDetails['paymentdate'] = explode(' ', $invoice['datepaid'])[0] == '0000-00-00' ? null : explode(' ', $invoice['datepaid'])[0];
     // When omitted, or when no match has been made possible, the first available template in the contract will be selected.
     $invoiceDetails['template'] = $config['acumulus_invoice_templateid'];
 
-    // If ["acumulus_use_acumulus_invoice_numbering"] is disabled or bulk import is enabled use the WHMCS invoice number
+    // If ["acumulus_use_acumulus_invoice_numbering"] is disabled we use the
+    // WHMCS invoice number.
     if ($config['acumulus_use_acumulus_invoice_numbering'] !== 'on') {
-        // check if invoice number exists or uses the invoice id instead
+        // Check if invoice number exists or use the invoice id instead.
         if ($invoice['invoicenum'] == '') {
             $invoice['invoicenum'] = $invoice['invoiceid'];
         }
         $invoiceDetails['number'] = $invoice['invoicenum'];
     }
-    // Overall description of the invoice, invoice title.
+    // Overall description of the invoice: invoice title.
     $invoiceDetails['description'] = acumulus_connect_replaceVarsInText($config['acumulus_invoice_description'], $invoice, $client);
     // Multiline field for extended description of the invoice. Content will appear on invoice and associated emails. Use \n for newlines. Tabs are not supported.
     $invoiceDetails['descriptiontext'] = str_replace("\n", "\\n",
@@ -1144,8 +1142,8 @@ function acumulus_connect_XMLPrepairInvoiceDetails(array $config, array $invoice
 function acumulus_connect_generatexml(array $config, array $invoice, array $client, bool $iscredit = false): SimpleXMLElement
 {
     // Create the basic XML.
-    $customerDetails = acumulus_connect_XMLPrepairCustomerDetails($config, $invoice, $client);
-    $invoiceDetails = acumulus_connect_XMLPrepairInvoiceDetails($config, $invoice, $client, $iscredit);
+    $customerDetails = acumulus_connect_XMLPrepareCustomerDetails($config, $invoice, $client);
+    $invoiceDetails = acumulus_connect_XMLPrepareInvoiceDetails($config, $invoice, $client, $iscredit);
 
     // Create The XML file.
     $xml = acumulus_connect_basicXML();

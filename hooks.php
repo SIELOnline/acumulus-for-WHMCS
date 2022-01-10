@@ -1,6 +1,6 @@
 <?php
 /**
- * This file contains hook implementations for the Acumulus connect addon.
+ * This file contains hook implementations for the Acumulus addon.
  *
  * This file will be detected and loaded by WHMCS on every page load,
  * {@see https://developers.whmcs.com/hooks/module-hooks/}

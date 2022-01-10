@@ -33,9 +33,10 @@ require_once('acumulus_connect_functions.php');
 /** @noinspection PhpIncludeInspection  false positive */
 require_once('assets/gplv3.php');
 
-/* ---------------------------
-   Module Mandatory functions
-  ----------------------------*/
+/*
+ *  Module Mandatory functions.
+ */
+
 /**
  * Function to return the configuration array for the Acumulus module.
  *
@@ -72,18 +73,18 @@ function acumulus_connect_config(): array
         } else {
             // the entered credentials are not valid.
             $config_array = acumulus_connect_construct_basic_configarray();
-            $config_array["fields"][] = array(
+            $config_array["fields"][] = [
                 "FriendlyName" => "Credential check",
                 "Description" => '<font color="red"><b>' . 'The credentials are not correct.' . '</b></font>'
-            );
+            ];
         }
     } else {
         // one or more required credentials are not given.
         $config_array = acumulus_connect_construct_basic_configarray();
-        $config_array["fields"][] = array(
+        $config_array["fields"][] = [
             "FriendlyName" => "Credential check",
             "Description" => '<font color="blue"><b>' . 'Please enter your credentials and click "Save Changes", to continue configurating.' . '</b></font>',
-        );
+        ];
     }
     return $config_array;
 }
@@ -111,11 +112,11 @@ function acumulus_connect_activate(): array
         );
     } catch (Exception $e) {
         logActivity('Acumulus_Connect: Installing the module failed Unable to create my_table: ' . $e->getMessage());
-        return array('status' => 'error', 'description' => 'Installing the module failed Unable to create my_table: ' . $e->getMessage());
+        return ['status' => 'error', 'description' => 'Installing the module failed Unable to create my_table: ' . $e->getMessage()];
     }
 
     // Return the result.
-    return array('status' => 'success', 'description' => 'The module Acumulus Connect is installed Successfully, please fill in the configuration data.');
+    return ['status' => 'success', 'description' => 'The Acumulus module is installed Successfully, please fill in the configuration data.'];
 }
 
 /**
@@ -132,11 +133,11 @@ function acumulus_connect_deactivate(): array
         Capsule::schema()->drop('mod_acumulus_connect');
     } catch (Exception $e) {
         logActivity('Acumulus_Connect: Deactivating the module failed: ' . $e->getMessage());
-        return array('status' => 'error', 'description' => 'Deactivating the module failed: ' . $e->getMessage());
+        return ['status' => 'error', 'description' => 'Deactivating the module failed: ' . $e->getMessage()];
     }
 
     // Return the result
-    return array('status' => 'success', 'description' => 'The module Acumulus Connect is deactivated Successfully');
+    return ['status' => 'success', 'description' => 'The Acumulus module is deactivated Successfully'];
 }
 
 
@@ -179,7 +180,7 @@ function acumulus_connect_sidebar(array $vars): string
     $version = $vars['version'];
     $lang = $vars['_lang'];
 
-    $sidebar = '<span class="header"><img src="images/icons/addonmodules.png" class="absmiddle" width="16" height="16" alt="" /> Acumulus Connect</span>
+    $sidebar = '<span class="header"><img src="images/icons/addonmodules.png" class="absmiddle" width="16" height="16" alt="" />Acumulus</span>
         <ul class="menu">
                 <li><a href="#">' . $lang['Version'] . ': ' . $version . '</a></li>';
     if (isset($_SESSION['acumulus_connect_newversion'])) {
@@ -224,10 +225,10 @@ function acumulus_connect_output(array $vars)
                             echo '<br><a href="addonmodules.php?module=acumulus_connect" class="btn btn-warning">' . $lang['Return'] . '</a>';
                             return;
                         }
-                        $invoices = array($invoiceids);
+                        $invoices = [$invoiceids];
                         break;
                     default:
-                        $invoices = array($invoiceid);
+                        $invoices = [$invoiceid];
                 }
                 if (empty($invoices[0])) {
                     echo "<br><h2>" . $lang['No records found message'] . "</h2>";
@@ -244,7 +245,7 @@ function acumulus_connect_output(array $vars)
                 </form>';
                 break;
             case "sendbatch":
-                $invoices = array();
+                $invoices = [];
                 $filterby = $_POST['filterby'];
                 $filterby2 = $_POST['filterby2'];
                 $datefrom = toMySQLDate($_POST['datefrom']);
@@ -354,35 +355,37 @@ function acumulus_connect_output(array $vars)
  */
 function acumulus_connect_construct_basic_configarray(): array
 {
-    return array(
-        "name" => "Acumulus Connect",
-        "description" => "This connect module allows you to send invoices and contacts to Acumulus&reg;.",
-        "version" => "3.2",
-        "author" => "<a href=\"https://remline.nl\" target=\"_blank\"><img alt=\"Remline ict-diensten\" src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAAAZCAYAAACxZDnAAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDpBMUE0REEzMUZEMDZFMDExQjM2N0UzQ0NEQjZCOTEyMiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpDMEM0Q0I3QTI4NDMxMUU0ODA3RERBRDA0QjNEOEFBQSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpDMEM0Q0I3OTI4NDMxMUU0ODA3RERBRDA0QjNEOEFBQSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChNYWNpbnRvc2gpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MDg4MDExNzQwNzIwNjgxMTgwODNGQ0MyOEEyODFERjAiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6QTFBNERBMzFGRDA2RTAxMUIzNjdFM0NDREI2QjkxMjIiLz4gPC9yZGY6RGVzY3Jp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\"/></a>",
+    return [
+        // This is where the module name is defined!:
+        "name" => "Acumulus",
+        "description" => "The Acumulus module connects to the Acumulus online financial administration application.",
+        // This is where the module version is defined!:
+        "version" => "3.3",
+        "author" => 'SIEL & Buro RaDer',
         "language" => "english",
-        "fields" => array(
-            "acumulus_code" => array(
+        "fields" => [
+            "acumulus_code" => [
                 "FriendlyName" => "Contract code",
                 "Type" => "text",
                 "Size" => "25",
-                "Description" => "Enter the Acumulus&reg; contract code here.",
+                "Description" => "Enter the Acumulus contract code here.",
                 "Default" => "",
-            ),
-            "acumulus_username" => array(
+            ],
+            "acumulus_username" => [
                 "FriendlyName" => "Username",
                 "Type" => "text",
                 "Size" => "25",
-                "Description" => "Enter the Acumulus&reg; username here.",
+                "Description" => "Enter the Acumulus username here.",
                 "Default" => "",
-            ),
-            "acumulus_password" => array(
+            ],
+            "acumulus_password" => [
                 "FriendlyName" => "Password",
                 "Type" => "password",
                 "Size" => "25",
-                "Description" => "Enter the Acumulus&reg; password here.",
-            ),
-        ),
-    );
+                "Description" => "Enter the Acumulus password here.",
+            ],
+        ],
+    ];
 }
 
 /**
@@ -420,338 +423,338 @@ function acumulus_connect_construct_full_configarray(): array
     }
     $Acumulus_AccountNumbers = rtrim($Acumulus_AccountNumbers, ",");
 
-    $config_array["fields"][] = array("FriendlyName" => "Credential check", "Description" => 'Credentials are correct.');
+    $config_array["fields"][] = ["FriendlyName" => "Credential check", "Description" => 'Credentials are correct.'];
 
     // Features.
-    $config_array["fields"]["acumulus_features_hook_invoice_message1"] = array(
+    $config_array["fields"]["acumulus_features_hook_invoice_message1"] = [
         "FriendlyName" => "",
         "Description" => acumulus_connect_newConfigSection("Features"),
-    );
-    $config_array["fields"]["acumulus_emailaspdf"] = array(
-        "FriendlyName" => "Let Acumulus&reg send invoice",
+    ];
+    $config_array["fields"]["acumulus_emailaspdf"] = [
+        "FriendlyName" => "Let Acumulus send invoice",
         "Type" => "yesno",
         "Size" => "25",
-        "Description" => "When enabled imported invoices will be send as pdf file using Acumulus.<br><i>* When importing invoices with the bulk import, this setting is ignored and no invoices will be send by Acumulus&reg.</i>",
+        "Description" => "When enabled imported invoices will be send as pdf file using Acumulus.<br><i>* When importing invoices with the bulk import, this setting is ignored and no invoices will be sent by Acumulus.</i>",
         "Default" => "no",
-    );
+    ];
 
-    $config_array["fields"]["acumulus_customer_import_enabled"] = array(
+    $config_array["fields"]["acumulus_customer_import_enabled"] = [
         "FriendlyName" => "Import customer details",
         "Type" => "yesno",
         "Size" => "25",
-        "Description" => "Import WHMCS customer details in Acumulus&reg when an invoice is send to Acumulus&reg.",
+        "Description" => "Import WHMCS customer details in Acumulus when an invoice is send to Acumulus.",
         "Default" => "on",
-    );
+    ];
 
     // Hook Variables.
-    $config_array["fields"]["acumulus_hook_invoice_create_enabled"] = array(
+    $config_array["fields"]["acumulus_hook_invoice_create_enabled"] = [
         "FriendlyName" => "Enable create hook",
         "Type" => "yesno",
         "Size" => "25",
-        "Description" => "Send Invoice to Acumulus&reg; directly when a new invoice has been generated by the cron, order process, API, when converting a quote to an invoice, or when published a draft invoice with email.",
+        "Description" => "Send Invoice to Acumulus directly when a new invoice has been generated by the cron, order process, API, when converting a quote to an invoice, or when published a draft invoice with email.",
         "Default" => "on",
-    );
-    $config_array["fields"]["acumulus_hook_invoice_paid_enabled"] = array(
+    ];
+    $config_array["fields"]["acumulus_hook_invoice_paid_enabled"] = [
         "FriendlyName" => "Enable paid hook",
         "Type" => "yesno",
         "Size" => "25",
-        "Description" => "Update or Create Invoice in Acumulus&reg; directly when paid for.",
+        "Description" => "Update or Create Invoice in Acumulus directly when paid for.",
         "Default" => "on",
-    );
-    $config_array["fields"]["acumulus_hook_invoice_canceled_enabled"] = array(
+    ];
+    $config_array["fields"]["acumulus_hook_invoice_canceled_enabled"] = [
         "FriendlyName" => "Enable Canceled invoice hook",
         "Type" => "yesno",
         "Size" => "25",
-        "Description" => "Create Credit invoice in Acumulus&reg; when a invoice is being canceled.",
+        "Description" => "Create Credit invoice in Acumulus when a invoice is being canceled.",
         "Default" => "on",
-    );
+    ];
 
     // Customer Variables.
     if ($config['acumulus_customer_import_enabled'] === "on") {
-        $config_array["fields"]["acumulus_customer_message1"] = array(
+        $config_array["fields"]["acumulus_customer_message1"] = [
             "FriendlyName" => "",
             "Description" => acumulus_connect_newConfigSection("Customer Settings"),
-        );
+        ];
 
-        $config_array["fields"]["acumulus_customer_type"] = array(
+        $config_array["fields"]["acumulus_customer_type"] = [
             "FriendlyName" => "Customer Type",
             "Type" => "dropdown",
             "Options" => "Debtor,Creditor,Debtor/Creditor (neutral)",
-            "Description" => "Select under what type the customer needs to be registered in Acumulus&reg.",
+            "Description" => "Select under what type the customer needs to be registered in Acumulus.",
             "Default" => "Debtor/Creditor (neutral)",
-        );
-        $config_array["fields"]["acumulus_customer_countryautoname"] = array(
+        ];
+        $config_array["fields"]["acumulus_customer_countryautoname"] = [
             "FriendlyName" => "Customer country",
             "Type" => "dropdown",
             "Options" => "Use the same country as the customer in WHMCS,Automatic prefill based on country code,Automatic prefill based on country code including Nederland",
-            "Description" => "Select which customer country setting needs to be used in Acumulus&reg.",
+            "Description" => "Select which customer country setting needs to be used in Acumulus.",
             "Default" => "Use the same country as the customer in WHMCS",
-        );
-        $config_array["fields"]["acumulus_customer_overwriteifexists"] = array(
+        ];
+        $config_array["fields"]["acumulus_customer_overwriteifexists"] = [
             "FriendlyName" => "Overwrite customer details",
             "Type" => "yesno",
             "Size" => "25",
-            "Description" => "Overwrite customer contact details in Acumulus&reg.",
+            "Description" => "Overwrite customer contact details in Acumulus.",
             "Default" => "on",
-        );
-        $config_array["fields"]["acumulus_customer_disableduplicates"] = array(
+        ];
+        $config_array["fields"]["acumulus_customer_disableduplicates"] = [
             "FriendlyName" => "Disable customer duplicates",
             "Type" => "yesno",
             "Size" => "25",
-            "Description" => "Disable older instances of a contact in Acumulus&reg when multiple contacts match the customer email.",
-        );
-        $config_array["fields"]["acumulus_whmcs_vatfield"] = array(
+            "Description" => "Disable older instances of a contact in Acumulus when multiple contacts match the customer email.",
+        ];
+        $config_array["fields"]["acumulus_whmcs_vatfield"] = [
             "FriendlyName" => "TAX or VAT field",
             "Type" => "dropdown",
             "Options" => implode(",", acumulus_connect_getClientCustomfields()) . ',[VAT Number]',
             "Description" => "WHMCS Vat field or Custom client field that represents the TAX ID or VAT number. The option [VAT Number] is the new vat field since WHMCS 7.7",
             "Default" => "[VAT Number]",
-        );
-        $config_array["fields"]["acumulus_whmcs_ibanfield"] = array(
+        ];
+        $config_array["fields"]["acumulus_whmcs_ibanfield"] = [
             "FriendlyName" => "IBAN field",
             "Type" => "dropdown",
             "Options" => implode(",", acumulus_connect_getClientCustomfields()),
             "Description" => "Custom client field that represents the clients IBAN number.",
             "Default" => "",
-        );
+        ];
         // @todo: correct typo but add an update function to retain value.
-        $config_array["fields"]["acumulus_cusromer_mark"] = array(
+        $config_array["fields"]["acumulus_cusromer_mark"] = [
             "FriendlyName" => "Client Mark",
             "Type" => "text",
             "Size" => "40",
             "Description" => "Extra label or mark. <i>(See manual for variables that can be used.)</i>",
             "Default" => "WHMCS Klantnr: {USERID}",
-        );
+        ];
     }
 
     // Standard Invoice Settings.
-    $config_array["fields"]["acumulus_invoice_message1"] = array(
+    $config_array["fields"]["acumulus_invoice_message1"] = [
         "FriendlyName" => "",
         "Description" => acumulus_connect_newConfigSection("Standard Invoice Settings"),
-    );
+    ];
 
-    $config_array["fields"]["acumulus_invoice_default_costcenter"] = array(
+    $config_array["fields"]["acumulus_invoice_default_costcenter"] = [
         "FriendlyName" => "Default Costcenter",
         "Type" => "dropdown",
         "Options" => $stringCostCenters,
         "Description" => "The default costcenter the new invoices will be booked to.",
         "Default" => "",
-    );
+    ];
 
-    $config_array["fields"]["acumulus_invoice_default_nature"] = array(
+    $config_array["fields"]["acumulus_invoice_default_nature"] = [
         "FriendlyName" => "Default nature",
         "Type" => "dropdown",
         "Options" => 'Product,Service',
         "Description" => "The default Nature on wich an invoice line is booked.",
         "Default" => "Service",
-    );
+    ];
 
-    $config_array["fields"]["acumulus_use_acumulus_invoice_numbering"] = array(
-        "FriendlyName" => "Use Acumulus&reg invoice numbering",
+    $config_array["fields"]["acumulus_use_acumulus_invoice_numbering"] = [
+        "FriendlyName" => "Use Acumulus invoice numbering",
         "Type" => "yesno",
         "Size" => "25",
-        "Description" => "When enabled, WHMCS ignors the invoice number and uses Acumulus&reg sequential invoice numbering.<br>",
+        "Description" => "When enabled, WHMCS ignors the invoice number and uses Acumulus sequential invoice numbering.<br>",
         "Default" => "on",
-    );
+    ];
 
-    $config_array["fields"]["acumulus_invoice_description"] = array(
+    $config_array["fields"]["acumulus_invoice_description"] = [
         "FriendlyName" => "Invoice title",
         "Type" => "text",
         "Size" => "40",
         "Description" => "Overall description of the invoice, invoice title.<br><i>(See manual for varibles that can be used.)</i>",
         "Default" => "WHMCS Factuur: {INVOICENUMBER}",
-    );
+    ];
 
-    $config_array["fields"]["acumulus_creditinvoice_description"] = array(
+    $config_array["fields"]["acumulus_creditinvoice_description"] = [
         "FriendlyName" => "Credit Invoice title",
         "Type" => "text",
         "Size" => "40",
         "Description" => "Overall description for the Credit invoice, credit invoice title.<br><i>(See manual for varibles that can be used.)</i>",
         "Default" => "Credit Factuur:  WHMCS: {INVOICENUMBER}",
-    );
+    ];
 
-    $config_array["fields"]["acumulus_invoice_descriptiontext"] = array(
+    $config_array["fields"]["acumulus_invoice_descriptiontext"] = [
         "FriendlyName" => "Invoice extended description",
         "Type" => "textarea",
         "Rows" => "4",
         "Cols" => "47",
         "Description" => "Multiline field for extended description of the invoice. Content will appear on invoice and associated emails.<br><i>(See manual for varibles that can be used.) note: tabs cannot be used here</i>",
         "Default" => "{INVOICENOTES}",
-    );
+    ];
 
-    $config_array["fields"]["acumulus_invoice_invoicenotes"] = array(
+    $config_array["fields"]["acumulus_invoice_invoicenotes"] = [
         "FriendlyName" => "Invoice additional remarks",
         "Type" => "textarea",
         "Rows" => "4",
         "Cols" => "47",
         "Description" => "Multiline field for additional remarks.  Contents is placed in notes/comments section of the invoice. Content <b>will not appear</b> on the actual invoice or associated emails.<br><i>(See manual for varibles that can be used.) (Use {TAB} for tabs)</i>",
         "Default" => "",
-    );
+    ];
 
-    $config_array["fields"]["acumulus_invoice_template"] = array(
+    $config_array["fields"]["acumulus_invoice_template"] = [
         "FriendlyName" => "Invoice Template",
         "Type" => "dropdown",
         "Options" => $stringTemplates,
-        "Description" => "Name of the template tht will be used by Acumulus&reg. When omitted, the first available template in the contract will be selected.",
+        "Description" => "Name of the template tht will be used by Acumulus. When omitted, the first available template in the contract will be selected.",
         "Default" => "",
-    );
+    ];
 
     // Additional Invoice Settings.
-    $config_array["fields"]["acumulus_invoice_message2"] = array(
+    $config_array["fields"]["acumulus_invoice_message2"] = [
         "FriendlyName" => "",
         "Description" => acumulus_connect_newConfigSection("Additional Invoice Settings"),
-    );
+    ];
 
-    $config_array["fields"]["acumulus_summarize_invoice"] = array(
+    $config_array["fields"]["acumulus_summarize_invoice"] = [
         "FriendlyName" => "Summarize invoice lines",
         "Type" => "yesno",
         "Size" => "25",
         "Description" => "Combine all invoice lines to one total invoice line. <i>The field \"Invoice line description\" is used as the description on the invoice line.</i>",
         "Default" => "",
-    );
+    ];
 
-    $config_array["fields"]["acumulus_invoice_correction"] = array(
+    $config_array["fields"]["acumulus_invoice_correction"] = [
         "FriendlyName" => "Invoice Correction",
         "Type" => "yesno",
         "Size" => "25",
         "Description" => "When enabled, the module will try to estimate the totals (WHMCS and ACUMULUS) and add a correction line when needed.",
         "Default" => "",
-    );
+    ];
     if ($config['acumulus_invoice_correction'] == 'on') {
-        $config_array["fields"]["acumulus_invoice_correction_text"] = array(
+        $config_array["fields"]["acumulus_invoice_correction_text"] = [
             "FriendlyName" => "Invoice correction line description<br>",
             "Type" => "text",
             "Size" => "40",
             "Description" => "The text that will appear on the invoice if there is a correction needed.<br><i>(See manual for varibles that can be used.)</i>",
             "Default" => "WHMCS correctie",
-        );
+        ];
     }
     if ($config['acumulus_summarize_invoice'] == 'on') {
-        $config_array["fields"]["acumulus_summarization_text_taxed"] = array(
+        $config_array["fields"]["acumulus_summarization_text_taxed"] = [
             "FriendlyName" => "Invoice line Sumarization description<br>including TAX",
             "Type" => "text",
             "Size" => "40",
             "Description" => "The text that will be used on the summerized invoice line for items with tax.<br><i>(See manual for varibles that can be used.)</i>",
             "Default" => "Totaal WHMCS Factuur belast met BTW",
-        );
+        ];
 
-        $config_array["fields"]["acumulus_summarization_text_untaxed"] = array(
+        $config_array["fields"]["acumulus_summarization_text_untaxed"] = [
             "FriendlyName" => "Invoice line Sumarization description<br>excluding TAX",
             "Type" => "text",
             "Size" => "40",
             "Description" => "The text that will be used on the summerized invoice line for items without tax.<br><i>(See manual for varibles that can be used.)</i>",
             "Default" => "Totaal WHMCS Factuur zonder BTW",
-        );
+        ];
     }
 
-    $config_array["fields"]["acumulus_invoice_use_last_paymentmethod"] = array(
+    $config_array["fields"]["acumulus_invoice_use_last_paymentmethod"] = [
         "FriendlyName" => "Use last paymentmethod",
         "Type" => "yesno",
         "Size" => "25",
-        "Description" => "When enabled, the module will change the account numbers invoice in Acumulus&reg; to use the last paymentmethod.",
+        "Description" => "When enabled, the module will change the account numbers invoice in Acumulus to use the last paymentmethod.",
         "Default" => "on",
-    );
+    ];
 
     // Account number translation
-    $config_array["fields"]["acumulus_accountnumber_message1"] = array(
+    $config_array["fields"]["acumulus_accountnumber_message1"] = [
         "FriendlyName" => "",
         "Description" => acumulus_connect_newConfigSection("Accountnumber translation"),
-    );
+    ];
 
     foreach (acumulus_connect_getWHMCSAccountNumbers($config['acumulus_whmcs_admin']) as $accountNumber) {
-        $config_array["fields"]["acumulus_AccountNumber_" . $accountNumber['module']] = array(
+        $config_array["fields"]["acumulus_AccountNumber_" . $accountNumber['module']] = [
             "FriendlyName" => "WHMCS Payment Gateway: <b>" . $accountNumber['displayname'] . "</b>",
             "Type" => "dropdown",
             "Options" => $Acumulus_AccountNumbers,
-            "Description" => "Select the matching Acumulus&reg AccountNumber.",
+            "Description" => "Select the matching Acumulus AccountNumber.",
             "Default" => "",
-        );
+        ];
     }
 
     // Send email as pdf from Acumulus.
     if ($config['acumulus_emailaspdf'] == 'on') {
 
-        $config_array["fields"]["acumulus_emailaspdf_message1"] = array(
+        $config_array["fields"]["acumulus_emailaspdf_message1"] = [
             "FriendlyName" => "",
             "Description" => acumulus_connect_newConfigSection("Acumulus E-Mail Settings"),
-        );
-        $config_array["fields"]["acumulus_emailaspdf_message2"] = array(
+        ];
+        $config_array["fields"]["acumulus_emailaspdf_message2"] = [
             "FriendlyName" => "E-mail To",
             "Description" => "The invoice will be send to the primary customer email adres. WHMCS Aditional Contacts will be ignored.",
-        );
+        ];
 
-        $config_array["fields"]["acumulus_emailaspdf_emailbcc"] = array(
+        $config_array["fields"]["acumulus_emailaspdf_emailbcc"] = [
             "FriendlyName" => "E-mail BCC",
             "Type" => "text",
             "Size" => "40",
             "Description" => "Use valid email addresses. Muliple addresses can be used when separated with a comma or semicolon. If emailto is not set, the emailbcc will be ignored and skipped.",
             "Default" => "",
-        );
-        $config_array["fields"]["acumulus_emailaspdf_emailfrom"] = array(
+        ];
+        $config_array["fields"]["acumulus_emailaspdf_emailfrom"] = [
             "FriendlyName" => "Email From",
             "Type" => "text",
             "Size" => "40",
             "Description" => "Use a single valid emailaddress. If omitted, the email address of the invoice template, with fallback to the account owner will be used. Most pretty results are obtained when using fully configured invoice templates in Acumulus and leaving this option empty (recommended).",
             "Default" => "",
-        );
-        $config_array["fields"]["acumulus_emailaspdf_subject"] = array(
+        ];
+        $config_array["fields"]["acumulus_emailaspdf_subject"] = [
             "FriendlyName" => "E-mail Subject",
             "Type" => "text",
             "Size" => "40",
             "Description" => "ASCII-only allowed. Be sure to provide xml-escaped htmlentities for UTF-8 characters.<br>If omitted or left empty, the subject will be: Factuur [number] [description]<br><i>(See manual for varibles that can be used.)</i>",
             "Default" => "",
-        );
-        $config_array["fields"]["acumulus_emailaspdf_message"] = array(
+        ];
+        $config_array["fields"]["acumulus_emailaspdf_message"] = [
             "FriendlyName" => "E-mail Message",
             "Type" => "textarea",
             "Rows" => "4",
             "Cols" => "47",
             "Description" => "Currently ASCII-only allowed. Mileage may vary when trying to submit multiple lines.<br>If omitted, the email text composed in the template will be used (recommended)<br><i>(See manual for varibles that can be used.)</i>.",
             "Default" => "",
-        );
-        $config_array["fields"]["acumulus_emailaspdf_confirmreading"] = array(
+        ];
+        $config_array["fields"]["acumulus_emailaspdf_confirmreading"] = [
             "FriendlyName" => "E-mail Confirm Reading",
             "Type" => "yesno",
             "Size" => "25",
             "Description" => "Ask the recipient to confirm the delivery of the email message.",
             "Default" => "no",
-        );
+        ];
     }
 
     // Warnings & Error Variables.
-    $config_array["fields"]["acumulus_warning_message2"] = array(
+    $config_array["fields"]["acumulus_warning_message2"] = [
         "FriendlyName" => "",
         "Description" => acumulus_connect_newConfigSection("Warnings & Errors"),
-    );
+    ];
 
-    $config_array["fields"]["acumulus_warning_email_address"] = array(
+    $config_array["fields"]["acumulus_warning_email_address"] = [
         "FriendlyName" => "Email address for warnings",
         "Type" => "text",
         "Size" => "25",
         "Description" => "Enter a email address where api warning messages should be send to.<br> When ommitted no warnings will be send.",
         "Default" => "",
-    );
+    ];
 
-    $config_array["fields"]["acumulus_error_email_address"] = array(
+    $config_array["fields"]["acumulus_error_email_address"] = [
         "FriendlyName" => "Email address for errors",
         "Type" => "text",
         "Size" => "25",
         "Description" => "Enter a email address where api error messages should be send to.<br>When ommitted no errors will be send.",
         "Default" => "",
-    );
+    ];
 
     // API Variables.
-    $config_array["fields"]["acumulus_api_message1"] = array(
+    $config_array["fields"]["acumulus_api_message1"] = [
         "FriendlyName" => "",
         "Description" => acumulus_connect_newConfigSection("WHMCS API Settings"),
-    );
-    $config_array["fields"]["acumulus_whmcs_admin"] = array(
+    ];
+    $config_array["fields"]["acumulus_whmcs_admin"] = [
         "FriendlyName" => "Hook admin",
         "Type" => "dropdown",
         "Options" => implode(",", acumulus_connect_get_admins()),
         "Description" => "WHMCS Admin user that the acumulus_connect module and runs as.",
         "Default" => "admin",
-    );
+    ];
 
     return $config_array;
 }
@@ -781,7 +784,7 @@ function acumulus_connect_show_module_form(array $vars)
     $todaysdate = getTodaysDate();
     $lang = $vars['_lang'];
 
-    $gateways = array();
+    $gateways = [];
     foreach (acumulus_connect_getWHMCSAccountNumbers($_SESSION['adminid']) as $gateway) {
         $gateways[] = $gateway['module'];
     }
@@ -857,14 +860,12 @@ function acumulus_connect_show_module_form(array $vars)
       </p>
         <table class=\"form\" width=\"100%\" border=\"0\" cellspacing=\"2\" cellpadding=\"3\">
         <tbody>
-           <tr>
-                <td width=\"100px;\" align=\"center\">
-                    <img src=\"data:image/png;base64,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\"/>
-                </td>
-                <td>" . $lang['License Information text'] . " <a href=\"https://remline.nl\" target=\"_blank\">Remline ict-diensten</a> (<a href=\"mailto: whmcs@acumulus.nl\"> whmcs@acumulus.nl</a>)</td></tr>
+            <tr>
+                <td>" . $lang['License Information text'] . ' <a href="mailto: whmcs@acumulus.nl"> whmcs@acumulus.nl</a>.</td>
+            </tr>
         </tbody>
         </table>
-    ";
+    ';
 }
 
 /**
@@ -882,7 +883,7 @@ function acumulus_connect_invoicesummary(array $invoices, array $vars): string
 
     $totalinvoices = 0;
     $summaryline = '';
-    $sendinvoices = array();
+    $sendinvoices = [];
 
     foreach ($invoices as $invoiceid) {
 
