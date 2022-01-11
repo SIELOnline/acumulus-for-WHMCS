@@ -40,7 +40,7 @@ function acumulus_connect_triggerInvoiceCreationPreEmailHook(array $vars): void
             // No token exists, so let's send the invoice;
             acumulus_connect_sendInvoice($config, $invoiceid);
         } else {
-            logActivity("acumulus_connect - Skipped sending Invoice ID: " . $invoiceid . " by hook 'triggerInvoiceCreationPreEmailHook' because it was already send.");
+            logActivity("acumulus_connect - Skipped sending Invoice ID: " . $invoiceid . " by hook 'triggerInvoiceCreationPreEmailHook' because it already was sent.");
         }
     }
 }

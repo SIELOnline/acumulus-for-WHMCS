@@ -135,6 +135,7 @@ function acumulus_connect_getClientCustomfields(): array
  */
 function acumulus_connect_getclient(int $clientid, string $adminuser): array
 {
+    // https://developers.whmcs.com/api-reference/getclientsdetails/
     $command = 'GetClientsDetails';
     $values = ['clientid' => $clientid, 'responsetype' => 'json',];
     $results = localAPI($command, $values, $adminuser);
@@ -185,6 +186,7 @@ function acumulus_connect_getinvoice(int $invoiceid, string $adminuser, bool $ex
  */
 function acumulus_connect_getWHMCSAccountNumbers(string $adminuser): array
 {
+    // https://developers.whmcs.com/api-reference/getpaymentmethods/
     $command = "GetPaymentMethods";
     $values = [];
     $results = localAPI($command, $values, $adminuser);
@@ -210,6 +212,7 @@ function acumulus_connect_getWHMCSAccountNumbers(string $adminuser): array
  */
 function acumulus_connect_getPaymentGatewayUsed(array $config, int $invoiceid): string
 {
+    // https://developers.whmcs.com/api-reference/gettransactions/
     $command = 'GetTransactions';
     $values = [
         'invoiceid' => $invoiceid,
@@ -655,6 +658,7 @@ function acumulus_connect_sendInvoicetoAccumulus(array $config, array $invoice, 
 
     $rawdata = curl_exec($ch);
     $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
+    // @todo: extract $replaceVars into a constant.
     logModuleCall("acumulus_connect", "Send Invoice to Acumulus", $xml->asXML(), $rawdata, $result,
         [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']]);
 
@@ -697,7 +701,9 @@ function acumulus_connect_setinvoicetoken(array $invoice, string $invoicetoken, 
     // Don't save the token to the reference table if paid, no need to store
     // references.
     if ($invoice["status"] == "Paid") {
-        logModuleCall("acumulus_connect", "Add invoicetoken to database", 'Invoice is already Paid, no need to store invoicetoken.', '', '', []);
+        // @todo: logActivity?
+        logModuleCall("acumulus_connect", "Add invoicetoken to database", 'Invoice is already Paid, no need to store invoicetoken.',
+            '', '', []);
         return;
     }
 
@@ -714,11 +720,14 @@ function acumulus_connect_setinvoicetoken(array $invoice, string $invoicetoken, 
                 ]
             )
             ) {
+                // @todo: logActivity?
                 logModuleCall("acumulus_connect", "Add invoicetoken to database", '',
                     'Added successful: ' . $invoice["invoiceid"] . ' - ' . $invoicetoken . ' - ' . $entryid, '', []);
             }
         } catch (Exception $e) {
-            logModuleCall("acumulus_connect", "Add invoicetoken to database", '', 'Error in SQL Query: ' . $e->getMessage(), '', []);
+            // @todo: logActivity?
+            logModuleCall("acumulus_connect", "Add invoicetoken to database", '', 'Error in SQL Query: ' . $e->getMessage(),
+                '', []);
         }
     } else {
         //a token already exists, so lets update the token
@@ -733,10 +742,12 @@ function acumulus_connect_setinvoicetoken(array $invoice, string $invoicetoken, 
                                            ]
                                        );
             if ($updatedUserCount > 0) {
+                // @todo: logActivity?
                 logModuleCall("acumulus_connect", "Update invoicetoken in database", '',
                     'Changed successfull: ' . $invoice["invoiceid"] . ' - ' . $invoicetoken, '', []);
             }
         } catch (Exception $e) {
+            // @todo: logActivity?
             logModuleCall("acumulus_connect", "Update invoicetoken in database", '', 'Error in SQL Query: ' . $e->getMessage(), '', []);
         }
     }
@@ -812,6 +823,7 @@ function acumulus_connect_getPaymentStatus(array $config, string $token): array
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
     $rawdata = curl_exec($ch);
     $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
+    // @todo: extract $replaceVars into a constant.
     logModuleCall("acumulus_connect", "invoice_paymentstatus_get()", $xml->asXML(), $rawdata, $result,
         [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']]);
     curl_close($ch);
@@ -1375,6 +1387,7 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
     try {
         $token = Capsule::table('mod_acumulus_connect')->where('id', $invoice["invoiceid"])->value('token');
     } catch (Exception $e) {
+        // @todo: logActivity?
         logModuleCall("acumulus_connect", "Hook[InvoicePaid][acumulus_connect_updateInvoice]", '', 'Error in SQL Query: ' . $e->getMessage(), '', []);
     }
     // if the token exists update the invoice in Acumulus, else send entire invoice.
@@ -1389,13 +1402,15 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
             }
             if ($invoice['paymentmethod'] !== $lastpaymentgateway) {
                 acumulus_connect_updateInvoicePaymentMethode($config, $invoiceid, $lastpaymentgateway);
-                //update the invoice in whmcs to the paid methode.
+                // Update the payment method of the invoice in whmcs.
+                // https://developers.whmcs.com/api-reference/updateinvoice/
                 $command = 'UpdateInvoice';
                 $postData = [
                     'invoiceid' => $invoiceid,
                     'paymentmethod' => $lastpaymentgateway,
                 ];
                 $results = localAPI($command, $postData);
+                // @todo: logActivity?
                 logModuleCall("acumulus_connect", "[acumulus_connect_updateInvoice in whmcs]", 'API CALL:UpdateInvoice: ' . implode(',', $postData), $results, '', []);
             }
         }
@@ -1422,9 +1437,11 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         $rawdata = curl_exec($ch);
         $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
+        // @todo: extract $replaceVars into a constant.
         logModuleCall("acumulus_connect", "Update Invoice paid status in Acumulus", $xml->asXML(), $rawdata, $result,
             [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']]);
 
+        // @todo: change to call to logActivity()?
         $command = "logactivity";
         $adminuser = $config['acumulus_whmcs_admin'];
         if (isset($result["status"])) {
@@ -1453,6 +1470,7 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
         curl_close($ch);
     } else {
         // Token not found make a module log entry and sent entire invoice;
+        // @todo: logActivity?
         logModuleCall("acumulus_connect", "Hook[InvoicePaid][acumulus_connect_updateInvoice]", '',
             'Token for id : "' . $invoice["invoiceid"] . '" not found so sending entire invoice.', '', []);
         acumulus_connect_sendInvoice($config, $invoiceid);
@@ -1489,17 +1507,19 @@ function acumulus_connect_updateInvoicePaymentMethode(array $config, int $invoic
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         $rawdata = curl_exec($ch);
         $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
+        // @todo: extract $replaceVars into a constant.
         logModuleCall("acumulus_connect", "Update accountnumber in invoice", $xml->asXML(), $rawdata, $result,
             [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']]);
 
+        // @todo: change to call to logActivity()?
         $command = "logactivity";
         $adminuser = $config['acumulus_whmcs_admin'];
         if (isset($result['entry']['entryproc'])) {
             switch ($result['entry']['entryproc']) {
-                case "updated":  //failed
+                case "updated":  // failed.
                     $values["description"] = "acumulus_connect - Changing payment methode for Invoice ID: " . $invoiceid . " to " . $config['account_numbers'][$paymentmethod]['name'] . "(" . $paymentmethod . ")";
                     break;
-                case "error":  //success without warnings
+                case "error":  //success without warnings.
                     $values["description"] = "acumulus_connect - Error changing payment methode for Invoice ID: " . $invoiceid . ". Not able to propagate the update.";
                     break;
                 default:
@@ -1523,9 +1543,10 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
 {
     $adminuser = $config['acumulus_whmcs_admin'];
 
+    // @todo: logActivity?
     logModuleCall("acumulus_connect", "Hook[InvoiceCancelled][DEBUG[CONFIG]]", $config, '', '', []);
 
-    // Run whmcsapi to retrieve the invoice and customer.
+    // Run whmcs api to retrieve the invoice and customer.
     $invoice = acumulus_connect_getinvoice($invoiceid, $adminuser, false);
     $client = acumulus_connect_getclient($invoice['userid'], $adminuser);
 
@@ -1537,6 +1558,7 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
         try {
             $token = Capsule::table('mod_acumulus_connect')->where('id', $invoice["invoiceid"])->value('token');
         } catch (Exception $e) {
+            // @todo: logActivity?
             logModuleCall("acumulus_connect", "Hook[InvoiceCancelled][getToken]", '', 'Error in SQL Query: ' . $e->getMessage(), '', []);
         }
         // If the token exists update the invoice in Acumulus, else send the
@@ -1559,11 +1581,13 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
             //Send new credit invoice (xml) to Acumulus.
             acumulus_connect_sendInvoicetoAccumulus($config, $negativeInvoice, $client, $xml);
         } else {
+            // @todo: change to call to logActivity()?
             $command = "logActivity";
             $values["description"] = "acumulus_connect - Credit invoice not created no token found for " . $invoice["invoiceid"] . " for User ID: " . $client["userid"];
             localAPI($command, $values, $adminuser);
         }
     } else {
+        // @todo: change to call to logActivity()?
         $command = "logActivity";
         $values["description"] = "acumulus_connect - Credit invoice not created not using acumulus sequential invoice numbering. ( " . $invoiceid . " for User ID: " . $client["userid"] . " )";
         localAPI($command, $values, $adminuser);

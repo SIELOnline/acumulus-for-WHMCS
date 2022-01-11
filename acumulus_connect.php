@@ -887,6 +887,7 @@ function acumulus_connect_invoicesummary(array $invoices, array $vars): string
 
     foreach ($invoices as $invoiceid) {
 
+        // https://developers.whmcs.com/api-reference/getinvoice/ (GetInvoice)
         $command = "getinvoice";
         $values["invoiceid"] = $invoiceid;
         $adminuser = $vars["acumulus_whmcs_admin"];

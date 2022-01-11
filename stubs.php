@@ -21,7 +21,31 @@
 namespace
 {
 /**
+ * Log activity.
+ *
+ * A helper method is available for adding entries to the activity log. This
+ * function is available to all hooks, modules and template files throughout the
+ * WHMCS system.
+ *
+ * From: {@see https://developers.whmcs.com/advanced/logging/}
+ *
+ * @param string $message The message to log
+ * @param int $userId An optional user id to which the log entry relates
+ */
+function logActivity(string $message, int $userId = 0) {}
+
+/**
  * Log module call.
+ *
+ * We recommend making use of the module log to record all external API calls
+ * and requests. This makes debugging the external API calls your modules easier
+ * and consistent with other modules.
+ *
+ * We recommend passing data strings such as usernames and passwords into the
+ * $replaceVars parameter to allow them to be automatically scrubbed and
+ * ommitted from module log entries.
+ *
+ * From: {@see https://developers.whmcs.com/advanced/logging/}
  *
  * @param string $module The name of the module
  * @param string $action The name of the action being performed
@@ -33,14 +57,6 @@ namespace
 function logModuleCall(string $module, string $action, $requestString, $responseData, $processedData, array $replaceVars) {}
 
 /**
- * Log activity.
- *
- * @param string $message The message to log
- * @param int $userId An optional user id to which the log entry relates
- */
-function logActivity(string $message, int $userId = 0) {}
-
-/**
  * The Internal API should be used when making API calls from within the WHMCS system.
  *
  * Common uses for this include from modules, hooks, or other custom code local
@@ -48,6 +64,11 @@ function logActivity(string $message, int $userId = 0) {}
  *
  * The import of init.php is not required when you’re already in a WHMCS runtime
  * (like in a hook) where init.php has already been imported.
+ *
+ * From: {@see https://developers.whmcs.com/api/internal-api/}
+ *
+ * See {@see https://developers.whmcs.com/api/api-index/} for an overview of
+ * available API calls with details per call on separate pages.
  *
  * @param string $command
  * @param array $values
