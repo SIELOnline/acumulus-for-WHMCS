@@ -129,6 +129,8 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
           - Changed calls to logActivity via localAPI to direct calls to logActivity.
           - Added logging to hooks, e.g. if they are not enabled.
           - Added a function for generic exception logging.
+          - Removed all use of $adminUser when calling the API.
+          - Removed unused function acumulus_connect_getPaymentGatewayUsed().
         - Bugs:
           - Presenting Acumulus accounts went wrong if no account number is defined
             in Acumulus for a certain account (e.g. cash or -1: outside Acumulus).

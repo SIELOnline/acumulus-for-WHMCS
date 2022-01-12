@@ -681,7 +681,7 @@ function acumulus_connect_construct_full_configarray(): array
         "Description" => acumulus_connect_newConfigSection("Account number translation"),
     ];
 
-    foreach (acumulus_connect_getWHMCSAccountNumbers($config['acumulus_whmcs_admin']) as $accountNumber) {
+    foreach (acumulus_connect_getWHMCSAccountNumbers() as $accountNumber) {
         $config_array["fields"]["acumulus_AccountNumber_" . $accountNumber['module']] = [
             "FriendlyName" => "WHMCS Payment Gateway: <b>" . $accountNumber['displayname'] . "</b>",
             "Type" => "dropdown",
@@ -768,13 +768,6 @@ function acumulus_connect_construct_full_configarray(): array
         "FriendlyName" => "",
         "Description" => acumulus_connect_newConfigSection("WHMCS API Settings"),
     ];
-    $config_array["fields"]["acumulus_whmcs_admin"] = [
-        "FriendlyName" => "Hook admin",
-        "Type" => "dropdown",
-        "Options" => implode(",", acumulus_connect_get_admins()),
-        "Description" => "WHMCS Admin user that the acumulus_connect module and runs as.",
-        "Default" => "admin",
-    ];
 
     return $config_array;
 }
@@ -805,7 +798,7 @@ function acumulus_connect_show_module_form(array $vars)
     $lang = $vars['_lang'];
 
     $gateways = [];
-    foreach (acumulus_connect_getWHMCSAccountNumbers($_SESSION['adminid']) as $gateway) {
+    foreach (acumulus_connect_getWHMCSAccountNumbers() as $gateway) {
         $gateways[] = $gateway['module'];
     }
 
@@ -910,9 +903,8 @@ function acumulus_connect_invoicesummary(array $invoices, array $vars): string
         // https://developers.whmcs.com/api-reference/getinvoice/
         $command = "GetInvoice";
         $values["invoiceid"] = $invoiceid;
-        $adminuser = $vars["acumulus_whmcs_admin"];
-        $data = acumulusLocalAPI($command, $values, $adminuser);
-        $client = acumulus_connect_getclient($data["userid"], $adminuser);
+        $data = acumulusLocalAPI($command, $values);
+        $client = acumulus_connect_getclient($data["userid"]);
 
         // Check if invoice number exists or use the invoice id instead.
         if ($data["invoicenum"] === "") {

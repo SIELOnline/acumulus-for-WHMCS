@@ -31,7 +31,6 @@ function logException(Exception $e)
  *
  * @param string $command
  * @param array $values
- * @param string $adminUserName @todo: is this parameter still useful?
  *
  * @return array
  *  Array with keys:
@@ -42,10 +41,9 @@ function logException(Exception $e)
  *
  * @throws \RuntimeException
  */
-function acumulusLocalAPI(string $command, array $values, string $adminUserName = ''): array
+function acumulusLocalAPI(string $command, array $values): array
 {
-    // $config['acumulus_whmcs_admin']
-    $results = localAPI($command, $values, $adminUserName);
+    $results = localAPI($command, $values);
     if ($results['result'] !== "success") {
         $callingFunction = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
         $mainArg = '';
@@ -82,7 +80,7 @@ function acumulus_connect_getConfig(): array
     $config['acumulus_invoice_templateid'] = $acumulusInvoiceTemplateParts[0];
     $config['acumulus_invoice_templatename'] = $acumulusInvoiceTemplateParts[1];
     // Loop through all account numbers in WHMCS and split them as well.
-    foreach (acumulus_connect_getWHMCSAccountNumbers($config['acumulus_whmcs_admin']) as $accountNumber) {
+    foreach (acumulus_connect_getWHMCSAccountNumbers() as $accountNumber) {
         $accountParts = explode(" ", $config['acumulus_AccountNumber_' . $accountNumber['module']], 2);
         $config['account_numbers'][$accountNumber['module']]['id'] = $accountParts[0];
         $config['account_numbers'][$accountNumber['module']]['name'] = $accountParts[1];
@@ -127,16 +125,15 @@ function acumulus_connect_getClientCustomfields(): array
  * WHMCS API Call to retrieve client details.
  *
  * @param int $clientid
- * @param string $adminuser
  *
  * @return array
  */
-function acumulus_connect_getclient(int $clientid, string $adminuser): array
+function acumulus_connect_getclient(int $clientid): array
 {
     // https://developers.whmcs.com/api-reference/getclientsdetails/
     $command = 'GetClientsDetails';
     $values = ['clientid' => $clientid, 'stats' => false];
-    $results = acumulusLocalAPI($command, $values, $adminuser);
+    $results = acumulusLocalAPI($command, $values);
 
     return $results["client"];
 }
@@ -145,21 +142,20 @@ function acumulus_connect_getclient(int $clientid, string $adminuser): array
  * WHMCS API Call to retrieve invoice details.
  *
  * @param int $invoiceid
- * @param string $adminuser
  * @param bool $expand
  *
  * @return array
  */
-function acumulus_connect_getinvoice(int $invoiceid, string $adminuser, bool $expand = true): array
+function acumulus_connect_getinvoice(int $invoiceid, bool $expand = true): array
 {
     // https://developers.whmcs.com/api-reference/getinvoice/
     $command = "GetInvoice";
     $values = ['invoiceid' => $invoiceid];
-    $results = acumulusLocalAPI($command, $values, $adminuser);
+    $results = acumulusLocalAPI($command, $values);
 
     // Add some custom fields to the invoice.
     if ($expand) {
-        $client = acumulus_connect_getclient($results['userid'], $adminuser);
+        $client = acumulus_connect_getclient($results['userid']);
         $results = acumulus_connect_expandInvoiceWithCustomValues($results, $client);
     }
     return $results;
@@ -168,36 +164,15 @@ function acumulus_connect_getinvoice(int $invoiceid, string $adminuser, bool $ex
 /**
  * WHMCS API Call to retrieve the account numbers from WHMCS.
  *
- * @param string $adminuser
- *
  * @return array[]
  */
-function acumulus_connect_getWHMCSAccountNumbers(string $adminuser): array
+function acumulus_connect_getWHMCSAccountNumbers(): array
 {
     // https://developers.whmcs.com/api-reference/getpaymentmethods/
     $command = "GetPaymentMethods";
     $values = [];
-    $results = acumulusLocalAPI($command, $values, $adminuser);
+    $results = acumulusLocalAPI($command, $values);
     return $results['paymentmethods']["paymentmethod"];
-}
-
-/**
- * WHMCS API Call to retrieve the payment gateway used in the first transaction.
- *
- * @param array $config
- * @param int $invoiceId
- *
- * @return string
- *
- * @todo: still used?
- * @noinspection PhpUnused
- */
-function acumulus_connect_getPaymentGatewayUsed(array $config, int $invoiceId): string
-{
-    // https://developers.whmcs.com/api-reference/gettransactions/
-    $command = 'GetTransactions';
-    $values = ['invoiceid' => $invoiceId];
-    return acumulusLocalAPI($command, $values, $config['acumulus_whmcs_admin'])['transactions']['transaction'][0]['gateway'];
 }
 
 /**
@@ -1338,11 +1313,9 @@ function acumulus_connect_generatexml(array $config, array $invoice, array $clie
  */
 function acumulus_connect_sendInvoice(array $config, int $invoiceid): void
 {
-    $adminuser = $config['acumulus_whmcs_admin'];
-
     // Run whmcsapi to retrieve the invoice and customer.
-    $invoice = acumulus_connect_getinvoice($invoiceid, $adminuser);
-    $client = acumulus_connect_getclient($invoice['userid'], $adminuser);
+    $invoice = acumulus_connect_getinvoice($invoiceid);
+    $client = acumulus_connect_getclient($invoice['userid']);
 
     //Make the xml file
     $xml = acumulus_connect_generatexml($config, $invoice, $client);
@@ -1360,8 +1333,8 @@ function acumulus_connect_sendInvoice(array $config, int $invoiceid): void
  */
 function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $usedate = null): void
 {
-    $invoice = acumulus_connect_getinvoice($invoiceid, $config["acumulus_whmcs_admin"]);
-    $client = acumulus_connect_getclient($invoice['userid'], $config["acumulus_whmcs_admin"]);
+    $invoice = acumulus_connect_getinvoice($invoiceid);
+    $client = acumulus_connect_getclient($invoice['userid']);
 
     // Retrieve the token from the mod_acumulus_connect table
     try {
@@ -1423,7 +1396,6 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
 
         // @todo: change to call to logActivity()?
         $command = "logactivity";
-        $adminuser = $config['acumulus_whmcs_admin'];
         if (isset($result["status"])) {
             $values["userid"] = $client["userid"];
             switch ($result["status"]) {
@@ -1446,7 +1418,7 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
         } else {
             $values["description"] = "acumulus_connect - API Error reaching acumulus website to update Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"];
         }
-        acumulusLocalAPI($command, $values, $adminuser);
+        acumulusLocalAPI($command, $values);
         curl_close($ch);
     } else {
         // Token not found make a module log entry and sent entire invoice;
@@ -1493,7 +1465,6 @@ function acumulus_connect_updateInvoicePaymentMethode(array $config, int $invoic
 
         // @todo: change to call to logActivity()?
         $command = "logactivity";
-        $adminuser = $config['acumulus_whmcs_admin'];
         if (isset($result['entry']['entryproc'])) {
             switch ($result['entry']['entryproc']) {
                 case 'updated':  // Success.
@@ -1511,7 +1482,7 @@ function acumulus_connect_updateInvoicePaymentMethode(array $config, int $invoic
         } else {
             $values['description'] = "acumulus_connect - API Error reaching acumulus website to update payment methode ID: $invoiceid";
         }
-        acumulusLocalAPI($command, $values, $adminuser);
+        acumulusLocalAPI($command, $values);
         curl_close($ch);
     }
 }
@@ -1524,14 +1495,12 @@ function acumulus_connect_updateInvoicePaymentMethode(array $config, int $invoic
  */
 function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
 {
-    $adminuser = $config['acumulus_whmcs_admin'];
-
     // @todo: logActivity?
     logModuleCall("acumulus_connect", "Hook[InvoiceCancelled][DEBUG[CONFIG]]", $config, '', '', []);
 
     // Run whmcs api to retrieve the invoice and customer.
-    $invoice = acumulus_connect_getinvoice($invoiceid, $adminuser, false);
-    $client = acumulus_connect_getclient($invoice['userid'], $adminuser);
+    $invoice = acumulus_connect_getinvoice($invoiceid, false);
+    $client = acumulus_connect_getclient($invoice['userid']);
 
     // check if acumulus_use_acumulus_invoice_numbering is used, if so, send an invoice with negative amounts (credit invoice).
     if ($config['acumulus_use_acumulus_invoice_numbering'] == 'on') {
