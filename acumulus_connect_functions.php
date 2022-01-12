@@ -6,6 +6,22 @@
 
 use WHMCS\Database\Capsule;
 
+function logException(Exception $e)
+{
+    if ($e->getCode() !== 'ACUMULUS') {
+        $callingFunction = $e->getTrace()[0]['function'];
+        $callingLine = $e->getLine();
+        $message = get_class($e);
+        if (!empty($e->getCode())) {
+            $message .= ' ' . $e->getCode() . ': ';
+        }
+        $message .= ': ';
+        $message .= $e->__toString();
+        $message .= " in $callingFunction:$callingLine";
+        logActivity($message);
+    }
+}
+
 /**
  * Wrapper around the WHMCS loadApi() function that adds some error handling.
  *
@@ -15,7 +31,7 @@ use WHMCS\Database\Capsule;
  *
  * @param string $command
  * @param array $values
- * @param string $adminUserName @todo: remove or still usefull?
+ * @param string $adminUserName @todo: is this parameter still useful?
  *
  * @return array
  *  Array with keys:
@@ -28,12 +44,19 @@ use WHMCS\Database\Capsule;
  */
 function acumulusLocalAPI(string $command, array $values, string $adminUserName = ''): array
 {
+    // $config['acumulus_whmcs_admin']
     $results = localAPI($command, $values, $adminUserName);
     if ($results['result'] !== "success") {
         $callingFunction = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
-        reset($values);
-        $mainArg = count($values) >= 1 ? key($values) . ':' . current($values) : '';
-        throw new RuntimeException("$callingFunction($mainArg): $command failed: {$results['result']}: {$results['message']}");
+        $mainArg = '';
+        if (count($values) >= 1) {
+            reset($values);
+            $value = current($values);
+            $mainArg = is_scalar($value) ? key($values) . ': ' . $value : '...';
+        }
+        $message = "$callingFunction($mainArg): $command failed: {$results['result']}: {$results['message']}";
+        logActivity($message);
+        throw new RuntimeException($message, 'ACUMULUS');
     }
     return $results;
 }
@@ -41,90 +64,33 @@ function acumulusLocalAPI(string $command, array $values, string $adminUserName 
 /**
  * Helper function to load the configuration data stored in the Database.
  *
- * @return array|null
+ * @return array
  */
-function acumulus_connect_getConfig(): ?array
+function acumulus_connect_getConfig(): array
 {
-    try {
-        $config = [];
-        $config['version'] = Capsule::table('tbladdonmodules')->where('module', 'acumulus_connect')->where('setting', 'version')->first()->value;
-        $config['acumulus_code'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_code')->first()->value;
-        $config['acumulus_username'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_username')->first()->value;
-        $config['acumulus_password'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_password')->first()->value;
-        $config['acumulus_warning_email_address'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_warning_email_address')->first()->value;
-        $config['acumulus_error_email_address'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_error_email_address')->first()->value;
-        $config['acumulus_hook_invoice_create_enabled'] = Capsule::table('tbladdonmodules')
-                                                                 ->where('setting', 'acumulus_hook_invoice_create_enabled')
-                                                                 ->first()->value;
-        $config['acumulus_hook_invoice_paid_enabled'] = Capsule::table('tbladdonmodules')
-                                                               ->where('setting', 'acumulus_hook_invoice_paid_enabled')
-                                                               ->first()->value;
-        $config['acumulus_hook_invoice_canceled_enabled'] = Capsule::table('tbladdonmodules')
-                                                                   ->where('setting', 'acumulus_hook_invoice_canceled_enabled')
-                                                                   ->first()->value;
-        $config['acumulus_customer_import_enabled'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_customer_import_enabled')->first()->value;
-        $config['acumulus_customer_type'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_customer_type')->first()->value;
-        $config['acumulus_customer_countryautoname'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_customer_countryautoname')->first()->value;
-        $config['acumulus_customer_overwriteifexists'] = Capsule::table('tbladdonmodules')
-                                                                ->where('setting', 'acumulus_customer_overwriteifexists')
-                                                                ->first()->value;
-        $config['acumulus_customer_disableduplicates'] = Capsule::table('tbladdonmodules')
-                                                                ->where('setting', 'acumulus_customer_disableduplicates')
-                                                                ->first()->value;
-        $config['acumulus_invoice_correction'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_invoice_correction')->first()->value;
-        $config['acumulus_cusromer_mark'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_cusromer_mark')->first()->value;
-        $config['acumulus_whmcs_vatfield'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_whmcs_vatfield')->first()->value;
-        $config['acumulus_whmcs_ibanfield'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_whmcs_ibanfield')->first()->value;
-        $config['acumulus_whmcs_admin'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_whmcs_admin')->first()->value;
-        $config['acumulus_invoice_default_costcenterid'] = explode(" ",
-            Capsule::table('tbladdonmodules')->where('setting', 'acumulus_invoice_default_costcenter')->first()->value, 2)[0];
-        $config['acumulus_invoice_default_costcentername'] = explode(" ",
-            Capsule::table('tbladdonmodules')->where('setting', 'acumulus_invoice_default_costcenter')->first()->value, 2)[1];
-        $config['acumulus_invoice_templateid'] = explode(" ", Capsule::table('tbladdonmodules')->where('setting', 'acumulus_invoice_template')->first()->value,
-            2)[0];
-        $config['acumulus_invoice_templatename'] = explode(" ",
-            Capsule::table('tbladdonmodules')->where('setting', 'acumulus_invoice_template')->first()->value, 2)[1];
-        $config['acumulus_use_acumulus_invoice_numbering'] = Capsule::table('tbladdonmodules')
-                                                                    ->where('setting', 'acumulus_use_acumulus_invoice_numbering')
-                                                                    ->first()->value;
-        $config['acumulus_summarize_invoice'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_summarize_invoice')->first()->value;
-        $config['acumulus_summarization_text_taxed'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_summarization_text_taxed')->first()->value;
-        $config['acumulus_summarization_text_untaxed'] = Capsule::table('tbladdonmodules')
-                                                                ->where('setting', 'acumulus_summarization_text_untaxed')
-                                                                ->first()->value;
-        $config['acumulus_invoice_default_nature'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_invoice_default_nature')->first()->value;
-        $config['acumulus_invoice_description'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_invoice_description')->first()->value;
-        $config['acumulus_creditinvoice_description'] = Capsule::table('tbladdonmodules')
-                                                               ->where('setting', 'acumulus_creditinvoice_description')
-                                                               ->first()->value;
-        $config['acumulus_invoice_correction_text'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_invoice_correction_text')->first()->value;
-        $config['acumulus_invoice_descriptiontext'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_invoice_descriptiontext')->first()->value;
-        $config['acumulus_invoice_invoicenotes'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_invoice_invoicenotes')->first()->value;
-        $config['acumulus_invoice_use_last_paymentmethod'] = Capsule::table('tbladdonmodules')
-                                                                    ->where('setting', 'acumulus_invoice_use_last_paymentmethod')
-                                                                    ->first()->value;
-        $config['acumulus_emailaspdf'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_emailaspdf')->first()->value;
-        $config['acumulus_emailaspdf_emailbcc'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_emailaspdf_emailbcc')->first()->value;
-        $config['acumulus_emailaspdf_emailfrom'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_emailaspdf_emailfrom')->first()->value;
-        $config['acumulus_emailaspdf_subject'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_emailaspdf_subject')->first()->value;
-        $config['acumulus_emailaspdf_message'] = Capsule::table('tbladdonmodules')->where('setting', 'acumulus_emailaspdf_message')->first()->value;
-        $config['acumulus_emailaspdf_confirmreading'] = Capsule::table('tbladdonmodules')
-                                                               ->where('setting', 'acumulus_emailaspdf_confirmreading')
-                                                               ->first()->value;
-        // Loop through all account numbers in WHMCS and put them in an array.
-        foreach (acumulus_connect_getWHMCSAccountNumbers($config['acumulus_whmcs_admin']) as $accountNumber) {
-            $config['account_numbers'][$accountNumber['module']]['id'] = explode(" ",
-                Capsule::table('tbladdonmodules')->where('setting', 'acumulus_AccountNumber_' . $accountNumber['module'])->first()->value, 2)[0];
-            $config['account_numbers'][$accountNumber['module']]['name'] = explode(" ",
-                Capsule::table('tbladdonmodules')->where('setting', 'acumulus_AccountNumber_' . $accountNumber['module'])->first()->value, 2)[1];
-        }
-
-        // Global WHMCS Settings.
-        $config['TaxType'] = Capsule::table('tblconfiguration')->where('setting', 'TaxType')->first()->value;
-    } catch (Exception $e) {
-        // @todo: log exception.
-        $config = null;
+    // @todo: what if table is empty?
+    $configRecords = Capsule::table('tbladdonmodules')->where('module', 'acumulus_connect')->get(['setting', 'value']);
+    $config = [];
+    foreach ($configRecords as $record) {
+        $config[$record->setting] = $record->value;
     }
+    // Split composite values into their parts.
+    $acumulusDefaultCostCenterParts = explode(" ", $config['acumulus_invoice_default_costcenter'], 2);
+    $config['acumulus_invoice_default_costcenterid'] = $acumulusDefaultCostCenterParts[0];
+    $config['acumulus_invoice_default_costcentername'] = $acumulusDefaultCostCenterParts[1];
+    $acumulusInvoiceTemplateParts = explode(" ", $config['acumulus_invoice_template'], 2);
+    $config['acumulus_invoice_templateid'] = $acumulusInvoiceTemplateParts[0];
+    $config['acumulus_invoice_templatename'] = $acumulusInvoiceTemplateParts[1];
+    // Loop through all account numbers in WHMCS and split them as well.
+    foreach (acumulus_connect_getWHMCSAccountNumbers($config['acumulus_whmcs_admin']) as $accountNumber) {
+        $accountParts = explode(" ", $config['acumulus_AccountNumber_' . $accountNumber['module']], 2);
+        $config['account_numbers'][$accountNumber['module']]['id'] = $accountParts[0];
+        $config['account_numbers'][$accountNumber['module']]['name'] = $accountParts[1];
+    }
+
+    // Global WHMCS Settings.
+    $configRecordTaxType = Capsule::table('tbladdonmodules')->where('setting', 'TaxType')->first();
+    $config['TaxType'] = $configRecordTaxType->value ?? null;
 
     return $config;
 }
@@ -714,7 +680,7 @@ function acumulus_connect_setinvoicetoken(array $invoice, string $invoicetoken, 
 {
     // Don't save the token to the reference table if paid, no need to store
     // references.
-    if ($invoice["status"] == "Paid") {
+    if ($invoice["status"] === "Paid") {
         // @todo: logActivity?
         logModuleCall("acumulus_connect", "Add invoicetoken to database", 'Invoice is already Paid, no need to store invoicetoken.',
             '', '', []);
@@ -723,7 +689,7 @@ function acumulus_connect_setinvoicetoken(array $invoice, string $invoicetoken, 
 
     // check if invoiceid and invoicetoken are already stored and, if so, update.
     if (!Capsule::table('mod_acumulus_connect')->where('id', $invoice["invoiceid"])->exists()) {
-        // no token exists, so let's add the token.
+        // No token exists, so let's add the token.
         try {
             if (Capsule::table('mod_acumulus_connect')->insert(
                 [
@@ -744,7 +710,7 @@ function acumulus_connect_setinvoicetoken(array $invoice, string $invoicetoken, 
                 '', []);
         }
     } else {
-        //a token already exists, so lets update the token
+        // A token already exists, so lets update the token.
         try {
             $updatedUserCount = Capsule::table('mod_acumulus_connect')
                                        ->where('id', $invoice["invoiceid"])
@@ -1049,7 +1015,7 @@ function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice
 {
     // Format: yyyy-mm-dd.
     $invoiceDetails['issuedate'] = $invoice['date'];
-    // When omitted, or when no match has been made possible, the first available costcenter in the contract will be selected.
+    // When omitted, or when no match has been made possible, the first available cost center in the contract will be selected.
     $invoiceDetails['costcenter'] = $config['acumulus_invoice_default_costcentername'];
     // 1 = Due (default), 2 = Paid
     $invoiceDetails['paymentstatus'] = ($invoice['status'] === 'Paid' ? '2' : '1');
@@ -1077,7 +1043,7 @@ function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice
     $invoiceDetails['invoicenotes'] = str_replace("{TAB}", "\\t", str_replace("\n", "\\n",
         acumulus_connect_replaceVarsInText($config['acumulus_invoice_invoicenotes'], $invoice, $client)));
 
-    // When omitted, or when no match has been made possible, the first available accountnumber in the contract will be selected
+    // When omitted, or when no match has been made possible, the first available account number in the contract will be selected
     $invoiceDetails['accountnumber'] = $config['account_numbers'][$invoice['paymentmethod']]['id'];
     $invoiceDetails['vattype'] = $invoice['custom']['vattype'];
 
@@ -1530,17 +1496,20 @@ function acumulus_connect_updateInvoicePaymentMethode(array $config, int $invoic
         $adminuser = $config['acumulus_whmcs_admin'];
         if (isset($result['entry']['entryproc'])) {
             switch ($result['entry']['entryproc']) {
-                case "updated":  // failed.
-                    $values["description"] = "acumulus_connect - Changing payment methode for Invoice ID: " . $invoiceid . " to " . $config['account_numbers'][$paymentmethod]['name'] . "(" . $paymentmethod . ")";
+                case 'updated':  // Success.
+                    $values['description'] = "acumulus_connect - Changing payment method for Invoice ID: $invoiceid to {$config['account_numbers'][$paymentmethod]['name']} ($paymentmethod)";
                     break;
-                case "error":  //success without warnings.
-                    $values["description"] = "acumulus_connect - Error changing payment methode for Invoice ID: " . $invoiceid . ". Not able to propagate the update.";
+                case 'no changes made':  // Success.
+                    $values['description'] = "acumulus_connect - Not changing payment method for Invoice ID: $invoiceid, already equals {$config['account_numbers'][$paymentmethod]['name']} ($paymentmethod)";
+                    break;
+                case 'error':  //success without warnings.
+                    $values['description'] = "acumulus_connect - Error changing payment method for Invoice ID: $invoiceid. Not able to propagate the update.";
                     break;
                 default:
-                    $values["description"] = "acumulus_connect - Error changing payment methode for Invoice ID: " . $invoiceid . ". Undocumented error, payment methode probably not updated in Acumulus.";
+                    $values['description'] = "acumulus_connect - Error changing payment method for Invoice ID: $invoiceid. Undocumented entrproc ({$result['entry']['entryproc']}), payment methode probably not updated in Acumulus.";
             }
         } else {
-            $values["description"] = "acumulus_connect - API Error reaching acumulus website to update paymentmethode ID: " . $invoiceid;
+            $values['description'] = "acumulus_connect - API Error reaching acumulus website to update payment methode ID: $invoiceid";
         }
         acumulusLocalAPI($command, $values, $adminuser);
         curl_close($ch);
