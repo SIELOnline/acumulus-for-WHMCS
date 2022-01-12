@@ -76,8 +76,10 @@ function logModuleCall(string $module, string $action, $requestString, $response
  *
  * @return array
  *  Array with keys:
- *  - result: string: success or another string indicating non-success.
- *  - message: string: error message
+ *  - result: string: success or error.
+ *  - message: string: optional, error message in case of error.
+ *  - Other keys depend on the API funtion called, see
+ *    {@see https://developers.whmcs.com/api/api-index/}.
  */
 function localAPI(string $command, array $values, string $adminUserName = ''): array {}
 

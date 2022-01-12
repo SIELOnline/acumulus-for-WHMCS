@@ -54,7 +54,7 @@ function acumulus_connect_config(): array
         $xml->addChild('format', 'xml');
         $xml_string = urlencode($xml->asXML());
 
-        // Lets check the credentials against the Acumulus API.
+        // Let's check the credentials against the Acumulus API.
         $url = "https://api.sielsystems.nl/acumulus/stable/general/general_about.php";
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -83,7 +83,7 @@ function acumulus_connect_config(): array
         $config_array = acumulus_connect_construct_basic_configarray();
         $config_array["fields"][] = [
             "FriendlyName" => "Credential check",
-            "Description" => '<font color="blue"><b>' . 'Please enter your credentials and click "Save Changes", to continue configurating.' . '</b></font>',
+            "Description" => '<font color="blue"><b>' . 'Please enter your credentials and click "Save Changes", to continue configuring the Acumulus module.' . '</b></font>',
         ];
     }
     return $config_array;
@@ -123,6 +123,8 @@ function acumulus_connect_activate(): array
  * Performs custom actions on deactivating this module.
  *
  * - Remove Custom DB Table
+ *
+ * @todo: should we always drop the table or can we ask for confirmation?
  *
  * @return string[]
  *   Results of the activation.
@@ -165,9 +167,10 @@ function acumulus_connect_upgrade($vars)
     }
 }
 
-/* ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-   Module Additional functions
-  ----------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*
+ * Module Additional functions. These functions are called by WHMCS based on
+ * naming patterns.
+ */
 /**
  * Return html to add to the sidebar.
  *
@@ -201,7 +204,7 @@ function acumulus_connect_output(array $vars)
     global $_SESSION;
     $lang = $vars['_lang'];
     if (isset($_POST["action"])) {
-        if (empty($_POST['resentinvoice']) and ($_POST['action'] == 'sendinvoice')) {
+        if (empty($_POST['resentinvoice']) && ($_POST['action'] == 'sendinvoice')) {
             echo "<br><h2>" . $lang['No records found message'] . "</h2>";
             echo '<br><a href="addonmodules.php?module=acumulus_connect" class="btn btn-warning">' . $lang['Return'] . '</a>';
 
@@ -887,11 +890,11 @@ function acumulus_connect_invoicesummary(array $invoices, array $vars): string
 
     foreach ($invoices as $invoiceid) {
 
-        // https://developers.whmcs.com/api-reference/getinvoice/ (GetInvoice)
-        $command = "getinvoice";
+        // https://developers.whmcs.com/api-reference/getinvoice/
+        $command = "GetInvoice";
         $values["invoiceid"] = $invoiceid;
         $adminuser = $vars["acumulus_whmcs_admin"];
-        $data = localAPI($command, $values, $adminuser);
+        $data = acumulusLocalAPI($command, $values, $adminuser);
         $client = acumulus_connect_getclient($data["userid"], $adminuser);
 
         // Check if invoice number exists or use the invoice id instead.

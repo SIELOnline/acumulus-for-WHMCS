@@ -119,8 +119,13 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
           - Typos, CRLF -> LF, new array style ([]).
           - Added PHPDoc blocks and type-info to parameters and function returns.
           - Removed warnings and errors found by PhpStorm inspections.
-          - Removed use of functions from the mysql extension (already removed in PHP 7.0!)
+          - Removed use of functions from the mysql extension (already removed in PHP 7.0!).
           - Changed contents of the <connector> tag in XML messages to the Acumulus API.
           - Added a file with stubs of functions and classes used from WHMCS that
             aids - at development time - with autocompletion, static (type)
             checking, etc. This file is never loaded at runtime.
+          - Added a wrapper around localAPI() that adds error logging.
+          - Replaced a number of string concatenations by variable expansion in double-quoted strings.
+          - Changed calls to logActivity via localAPI to direct calls to logActivity.
+          - Added logging to hooks, e.g. if they are not enabled.
+
