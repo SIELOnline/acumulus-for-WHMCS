@@ -136,3 +136,6 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
           - Removed all use of $adminuser when calling the API.
           - Removed unused function acumulus_connect_getPaymentGatewayUsed().
           - Removed unnecessary uses of unset().
+          - Camel cased variables (where phpstorm warns about typo).
+          - Prefer single quotes where possible.
+          - Camel case function names (after the prefix acumulus_connect).

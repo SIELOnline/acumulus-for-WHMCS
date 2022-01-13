@@ -6,7 +6,7 @@
 
 use WHMCS\Database\Capsule;
 
-function logException(Exception $e)
+function acumulus_logException(Exception $e)
 {
     if ($e->getCode() !== 'ACUMULUS') {
         $callingFunction = $e->getTrace()[0]['function'];
@@ -64,7 +64,7 @@ function acumulus_localAPI(string $command, array $values): array
  *
  * @return array
  */
-function acumulus_connect_getConfig(): array
+function acumulus_connect_get_config(): array
 {
     // @todo: what if table is empty?
     $configRecords = Capsule::table('tbladdonmodules')->where('module', 'acumulus_connect')->get(['setting', 'value']);
@@ -73,15 +73,15 @@ function acumulus_connect_getConfig(): array
         $config[$record->setting] = $record->value;
     }
     // Split composite values into their parts.
-    $acumulusDefaultCostCenterParts = explode(" ", $config['acumulus_invoice_default_costcenter'], 2);
+    $acumulusDefaultCostCenterParts = explode(' ', $config['acumulus_invoice_default_costcenter'], 2);
     $config['acumulus_invoice_default_costcenterid'] = $acumulusDefaultCostCenterParts[0];
     $config['acumulus_invoice_default_costcentername'] = $acumulusDefaultCostCenterParts[1];
-    $acumulusInvoiceTemplateParts = explode(" ", $config['acumulus_invoice_template'], 2);
+    $acumulusInvoiceTemplateParts = explode(' ', $config['acumulus_invoice_template'], 2);
     $config['acumulus_invoice_templateid'] = $acumulusInvoiceTemplateParts[0];
     $config['acumulus_invoice_templatename'] = $acumulusInvoiceTemplateParts[1];
     // Loop through all account numbers in WHMCS and split them as well.
     foreach (acumulus_connect_getWHMCSAccountNumbers() as $accountNumber) {
-        $accountParts = explode(" ", $config['acumulus_AccountNumber_' . $accountNumber['module']], 2);
+        $accountParts = explode(' ', $config['acumulus_AccountNumber_' . $accountNumber['module']], 2);
         $config['account_numbers'][$accountNumber['module']]['id'] = $accountParts[0];
         $config['account_numbers'][$accountNumber['module']]['name'] = $accountParts[1];
     }
@@ -98,7 +98,7 @@ function acumulus_connect_getConfig(): array
  *
  * @return array
  */
-function acumulus_connect_getClientCustomfields(): array
+function acumulus_connect_getClientCustomFields(): array
 {
     $results = [];
     foreach (Capsule::table('tblcustomfields')->where('type', 'client')->orderBy('fieldname')->get('fieldname') as $record) {
@@ -110,38 +110,38 @@ function acumulus_connect_getClientCustomfields(): array
 /**
  * WHMCS API Call to retrieve client details.
  *
- * @param int $clientid
+ * @param int $clientId
  *
  * @return array
  */
-function acumulus_connect_getclient(int $clientid): array
+function acumulus_connect_getClient(int $clientId): array
 {
     // https://developers.whmcs.com/api-reference/getclientsdetails/
     $command = 'GetClientsDetails';
-    $values = ['clientid' => $clientid, 'stats' => false];
+    $values = ['clientid' => $clientId, 'stats' => false];
     $results = acumulus_localAPI($command, $values);
 
-    return $results["client"];
+    return $results['client'];
 }
 
 /**
  * WHMCS API Call to retrieve invoice details.
  *
- * @param int $invoiceid
+ * @param int $invoiceId
  * @param bool $expand
  *
  * @return array
  */
-function acumulus_connect_getinvoice(int $invoiceid, bool $expand = true): array
+function acumulus_connect_getInvoice(int $invoiceId, bool $expand = true): array
 {
     // https://developers.whmcs.com/api-reference/getinvoice/
-    $command = "GetInvoice";
-    $values = ['invoiceid' => $invoiceid];
+    $command = 'GetInvoice';
+    $values = ['invoiceid' => $invoiceId];
     $results = acumulus_localAPI($command, $values);
 
     // Add some custom fields to the invoice.
     if ($expand) {
-        $client = acumulus_connect_getclient($results['userid']);
+        $client = acumulus_connect_getClient($results['userid']);
         $results = acumulus_connect_expandInvoiceWithCustomValues($results, $client);
     }
     return $results;
@@ -155,10 +155,10 @@ function acumulus_connect_getinvoice(int $invoiceid, bool $expand = true): array
 function acumulus_connect_getWHMCSAccountNumbers(): array
 {
     // https://developers.whmcs.com/api-reference/getpaymentmethods/
-    $command = "GetPaymentMethods";
+    $command = 'GetPaymentMethods';
     $values = [];
     $results = acumulus_localAPI($command, $values);
-    return $results['paymentmethods']["paymentmethod"];
+    return $results['paymentmethods']['paymentmethod'];
 }
 
 /**
@@ -181,7 +181,7 @@ function acumulus_connect_getWHMCSVersion(): string
  */
 function acumulus_connect_expandInvoiceWithCustomValues(array $invoice, array $client): array
 {
-    $config = acumulus_connect_getConfig();
+    $config = acumulus_connect_get_config();
 
     // Add some custom tax amounts
     $invoice['custom']['subtotal_taxedItems_exclTax'] = 0.0;
@@ -190,11 +190,11 @@ function acumulus_connect_expandInvoiceWithCustomValues(array $invoice, array $c
     $invoice['custom']['total_tax_roundedPerItem'] = 0.0;
     $invoice['custom']['total_tax'] = 0.0;
 
-    $convertedVatTax = acumulus_connect_invoiceDetails_getVatType($config, $invoice, $client);
+    $convertedVatTax = acumulus_connect_getVatType($config, $invoice, $client);
     $invoice['custom']['vattype'] = $convertedVatTax['vattype'];
     $invoice['custom']['taxrate'] = $convertedVatTax['taxrate'];
     if ($invoice['custom']['taxrate'] == '-1' || $invoice['custom']['taxrate'] == '0') {
-        $invoice["taxrate"] = '0';
+        $invoice['taxrate'] = '0';
     }
 
     // @todo: optimize (reverse if and foreach => merge inner else branches,
@@ -204,22 +204,22 @@ function acumulus_connect_expandInvoiceWithCustomValues(array $invoice, array $c
     if ($config['TaxType'] === 'Exclusive') {
         foreach ($invoice['items']['item'] as $item) {
             if ($item['taxed'] == 1) {
-                $invoice['items']['item'][$counter]['custom_tax_unrounded'] = round((floatval($item['amount']) / 100) * floatval($invoice["taxrate"]),
+                $invoice['items']['item'][$counter]['custom_tax_unrounded'] = round((floatval($item['amount']) / 100) * floatval($invoice['taxrate']),
                     4);  // (amount / 100) * Tax Rate
-                $invoice['items']['item'][$counter]['custom_tax_rounded'] = round((floatval($item['amount']) / 100) * floatval($invoice["taxrate"]),
+                $invoice['items']['item'][$counter]['custom_tax_rounded'] = round((floatval($item['amount']) / 100) * floatval($invoice['taxrate']),
                     2);  // (amount / 100) * Tax Rate
-                $invoice['items']['item'][$counter]['custom_price_incl_tax_unrounded'] = round(floatval($item['amount'] + ((floatval($item['amount']) / 100) * floatval($invoice["taxrate"]))),
+                $invoice['items']['item'][$counter]['custom_price_incl_tax_unrounded'] = round(floatval($item['amount'] + ((floatval($item['amount']) / 100) * floatval($invoice['taxrate']))),
                     4);   // amount + ((amount / 100) * Tax Rate)
-                $invoice['items']['item'][$counter]['custom_price_incl_tax_rounded'] = round(floatval($item['amount'] + round((floatval($item['amount']) / 100) * floatval($invoice["taxrate"]),
+                $invoice['items']['item'][$counter]['custom_price_incl_tax_rounded'] = round(floatval($item['amount'] + round((floatval($item['amount']) / 100) * floatval($invoice['taxrate']),
                         2)), 2); // amount + ((amount / 100) * Tax Rate)
                 $invoice['items']['item'][$counter]['custom_price_excl_tax_unrounded'] = round(floatval($item['amount']), 4);
                 $invoice['items']['item'][$counter]['custom_price_excl_tax_rounded'] = round(floatval($item['amount']), 2);
                 $invoice['custom']['subtotal_taxedItems_exclTax'] += floatval($item['amount']);
-                $invoice['custom']['subtotal_taxedItems_inclTax'] += round(floatval($item['amount'] + ((floatval($item['amount']) / 100) * floatval($invoice["taxrate"]))),
+                $invoice['custom']['subtotal_taxedItems_inclTax'] += round(floatval($item['amount'] + ((floatval($item['amount']) / 100) * floatval($invoice['taxrate']))),
                     4);   // amount + ((amount / 100) * Tax Rate)
-                $invoice['custom']['total_tax_roundedPerItem'] += round((floatval($item['amount']) / 100) * floatval($invoice["taxrate"]),
+                $invoice['custom']['total_tax_roundedPerItem'] += round((floatval($item['amount']) / 100) * floatval($invoice['taxrate']),
                     2);   // amount + ((amount / 100) * Tax Rate)
-                $invoice['custom']['total_tax'] += round((floatval($item['amount']) / 100) * floatval($invoice["taxrate"]),
+                $invoice['custom']['total_tax'] += round((floatval($item['amount']) / 100) * floatval($invoice['taxrate']),
                     4);   // amount + ((amount / 100) * Tax Rate)
             } else {
                 $invoice['items']['item'][$counter]['custom_tax_unrounded'] = 0.0;
@@ -236,22 +236,22 @@ function acumulus_connect_expandInvoiceWithCustomValues(array $invoice, array $c
         // Prices are set inclusive.
         foreach ($invoice['items']['item'] as $item) {
             if ($item['taxed'] == 1) {
-                $invoice['items']['item'][$counter]['custom_tax_unrounded'] = round((floatval($item['amount']) / (100 + floatval($invoice["taxrate"]))) * floatval($invoice["taxrate"]),
+                $invoice['items']['item'][$counter]['custom_tax_unrounded'] = round((floatval($item['amount']) / (100 + floatval($invoice['taxrate']))) * floatval($invoice['taxrate']),
                     4);    // amount / (100 + Tax Rate)
-                $invoice['items']['item'][$counter]['custom_tax_rounded'] = round((floatval($item['amount']) / (100 + floatval($invoice["taxrate"]))) * floatval($invoice["taxrate"]),
+                $invoice['items']['item'][$counter]['custom_tax_rounded'] = round((floatval($item['amount']) / (100 + floatval($invoice['taxrate']))) * floatval($invoice['taxrate']),
                     2);   // amount / (100 + Tax Rate)
                 $invoice['items']['item'][$counter]['custom_price_incl_tax_unrounded'] = round(floatval($item['amount']), 4);
                 $invoice['items']['item'][$counter]['custom_price_incl_tax_rounded'] = round(floatval($item['amount']), 2);
-                $invoice['items']['item'][$counter]['custom_price_excl_tax_unrounded'] = round((floatval($item['amount']) / (100 + floatval($invoice["taxrate"]))) * 100,
+                $invoice['items']['item'][$counter]['custom_price_excl_tax_unrounded'] = round((floatval($item['amount']) / (100 + floatval($invoice['taxrate']))) * 100,
                     4);  // (amount / (100 + Tax Rate)) * 100
-                $invoice['items']['item'][$counter]['custom_price_excl_tax_rounded'] = round((floatval($item['amount']) / (100 + floatval($invoice["taxrate"]))) * 100,
+                $invoice['items']['item'][$counter]['custom_price_excl_tax_rounded'] = round((floatval($item['amount']) / (100 + floatval($invoice['taxrate']))) * 100,
                     2);  // (amount / (100 + Tax Rate)) * 100
-                $invoice['custom']['subtotal_taxedItems_exclTax'] += round((floatval($item['amount']) / (100 + floatval($invoice["taxrate"]))) * 100,
+                $invoice['custom']['subtotal_taxedItems_exclTax'] += round((floatval($item['amount']) / (100 + floatval($invoice['taxrate']))) * 100,
                     4);  // (amount / (100 + Tax Rate)) * 100 ;
                 $invoice['custom']['subtotal_taxedItems_inclTax'] += round(floatval($item['amount']), 4);
-                $invoice['custom']['total_tax_roundedPerItem'] += round((floatval($item['amount']) / (100 + floatval($invoice["taxrate"]))) * floatval($invoice["taxrate"]),
+                $invoice['custom']['total_tax_roundedPerItem'] += round((floatval($item['amount']) / (100 + floatval($invoice['taxrate']))) * floatval($invoice['taxrate']),
                     2);   // amount / (100 + Tax Rate);
-                $invoice['custom']['total_tax'] += round((floatval($item['amount']) / (100 + floatval($invoice["taxrate"]))) * floatval($invoice["taxrate"]),
+                $invoice['custom']['total_tax'] += round((floatval($item['amount']) / (100 + floatval($invoice['taxrate']))) * floatval($invoice['taxrate']),
                     4);
             } else {
                 $invoice['items']['item'][$counter]['custom_tax_unrounded'] = 0.0;
@@ -268,7 +268,7 @@ function acumulus_connect_expandInvoiceWithCustomValues(array $invoice, array $c
     $invoice['custom']['subamountTaxRounded'] = round($invoice['custom']['subamountTax'], 2);
 
     // Calculate rounding corrections.
-    if ($config['acumulus_invoice_correction'] == "on") {
+    if ($config['acumulus_invoice_correction'] == 'on') {
         $invoice = acumulus_connect_estimateTotals($config, $invoice, $client);
     }
 
@@ -286,7 +286,7 @@ function acumulus_connect_expandInvoiceWithCustomValues(array $invoice, array $c
  */
 function acumulus_connect_replaceVarsInText(string $text, array $invoice, array $client): string
 {
-    $replVars = [
+    $vars = [
         '{USERID}' => $client['userid'] ?? '',
         '{FIRSTNAME}' => $client['firstname'] ?? '',
         '{LASTNAME}' => $client['lastname'] ?? '',
@@ -313,7 +313,7 @@ function acumulus_connect_replaceVarsInText(string $text, array $invoice, array 
         '{INVOICESTATUS}' => $invoice['status'] ?? '',
     ];
 
-    foreach ($replVars as $key => $value) {
+    foreach ($vars as $key => $value) {
         $text = str_ireplace($key, $value, $text);
     }
 
@@ -325,15 +325,15 @@ function acumulus_connect_replaceVarsInText(string $text, array $invoice, array 
  *
  * @return array
  */
-function acumulus_connect_getCostcenters(): array
+function acumulus_connect_getCostCenters(): array
 {
     // Construct the basic xml without email on errors or warnings.
-    $xml = acumulus_connect_basicXML(false);
+    $xml = acumulus_connect_basicXml(false);
     $xml->addChild('format', 'xml');
     $xml_string = urlencode($xml->asXML());
 
     // Let's check the credentials against the Acumulus API.
-    $url = "https://api.sielsystems.nl/acumulus/stable/picklists/picklist_costcenters.php";
+    $url = 'https://api.sielsystems.nl/acumulus/stable/picklists/picklist_costcenters.php';
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_POST, 1);
@@ -363,12 +363,12 @@ function acumulus_connect_getCostcenters(): array
  */
 function acumulus_connect_getAccounts(): array
 {
-    $xml = acumulus_connect_basicXML(false); //construct the basic xml without email on errors or warnings.
+    $xml = acumulus_connect_basicXml(false); //construct the basic xml without email on errors or warnings.
     $xml->addChild('format', 'xml');
     $xml_string = urlencode($xml->asXML());
 
     // Let's check the credentials against the Acumulus API.
-    $url = "https://api.sielsystems.nl/acumulus/stable/picklists/picklist_accounts.php";
+    $url = 'https://api.sielsystems.nl/acumulus/stable/picklists/picklist_accounts.php';
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_POST, 1);
@@ -401,12 +401,12 @@ function acumulus_connect_getAccounts(): array
 function acumulus_connect_getTemplates(): array
 {
     // Construct the basic xml without email on errors or warnings.
-    $xml = acumulus_connect_basicXML(false);
+    $xml = acumulus_connect_basicXml(false);
     $xml->addChild('format', 'xml');
     $xml_string = urlencode($xml->asXML());
 
     // Let's check the credentials against the Acumulus API.
-    $url = "https://api.sielsystems.nl/acumulus/stable/picklists/picklist_invoicetemplates.php";
+    $url = 'https://api.sielsystems.nl/acumulus/stable/picklists/picklist_invoicetemplates.php';
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_POST, 1);
@@ -434,14 +434,14 @@ function acumulus_connect_getTemplates(): array
 /**
  * Helper function to check if country is an EU member.
  *
- * @param string $countrycode
+ * @param string $countryCode
  * @param string $date
  *
  * @return bool
  *
  * @todo: replace with Acumulus API call
  */
-function acumulus_connect_isCountryinEU(string $countrycode, string $date): bool
+function acumulus_connect_isCountryInEU(string $countryCode, string $date): bool
 {
     // $date is for future use like the brexit
     $eu_countries = [
@@ -491,7 +491,7 @@ function acumulus_connect_isCountryinEU(string $countrycode, string $date): bool
         $eu_countries = array_diff($eu_countries, ['GB']);
     }
 
-    return in_array($countrycode, $eu_countries);
+    return in_array($countryCode, $eu_countries);
 }
 
 /**
@@ -503,7 +503,7 @@ function acumulus_connect_isCountryinEU(string $countrycode, string $date): bool
  *
  * @return array
  */
-function acumulus_connect_invoiceDetails_getVatType(array $config, array $invoice, array $client): array
+function acumulus_connect_getVatType(array $config, array $invoice, array $client): array
 {
     /* Vattypes:
        1 	National 	Gewone nationale factuur 	DEFAULT
@@ -516,32 +516,32 @@ function acumulus_connect_invoiceDetails_getVatType(array $config, array $invoic
 
     if (strtoupper($client['countrycode']) == 'NL') {
         // Invoice is National.
-        $vattype = '1';
-        $taxrate = $invoice['taxrate'];
-    } elseif (acumulus_connect_isCountryinEU(strtoupper($client['countrycode']), $invoice['date'])) {
+        $vatType = '1';
+        $taxRate = $invoice['taxrate'];
+    } elseif (acumulus_connect_isCountryInEU(strtoupper($client['countrycode']), $invoice['date'])) {
         // Invoice is EU.
         if (strtotime($invoice['date']) < strtotime('2015-01-01')) {
             // factuur van voor 1 jan 2015 (pre MOSS).
-            $vattype = '1';
+            $vatType = '1';
             if (empty($client['companyname'])) {
                 // particulier.
-                $taxrate = $invoice['taxrate'];
+                $taxRate = $invoice['taxrate'];
             } else {
                 // bedrijf.
-                $taxrate = '0.00';
+                $taxRate = '0.00';
             }
         } else {
             // factuur na 1 jan 2015 (MOSS Regeling).
-            // echo "<pre>";
+            // echo '<pre>';
             if (empty($client['companyname'])) {
                 // particulier.
                 // whmcs zijn digitale diensten.
-                $vattype = '6';
-                $taxrate = $invoice['taxrate'];
+                $vatType = '6';
+                $taxRate = $invoice['taxrate'];
             } else {
                 // bedrijf.
-                $vattype = '3';
-                $taxrate = '0.00';
+                $vatType = '3';
+                $taxRate = '0.00';
             }
         }
     } else {
@@ -551,21 +551,21 @@ function acumulus_connect_invoiceDetails_getVatType(array $config, array $invoic
             if (empty($client['companyname'])) {
                 // particulier
                 // whmcs zijn digitale diensten.
-                $vattype = '4';
-                $taxrate = '0.00';  // btw angifte moet eventueel worden gedaan in het land van de afnemer.
+                $vatType = '4';
+                $taxRate = '0.00';  // btw aangifte moet eventueel worden gedaan in het land van de afnemer.
             } else {
                 // bedrijf.
-                $vattype = '1';
-                $taxrate = '-1'; // btw vrij.
+                $vatType = '1';
+                $taxRate = '-1'; // btw vrij.
             }
         } else {
             // The Default nature is a product.
-            $vattype = '4';
-            $taxrate = '0.00'; // btw vrij
+            $vatType = '4';
+            $taxRate = '0.00'; // btw vrij
         }
     }
 
-    return ['vattype' => $vattype, 'taxrate' => $taxrate];
+    return ['vattype' => $vatType, 'taxrate' => $taxRate];
 }
 
 /**
@@ -577,9 +577,9 @@ function acumulus_connect_invoiceDetails_getVatType(array $config, array $invoic
  * @param \SimpleXMLElement $xml
  *
  */
-function acumulus_connect_sendInvoicetoAccumulus(array $config, array $invoice, array $client, SimpleXMLElement $xml)
+function acumulus_connect_sendInvoiceToAcumulus(array $config, array $invoice, array $client, SimpleXMLElement $xml)
 {
-    $url = "https://api.sielsystems.nl/acumulus/stable/invoices/invoice_add.php";
+    $url = 'https://api.sielsystems.nl/acumulus/stable/invoices/invoice_add.php';
     $xml_string = urlencode($xml->asXML());
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -590,43 +590,44 @@ function acumulus_connect_sendInvoicetoAccumulus(array $config, array $invoice, 
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 
-    $rawdata = curl_exec($ch);
-    $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
-    logModuleCall("acumulus_connect", "Send Invoice to Acumulus", $xml->asXML(), $rawdata, $result, acumulus_connect_get_replace_vars($config));
+    $rawData = curl_exec($ch);
+    $result = json_decode(json_encode((array) simplexml_load_string($rawData)), 1);
+    logModuleCall('acumulus_connect', 'Send Invoice to Acumulus', $xml->asXML(), $rawData, $result, acumulus_connect_getReplaceVars($config));
 
-    if (isset($result["status"])) {
-        switch ($result["status"]) {
-            case "1":  //failed
+    // @todo: make logActivity calls like in other places.
+    if (isset($result['status'])) {
+        switch ($result['status']) {
+            case '1':  //failed
                 $errors = print_r($result['error'], true);
-                logActivity("acumulus_connect - Error sending Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"] . " Errors:" . $errors);
+                logActivity("acumulus_connect - Error sending Invoice ID: " . $invoice['invoiceid'] . " for User ID: " . $client['userid'] . " Errors:" . $errors);
                 break;
-            case "0":  //success without warnings
-                logActivity("acumulus_connect - Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"] . " Sent successfully");
-                acumulus_connect_setinvoicetoken($invoice, $result["invoice"]["token"], $result["invoice"]["entryid"]);
+            case '0':  //success without warnings
+                logActivity("acumulus_connect - Invoice ID: " . $invoice['invoiceid'] . " for User ID: " . $client['userid'] . ' Sent successfully');
+                acumulus_connect_setInvoiceToken($invoice, $result['invoice']['token'], $result['invoice']['entryid']);
                 break;
-            case "2":  //success with warnings
+            case '2':  //success with warnings
                 $warnings = print_r($result['warning'], true);
-                logActivity("acumulus_connect - Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"] . " Sent with " . $result["countwarnings"] . " warnings:" . $warnings);
-                acumulus_connect_setinvoicetoken($invoice, $result["invoice"]["token"], $result["invoice"]["entryid"]);
+                logActivity("acumulus_connect - Invoice ID: " . $invoice['invoiceid'] . " for User ID: " . $client['userid'] . ' Sent with ' . $result['countwarnings'] . " warnings:" . $warnings);
+                acumulus_connect_setInvoiceToken($invoice, $result['invoice']['token'], $result['invoice']['entryid']);
                 break;
             default:
-                logActivity("acumulus_connect - Unspecified Error sending Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"]);
+                logActivity("acumulus_connect - Unspecified Error sending Invoice ID: " . $invoice['invoiceid'] . " for User ID: " . $client['userid']);
         }
     } else {
-        logActivity("acumulus_connect - Error reaching acumulus website to send Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"]);
+        logActivity("acumulus_connect - Error reaching acumulus website to send Invoice ID: " . $invoice['invoiceid'] . " for User ID: " . $client['userid']);
     }
     curl_close($ch);
 }
 
 /**
- *
+ * Gets the vars that should be hidden in the log
  *
  * @param array $config
  *
  * @return array
  *
  */
-function acumulus_connect_get_replace_vars(array $config): array
+function acumulus_connect_getReplaceVars(array $config): array
 {
     return [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']];
 }
@@ -635,27 +636,27 @@ function acumulus_connect_get_replace_vars(array $config): array
  * Helper function to update the token table for unpaid invoices.
  *
  * @param array $invoice
- * @param string $invoicetoken
- * @param int $entryid
+ * @param string $token
+ * @param int $entryId
  *
  */
-function acumulus_connect_setinvoicetoken(array $invoice, string $invoicetoken, int $entryid)
+function acumulus_connect_setInvoiceToken(array $invoice, string $token, int $entryId)
 {
     // Don't save the token to the reference table if paid, no need to store
     // references.
-    if ($invoice["status"] === "Paid") {
+    if ($invoice['status'] === 'Paid') {
         logActivity(__FUNCTION__ . 'Invoice is already Paid, no need to store invoice token.');
         return;
     }
 
-    // check if invoiceid and invoicetoken are already stored and, if so, update.
-    if (!Capsule::table('mod_acumulus_connect')->where('id', $invoice["invoiceid"])->exists()) {
+    // check if invoice id and invoice token are already stored and, if so, update.
+    if (!Capsule::table('mod_acumulus_connect')->where('id', $invoice['invoiceid'])->exists()) {
         // No token exists, so let's add the token.
         if (Capsule::table('mod_acumulus_connect')->insert([
-            'id' => $invoice["invoiceid"],
-            'token' => $invoicetoken,
-            'entryid' => $entryid,
-            'created_at' => date("Y-m-d H:i:s"),
+            'id' => $invoice['invoiceid'],
+            'token' => $token,
+            'entryid' => $entryId,
+            'created_at' => date('Y-m-d H:i:s'),
         ])) {
             logActivity(__FUNCTION__ . "({$invoice['invoiceid']}): inserted");
         } else {
@@ -664,11 +665,11 @@ function acumulus_connect_setinvoicetoken(array $invoice, string $invoicetoken, 
     } else {
         // A token already exists, so lets update the token.
         $updateCount = Capsule::table('mod_acumulus_connect')
-            ->where('id', $invoice["invoiceid"])
+            ->where('id', $invoice['invoiceid'])
             ->update([
-                'token' => $invoicetoken,
-                'entryid' => $entryid,
-                'updated_at' => date("Y-m-d H:i:s"),
+                'token' => $token,
+                'entryid' => $entryId,
+                'updated_at' => date('Y-m-d H:i:s'),
             ]);
         if ($updateCount > 0) {
             logActivity(__FUNCTION__ . "({$invoice['invoiceid']}): updated");
@@ -689,35 +690,35 @@ function acumulus_connect_setinvoicetoken(array $invoice, string $invoicetoken, 
  */
 function acumulus_connect_estimateTotals(array $config, array $invoice, array $client): array
 {
-    $totalwhmcs = 0;
-    $totalacumulus = 0;
+    $totalWhmcs = 0;
+    $totalAcumulus = 0;
 
     foreach ($invoice['items']['item'] as $item) {
-        $totalwhmcs += (float) $item ["custom_price_incl_tax_unrounded"];
-        $totalacumulus += (float) $item ["custom_price_incl_tax_rounded"];
+        $totalWhmcs += (float) $item ['custom_price_incl_tax_unrounded'];
+        $totalAcumulus += (float) $item ['custom_price_incl_tax_rounded'];
     }
-    $totalwhmcs = round($totalwhmcs, 2);
-    $totalacumulus = round($totalacumulus, 2);
+    $totalWhmcs = round($totalWhmcs, 2);
+    $totalAcumulus = round($totalAcumulus, 2);
 
-    $difference = $totalwhmcs - $totalacumulus;
+    $difference = $totalWhmcs - $totalAcumulus;
 
     if ($difference != 0) {
-        $corrline = [
-            "id" => "n/a",
-            "type" => "",
-            "relid" => "0",
-            "description" => acumulus_connect_replaceVarsInText($config['acumulus_invoice_correction_text'], $invoice, $client),
-            "amount" => $difference,
-            "taxed" => "0",
-            "custom_tax_unrounded" => "0",
-            "custom_tax_rounded" => "0",
-            "custom_price_incl_tax_unrounded" => "$difference",
-            "custom_price_incl_tax_rounded" => "$difference",
-            "custom_price_excl_tax_unrounded" => "$difference",
-            "custom_price_excl_tax_rounded" => "$difference",
+        $correctionLine = [
+            'id' => 'n/a',
+            'type' => '',
+            'relid' => '0',
+            'description' => acumulus_connect_replaceVarsInText($config['acumulus_invoice_correction_text'], $invoice, $client),
+            'amount' => $difference,
+            'taxed' => '0',
+            'custom_tax_unrounded' => '0',
+            'custom_tax_rounded' => '0',
+            'custom_price_incl_tax_unrounded' => $difference,
+            'custom_price_incl_tax_rounded' => $difference,
+            'custom_price_excl_tax_unrounded' => $difference,
+            'custom_price_excl_tax_rounded' => $difference,
         ];
 
-        $invoice['items']['item'][] = $corrline;
+        $invoice['items']['item'][] = $correctionLine;
     }
 
     return $invoice;
@@ -734,9 +735,9 @@ function acumulus_connect_estimateTotals(array $config, array $invoice, array $c
  */
 function acumulus_connect_getPaymentStatus(array $config, string $token): array
 {
-    $xml = acumulus_connect_basicXML();
+    $xml = acumulus_connect_basicXml();
     $xml->addChild('token', $token);
-    $url = "https://api.sielsystems.nl/acumulus/stable/invoices/invoice_paymentstatus_get.php";
+    $url = 'https://api.sielsystems.nl/acumulus/stable/invoices/invoice_paymentstatus_get.php';
     $xml_string = urlencode($xml->asXML());
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -746,9 +747,9 @@ function acumulus_connect_getPaymentStatus(array $config, string $token): array
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-    $rawdata = curl_exec($ch);
-    $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
-    logModuleCall("acumulus_connect", "invoice_paymentstatus_get()", $xml->asXML(), $rawdata, $result, acumulus_connect_get_replace_vars($config));
+    $rawData = curl_exec($ch);
+    $result = json_decode(json_encode((array) simplexml_load_string($rawData)), 1);
+    logModuleCall('acumulus_connect', 'invoice_paymentstatus_get()', $xml->asXML(), $rawData, $result, acumulus_connect_getReplaceVars($config));
     curl_close($ch);
 
     return $result['invoice'];
@@ -786,30 +787,30 @@ function acumulus_connect_inverseInvoiceAmounts(array $invoice): array
  *
  * @return \SimpleXMLElement
  */
-function acumulus_connect_basicXML(bool $includeWarnings = true): SimpleXMLElement
+function acumulus_connect_basicXml(bool $includeWarnings = true): SimpleXMLElement
 {
-    $config = acumulus_connect_getConfig();
+    $config = acumulus_connect_get_config();
     // Create The XML FILE.
     $xml = new SimpleXMLElement('<?xml version="1.0" encoding="utf-8"?><myxml></myxml>');
     // Contract details
     $contract = $xml->addChild('contract');
-    $contract->addChild('contractcode', $config["acumulus_code"]);
-    $contract->addChild('username', $config["acumulus_username"]);
-    $contract->addChild('password', $config["acumulus_password"]);
+    $contract->addChild('contractcode', $config['acumulus_code']);
+    $contract->addChild('username', $config['acumulus_username']);
+    $contract->addChild('password', $config['acumulus_password']);
     if ($includeWarnings) {
         // Do not include child object if entry is empty.
-        if (!empty($config["acumulus_warning_email_address"])) {
-            $contract->addChild('emailonerror', $config["acumulus_warning_email_address"]);
+        if (!empty($config['acumulus_warning_email_address'])) {
+            $contract->addChild('emailonerror', $config['acumulus_warning_email_address']);
         }
         // Do not include child object if entry is empty.
-        if (!empty($config["acumulus_error_email_address"])) {
-            $contract->addChild('emailonwarning', $config["acumulus_error_email_address"]);
+        if (!empty($config['acumulus_error_email_address'])) {
+            $contract->addChild('emailonwarning', $config['acumulus_error_email_address']);
         }
     }
     // The connector feedback code.
     $connector = $xml->addChild('connector');
     $connector->addChild('application', 'WHMCS ' . acumulus_connect_getWHMCSVersion());
-    $connector->addChild('webkoppel', 'Acumulus ' . $config["version"]);
+    $connector->addChild('webkoppel', 'Acumulus ' . $config['version']);
     $connector->addChild('development', 'SIEL - Buro RaDer');
     $connector->addChild('remark', 'PHP ' . phpversion());
     $connector->addChild('sourceuri', 'https://github.com/SIELOnline/acumulus-for-WHMCS');
@@ -826,7 +827,7 @@ function acumulus_connect_basicXML(bool $includeWarnings = true): SimpleXMLEleme
  *
  * @return array
  */
-function acumulus_connect_XMLPrepareCustomerDetails(array $config, array $invoice, array $client): array
+function acumulus_connect_XmlPrepareCustomerDetails(array $config, array $invoice, array $client): array
 {
     // Convert country code to country name.
     /** @noinspection PhpIncludeInspection  false positive */
@@ -843,11 +844,11 @@ function acumulus_connect_XMLPrepareCustomerDetails(array $config, array $invoic
     // support that custom field if no vat id has been set in the proper
     // WHMCS field and the name of the custom field has been set.
     $vatNr = $client['tax_id'];
-    if (empty($vatNr) && !empty($config["acumulus_whmcs_vatfield"])) {
+    if (empty($vatNr) && !empty($config['acumulus_whmcs_vatfield'])) {
         // Get the id of the custom field corresponding the VAT title and loop
         // through the clients custom fields for the VAT value.
-        $customFieldId = Capsule::table('tblcustomfields')->where('fieldname', $config["acumulus_whmcs_vatfield"])->value('id');
-        foreach ($client["customfields"] as $val) {
+        $customFieldId = Capsule::table('tblcustomfields')->where('fieldname', $config['acumulus_whmcs_vatfield'])->value('id');
+        foreach ($client['customfields'] as $val) {
             if ($val['id'] === $customFieldId) {
                 $vatNr = $val['value'];
                 break;
@@ -858,9 +859,9 @@ function acumulus_connect_XMLPrepareCustomerDetails(array $config, array $invoic
     // Get the id of the custom field corresponding to the IBAN field and loop
     // through the clients custom fields for the IBAN value.
     $IBAN = '';
-    if (!empty($config["acumulus_whmcs_ibanfield"])) {
-        $customFieldId = Capsule::table('tblcustomfields')->where('fieldname', $config["acumulus_whmcs_ibanfield"])->first()->id;
-        foreach ($client["customfields"] as $val) {
+    if (!empty($config['acumulus_whmcs_ibanfield'])) {
+        $customFieldId = Capsule::table('tblcustomfields')->where('fieldname', $config['acumulus_whmcs_ibanfield'])->first()->id;
+        foreach ($client['customfields'] as $val) {
             if ($val['id'] === $customFieldId) {
                 $IBAN = $val['value'];
                 break;
@@ -880,7 +881,7 @@ function acumulus_connect_XMLPrepareCustomerDetails(array $config, array $invoic
 
     // Set how the customer is being imported into Acumulus
     // 1 = debtor, 2 = creditor, 3 = debtor/creditor (neutral)
-    switch ($config["acumulus_customer_type"]) {
+    switch ($config['acumulus_customer_type']) {
         case 'Debtor':
             $type = '1';
             break;
@@ -954,11 +955,11 @@ function acumulus_connect_XMLPrepareCustomerDetails(array $config, array $invoic
  * @param array $config
  * @param array $invoice
  * @param array $client
- * @param bool $iscredit
+ * @param bool $isCredit
  *
  * @return array
  */
-function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice, array $client, bool $iscredit = false): array
+function acumulus_connect_XmlPrepareInvoiceDetails(array $config, array $invoice, array $client, bool $isCredit = false): array
 {
     // Format: yyyy-mm-dd.
     $invoiceDetails['issuedate'] = $invoice['date'];
@@ -972,7 +973,7 @@ function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice
     // When omitted, or when no match has been made possible, the first available template in the contract will be selected.
     $invoiceDetails['template'] = $config['acumulus_invoice_templateid'];
 
-    // If ["acumulus_use_acumulus_invoice_numbering"] is disabled we use the
+    // If ['acumulus_use_acumulus_invoice_numbering'] is disabled we use the
     // WHMCS invoice number.
     if ($config['acumulus_use_acumulus_invoice_numbering'] !== 'on') {
         // Check if invoice number exists or use the invoice id instead.
@@ -987,7 +988,7 @@ function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice
     $invoiceDetails['descriptiontext'] = str_replace("\n", "\\n",
         acumulus_connect_replaceVarsInText($config['acumulus_invoice_descriptiontext'], $invoice, $client));
     // Multiline field for additional remarks. Use \n for newlines and \t for tabs. Contents is placed in notes/comments section of the invoice. Content will not appear on the actual invoice or associated emails.
-    $invoiceDetails['invoicenotes'] = str_replace("{TAB}", "\\t", str_replace("\n", "\\n",
+    $invoiceDetails['invoicenotes'] = str_replace('{TAB}', "\\t", str_replace("\n", "\\n",
         acumulus_connect_replaceVarsInText($config['acumulus_invoice_invoicenotes'], $invoice, $client)));
 
     // When omitted, or when no match has been made possible, the first available account number in the contract will be selected
@@ -995,16 +996,16 @@ function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice
     $invoiceDetails['vattype'] = $invoice['custom']['vattype'];
 
     // Credit Invoice adjustments.
-    if ($iscredit) {
+    if ($isCredit) {
         // Overall description of the invoice, invoice title.
         $invoiceDetails['description'] = acumulus_connect_replaceVarsInText($config['acumulus_creditinvoice_description'], $invoice, $client);
         $invoiceDetails['paymentstatus'] = 2;
-        $invoiceDetails['paymentdate'] = date("Y-m-d");
+        $invoiceDetails['paymentdate'] = date('Y-m-d');
     }
 
     // Invoice Line Variables.
     $invoiceDetails['invoicelines'] = [];
-    if ($config["acumulus_summarize_invoice"] == 'on') {
+    if ($config['acumulus_summarize_invoice'] == 'on') {
         // Add total taxed items
         if (!empty($invoice['custom']['subtotal_taxedItems_exclTax'])) {
             $invoiceDetails['invoicelines'][] = [
@@ -1016,10 +1017,10 @@ function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice
                 'nature' => $config['acumulus_invoice_default_nature'],
                 // non-mandatory,  Unit price without VAT. Decimal separator is a point. No thousand separators. 4 decimals precision. E.g. 12.95 or 1200.50 or 12.6495. Will be rounded if provided with more than 4 decimals.
                 'unitprice' => $invoice['custom']['subtotal_taxedItems_exclTax'],
-                // mandatory,  Applicable vatrate for the product. Defaults to "21".
+                // mandatory,  Applicable vatrate for the product. Defaults to '21'.
                 'vatrate' => $invoice['custom']['taxrate'],
                 // non-mandatory, Number of products/services. Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 1 or 1.5 or 12.64. Default is 1.
-                'quantity' => "1",
+                'quantity' => '1',
                 // non-mandatory, Use in case of margin vat (marge-regeling). Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 12.95 or 1200.50
                 'costprice' => null,
             ];
@@ -1035,10 +1036,10 @@ function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice
                 'nature' => $config['acumulus_invoice_default_nature'],
                 // non-mandatory,  Unit price without VAT. Decimal separator is a point. No thousand separators. 4 decimals precision. E.g. 12.95 or 1200.50 or 12.6495. Will be rounded if provided with more than 4 decimals.
                 'unitprice' => $invoice['custom']['subtotal_untaxedItems'],
-                // mandatory,  Applicable vatrate for the product. Defaults to "21".
-                'vatrate' => "-1",
+                // mandatory,  Applicable vatrate for the product. Defaults to '21'.
+                'vatrate' => '-1',
                 // non-mandatory, Number of products/services. Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 1 or 1.5 or 12.64. Default is 1.
-                'quantity' => "1",
+                'quantity' => '1',
                 // non-mandatory, Use in case of margin vat (marge-regeling). Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 12.95 or 1200.50
                 'costprice' => null,
             ];
@@ -1055,10 +1056,10 @@ function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice
                 'nature' => $config['acumulus_invoice_default_nature'],
                 // non-mandatory,  Unit price without VAT. Decimal separator is a point. No thousand separators. 4 decimals precision. E.g. 12.95 or 1200.50 or 12.6495. Will be rounded if provided with more than 4 decimals.
                 'unitprice' => $item['custom_price_excl_tax_unrounded'],
-                // mandatory,  Applicable vatrate for the product. Defaults to "21".
+                // mandatory,  Applicable vatrate for the product. Defaults to '21'.
                 'vatrate' => ($item['taxed'] == 1) ? $invoice['custom']['taxrate'] : '-1',
                 // non-mandatory, Number of products/services. Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 1 or 1.5 or 12.64. Default is 1.
-                'quantity' => "1",
+                'quantity' => '1',
                 // non-mandatory, Use in case of margin vat (marge-regeling). Decimal separator is a point. No thousand separators. 2 decimals precision. E.g. 12.95 or 1200.50
                 'costprice' => null,
             ];
@@ -1078,20 +1079,20 @@ function acumulus_connect_XMLPrepareInvoiceDetails(array $config, array $invoice
  *
  * @return \SimpleXMLElement
  */
-function acumulus_connect_generatexml(array $config, array $invoice, array $client, bool $iscredit = false): SimpleXMLElement
+function acumulus_connect_generateXml(array $config, array $invoice, array $client, bool $iscredit = false): SimpleXMLElement
 {
     // Create the basic XML.
-    $customerDetails = acumulus_connect_XMLPrepareCustomerDetails($config, $invoice, $client);
-    $invoiceDetails = acumulus_connect_XMLPrepareInvoiceDetails($config, $invoice, $client, $iscredit);
+    $customerDetails = acumulus_connect_XmlPrepareCustomerDetails($config, $invoice, $client);
+    $invoiceDetails = acumulus_connect_XmlPrepareInvoiceDetails($config, $invoice, $client, $iscredit);
 
     // Create The XML file.
-    $xml = acumulus_connect_basicXML();
+    $xml = acumulus_connect_basicXml();
 
     // Add customer details to the XML.
     $customer = $xml->addChild('customer');
 
     // Send non-mandatory customer information when enabled in module config.
-    if ($config['acumulus_customer_import_enabled'] === "on") {
+    if ($config['acumulus_customer_import_enabled'] === 'on') {
         if (!empty($customerDetails['type'])) {
             $customer->addChild('type', $customerDetails['type']);
         }
@@ -1278,37 +1279,37 @@ function acumulus_connect_generatexml(array $config, array $invoice, array $clie
  * Sends the data of an invoice to Acumulus.
  *
  * @param array $config
- * @param int $invoiceid
+ * @param int $invoiceId
  */
-function acumulus_connect_sendInvoice(array $config, int $invoiceid): void
+function acumulus_connect_sendInvoice(array $config, int $invoiceId): void
 {
     // Retrieve the invoice and customer.
-    $invoice = acumulus_connect_getinvoice($invoiceid);
-    $client = acumulus_connect_getclient($invoice['userid']);
+    $invoice = acumulus_connect_getInvoice($invoiceId);
+    $client = acumulus_connect_getClient($invoice['userid']);
 
     //Make the xml file
-    $xml = acumulus_connect_generatexml($config, $invoice, $client);
+    $xml = acumulus_connect_generateXml($config, $invoice, $client);
 
     //Send xml to Acumulus
-    acumulus_connect_sendInvoicetoAccumulus($config, $invoice, $client, $xml);
+    acumulus_connect_sendInvoiceToAcumulus($config, $invoice, $client, $xml);
 }
 
 /**
  * Updates the payment status of an invoice at Acumulus.
  *
  * @param array $config
- * @param int $invoiceid
+ * @param int $invoiceId
  * @param ?string $usedate
  */
-function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $usedate = null): void
+function acumulus_connect_updateInvoice(array $config, int $invoiceId, string $usedate = null): void
 {
-    $invoice = acumulus_connect_getinvoice($invoiceid);
+    $invoice = acumulus_connect_getInvoice($invoiceId);
 
     // Retrieve the token from the mod_acumulus_connect table
     $token = Capsule::table('mod_acumulus_connect')->where('id', $invoice['invoiceid'])->value('token');
     // if the token exists update the invoice in Acumulus, else send entire invoice.
     if ($token !== null) {
-        // Update payment gateway if "use last payment method" is enabled and if it differs from the invoice set payment method.
+        // Update payment gateway if 'use last payment method' is enabled and if it differs from the invoice set payment method.
         if ($config['acumulus_invoice_use_last_paymentmethod'] === 'on') {
             if (!empty($invoice['transactions']['transaction'])) {
                 $lastpaymentgateway = end($invoice['transactions']['transaction'])['gateway'];
@@ -1316,13 +1317,13 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
                 $lastpaymentgateway = null;
             }
             if ($invoice['paymentmethod'] !== $lastpaymentgateway) {
-                logActivity(__FUNCTION__ . "($invoiceid): updating payment method in WHMCS");
-                acumulus_connect_updateInvoicePaymentMethod($config, $invoiceid, $lastpaymentgateway);
+                logActivity(__FUNCTION__ . "($invoiceId): updating payment method in WHMCS");
+                acumulus_connect_updateInvoicePaymentMethod($config, $invoiceId, $lastpaymentgateway);
                 // Update the payment method of the invoice in whmcs.
                 // https://developers.whmcs.com/api-reference/updateinvoice/
                 $command = 'UpdateInvoice';
                 $postData = [
-                    'invoiceid' => $invoiceid,
+                    'invoiceid' => $invoiceId,
                     'paymentmethod' => $lastpaymentgateway,
                 ];
                 acumulus_localAPI($command, $postData);
@@ -1330,7 +1331,7 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
         }
 
         // Update invoice to paid.
-        $xml = acumulus_connect_basicXML();
+        $xml = acumulus_connect_basicXml();
         $xml->addChild('token', $token);
         $xml->addChild('paymentstatus', '2');
         if (empty($usedate)) {
@@ -1339,7 +1340,7 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
             $xml->addChild('paymentdate', $usedate);
         }
 
-        $url = "https://api.sielsystems.nl/acumulus/stable/invoices/invoice_paymentstatus_set.php";
+        $url = 'https://api.sielsystems.nl/acumulus/stable/invoices/invoice_paymentstatus_set.php';
         $xml_string = urlencode($xml->asXML());
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -1349,21 +1350,21 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        $rawdata = curl_exec($ch);
-        $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
-        logModuleCall('acumulus_connect', 'invoice_paymentstatus_set', $xml->asXML(), $rawdata, $result, acumulus_connect_get_replace_vars($config));
+        $rawData = curl_exec($ch);
+        $result = json_decode(json_encode((array) simplexml_load_string($rawData)), 1);
+        logModuleCall('acumulus_connect', 'invoice_paymentstatus_set', $xml->asXML(), $rawData, $result, acumulus_connect_getReplaceVars($config));
 
         if (isset($result['status'])) {
             switch ($result['status']) {
-                case "0":  // Success
+                case '0':  // Success
                     $resultStatus = 'success';
                     $messages = '';
                     break;
-                case "1":  // Failed.
+                case '1':  // Failed.
                     $resultStatus = 'error(s)';
                     $messages = print_r($result['error'], true);
                     break;
-                case "2":  // Success with warnings.
+                case '2':  // Success with warnings.
                     $resultStatus = 'warning(s)';
                     $messages = print_r($result['warning'], true);
                     break;
@@ -1376,12 +1377,12 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
             $resultStatus = 'exception';
             $messages = 'Error reaching acumulus API webservice';
         }
-        logActivity(__FUNCTION__ . "($invoiceid): $resultStatus $messages.");
+        logActivity(__FUNCTION__ . "($invoiceId): $resultStatus $messages.");
         curl_close($ch);
     } else {
         // Token not found make a module log entry and send entire invoice.
-        logActivity(__FUNCTION__ . "($invoiceid) not yet sent, sending.");
-        acumulus_connect_sendInvoice($config, $invoiceid);
+        logActivity(__FUNCTION__ . "($invoiceId) not yet sent, sending.");
+        acumulus_connect_sendInvoice($config, $invoiceId);
     }
 }
 
@@ -1389,21 +1390,21 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
  * Updates the payment method of an invoice.
  *
  * @param array $config
- * @param int $invoiceid
+ * @param int $invoiceId
  * @param string $paymentmethod
  */
-function acumulus_connect_updateInvoicePaymentMethod(array $config, int $invoiceid, string $paymentmethod): void
+function acumulus_connect_updateInvoicePaymentMethod(array $config, int $invoiceId, string $paymentmethod): void
 {
-    $entryid = Capsule::table('mod_acumulus_connect')->where('id', $invoiceid)->value('entryid');
+    $entryId = Capsule::table('mod_acumulus_connect')->where('id', $invoiceId)->value('entryid');
 
-    if (!empty($entryid)) {
-        $accountnumber = $config['account_numbers'][$paymentmethod]['id'];
+    if (!empty($entryId)) {
+        $accountNumber = $config['account_numbers'][$paymentmethod]['id'];
         //Update the entry account number
-        $xml = acumulus_connect_basicXML();
-        $xml->addChild('entryid', $entryid);
-        $xml->addChild('accountnumber', $accountnumber);
+        $xml = acumulus_connect_basicXml();
+        $xml->addChild('entryid', $entryId);
+        $xml->addChild('accountnumber', $accountNumber);
 
-        $url = "https://api.sielsystems.nl/acumulus/stable/entry/entry_update.php";
+        $url = 'https://api.sielsystems.nl/acumulus/stable/entry/entry_update.php';
         $xml_string = urlencode($xml->asXML());
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -1413,21 +1414,21 @@ function acumulus_connect_updateInvoicePaymentMethod(array $config, int $invoice
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        $rawdata = curl_exec($ch);
-        $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
-        logModuleCall('acumulus_connect', 'entry_update', $xml->asXML(), $rawdata, $result, acumulus_connect_get_replace_vars($config));
+        $rawData = curl_exec($ch);
+        $result = json_decode(json_encode((array) simplexml_load_string($rawData)), 1);
+        logModuleCall('acumulus_connect', 'entry_update', $xml->asXML(), $rawData, $result, acumulus_connect_getReplaceVars($config));
 
         if (isset($result['status'])) {
             switch ($result['status']) {
-                case "0":  // Success
+                case '0':  // Success
                     $resultStatus = 'success';
                     $messages = '';
                     break;
-                case "1":  // Failed.
+                case '1':  // Failed.
                     $resultStatus = 'error(s)';
                     $messages = print_r($result['error'], true);
                     break;
-                case "2":  // Success with warnings.
+                case '2':  // Success with warnings.
                     $resultStatus = 'warning(s)';
                     $messages = print_r($result['warning'], true);
                     break;
@@ -1440,7 +1441,7 @@ function acumulus_connect_updateInvoicePaymentMethod(array $config, int $invoice
             $resultStatus = 'exception';
             $messages = 'Error reaching acumulus API webservice';
         }
-        logActivity(__FUNCTION__ . "($invoiceid): $resultStatus $messages.");
+        logActivity(__FUNCTION__ . "($invoiceId): $resultStatus $messages.");
         curl_close($ch);
     }
 }
@@ -1449,13 +1450,13 @@ function acumulus_connect_updateInvoicePaymentMethod(array $config, int $invoice
  * Refund an invoice by creating a credit note.
  *
  * @param array $config
- * @param int $invoiceid
+ * @param int $invoiceId
  */
-function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
+function acumulus_connect_InvoiceCanceled(array $config, int $invoiceId): void
 {
     // Run whmcs api to retrieve the invoice and customer.
-    $invoice = acumulus_connect_getinvoice($invoiceid, false);
-    $client = acumulus_connect_getclient($invoice['userid']);
+    $invoice = acumulus_connect_getInvoice($invoiceId, false);
+    $client = acumulus_connect_getClient($invoice['userid']);
 
     // check if acumulus_use_acumulus_invoice_numbering is used, if so, send an invoice with negative amounts (credit invoice).
     if ($config['acumulus_use_acumulus_invoice_numbering'] == 'on') {
@@ -1463,9 +1464,9 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
         // and do nothing else.
         // Retrieve the token from the mod_acumulus_connect table.
         try {
-            $token = Capsule::table('mod_acumulus_connect')->where('id', $invoice["invoiceid"])->value('token');
+            $token = Capsule::table('mod_acumulus_connect')->where('id', $invoice['invoiceid'])->value('token');
         } catch (Exception $e) {
-            logException($e);
+            acumulus_logException($e);
         }
         // If the token exists update the invoice in Acumulus, else send the
         // entire invoice.
@@ -1473,8 +1474,8 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
             // Set invoice to paid if its unpaid (get status from acumulus api).
             $paymentStatus = acumulus_connect_getPaymentStatus($config, $token);   // [paymentstatus] => 1 ,  [paymentdate] => 2018-01-20
             if ($paymentStatus == '0') {
-                $paymentDate = date("Y-m-d");
-                acumulus_connect_updateInvoice($config, $invoiceid, $paymentDate);
+                $paymentDate = date('Y-m-d');
+                acumulus_connect_updateInvoice($config, $invoiceId, $paymentDate);
             }
 
             // Inverse the amounts in the invoice.
@@ -1482,14 +1483,14 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
             $negativeInvoice = acumulus_connect_expandInvoiceWithCustomValues($negativeInvoice, $client);
 
             // Make the xml file.
-            $xml = acumulus_connect_generatexml($config, $negativeInvoice, $client, true);
+            $xml = acumulus_connect_generateXml($config, $negativeInvoice, $client, true);
 
             // Send new credit invoice (xml) to Acumulus.
-            acumulus_connect_sendInvoicetoAccumulus($config, $negativeInvoice, $client, $xml);
+            acumulus_connect_sendInvoiceToAcumulus($config, $negativeInvoice, $client, $xml);
         } else {
-            logActivity(__FUNCTION__ . "($invoiceid): no credit invoice created because no invoice was sent.");
+            logActivity(__FUNCTION__ . "($invoiceId): no credit invoice created because no invoice was sent.");
         }
     } else {
-        logActivity("acumulus - Credit invoice not created not using acumulus sequential invoice numbering. ($invoiceid for User ID: {$client['userid']})");
+        logActivity("acumulus - Credit invoice not created not using acumulus sequential invoice numbering. ($invoiceId for User ID: {$client['userid']})");
     }
 }

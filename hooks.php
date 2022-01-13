@@ -30,7 +30,7 @@ require_once('acumulus_connect_functions.php');
 function acumulus_connect_triggerInvoiceCreationPreEmailHook(array $vars): void
 {
     $invoiceId = $vars['invoiceid'];
-    $config = acumulus_connect_getConfig();
+    $config = acumulus_connect_get_config();
     if ($config['acumulus_hook_invoice_create_enabled'] === 'on') {
         // Check if invoice id and invoice token are already stored and, if so,
         // skip sending the invoice.
@@ -56,7 +56,7 @@ function acumulus_connect_triggerInvoiceCreationPreEmailHook(array $vars): void
 function acumulus_connect_triggerInvoicePaidHook(array $vars): void
 {
     $invoiceId = $vars['invoiceid'];
-    $config = acumulus_connect_getConfig();
+    $config = acumulus_connect_get_config();
     if ($config['acumulus_hook_invoice_paid_enabled'] === 'on') {
         logActivity(__FUNCTION__ . "($invoiceId): updating");
         acumulus_connect_updateInvoice($config, $invoiceId);
@@ -73,7 +73,7 @@ function acumulus_connect_triggerInvoicePaidHook(array $vars): void
  */
 function acumulus_connect_triggerInvoiceChangeGatewayHook(array $vars): void
 {
-    $config = acumulus_connect_getConfig();
+    $config = acumulus_connect_get_config();
     $invoiceId = $vars['invoiceid'];
     $paymentMethod = $vars['paymentmethod'];
     logActivity(__FUNCTION__ . "($invoiceId): changing payment method to $paymentMethod");
@@ -89,7 +89,7 @@ function acumulus_connect_triggerInvoiceChangeGatewayHook(array $vars): void
 function acumulus_connect_triggerInvoiceCanceledHook(array $vars): void
 {
     $invoiceId = $vars['invoiceid'];
-    $config = acumulus_connect_getConfig();
+    $config = acumulus_connect_get_config();
     if ($config['acumulus_hook_invoice_canceled_enabled'] === 'on') {
         logActivity(__FUNCTION__ . "($invoiceId): creating credit invoice");
         acumulus_connect_InvoiceCanceled($config, $invoiceId);
