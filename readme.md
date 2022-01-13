@@ -1,5 +1,5 @@
-Acumulus for WHMCS connector
-============================
+Acumulus for WHMCS
+==================
 
 @author: [Buro RaDer](https://burorader.com/) based on the addon by [Remline ict-diensten](https://remline.nl/)  
 @copyright: [SIEL BV](https://www.siel.nl/acumulus/)  
@@ -7,11 +7,11 @@ Acumulus for WHMCS connector
 @support: [Webkoppelingen - Acumulus Forum](https://forum.acumulus.nl/index.php?board=17.0)  
 @source: [Acumulus web service API client library](https://github.com/SIELOnline/libAcumulus)  
 @support: [whmcs@acumulus.nl](mailto:whmcs@acumulus.nl)  
-@version: 3.3, december 2021
+@version: 3.3, january 2022
 
 Introduction
 ------------
-This Acumulus for WHMCS addon connects your WHMCS intallation to your Acumulus
+This Acumulus for WHMCS addon connects your WHMCS installation to your Acumulus
 online administration account.
 
 License
@@ -26,6 +26,6 @@ Development
 ------------
 This addon is still under development and will:
 
- - where necessary be adapted to changes in fiscal rules.
- - be extended with new features.
- - eventually start using the [Acumulus web service API client library](https://github.com/SIELOnline/libAcumulus)
+ - Where necessary be adapted to changed fiscal rules.
+ - Be extended with new features.
+ - Eventually start using the [Acumulus web service API client library](https://github.com/SIELOnline/libAcumulus).
