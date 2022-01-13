@@ -903,7 +903,7 @@ function acumulus_connect_invoicesummary(array $invoices, array $vars): string
         // https://developers.whmcs.com/api-reference/getinvoice/
         $command = "GetInvoice";
         $values["invoiceid"] = $invoiceid;
-        $data = acumulusLocalAPI($command, $values);
+        $data = acumulus_localAPI($command, $values);
         $client = acumulus_connect_getclient($data["userid"]);
 
         // Check if invoice number exists or use the invoice id instead.
@@ -934,9 +934,7 @@ function acumulus_connect_invoicesummary(array $invoices, array $vars): string
         $summaryline .= "<tr>";
         ++$totalinvoices;
         $sendinvoices[] = $data["invoiceid"];
-        unset($data);
     }
-    unset($invoice);
     $summary = "<p>" . $lang['Sent invoice summery'] . ".</p>";
     $summary .= $totalinvoices . " " . $lang['Records Found'];
     $summary .= '<div class="tablebg">

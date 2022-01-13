@@ -8,15 +8,13 @@
  * @noinspection PhpUnused  Hooks are called from the WHMCS system based on
  *    naming patterns.
  */
-if (!defined("WHMCS")) {
-    die("This file cannot be accessed directly");
+if (!defined('WHMCS')) {
+    die('This file cannot be accessed directly');
 }
 
-// @todo: replaced by the line below, is that correct?
-//   use Illuminate\Database\Capsule\Manager as Capsule;
 use WHMCS\Database\Capsule;
 
-include_once('acumulus_connect_functions.php');
+require_once('acumulus_connect_functions.php');
 
 /**
  * This hook is run when:
@@ -37,13 +35,14 @@ function acumulus_connect_triggerInvoiceCreationPreEmailHook(array $vars): void
         // Check if invoice id and invoice token are already stored and, if so,
         // skip sending the invoice.
         if (!Capsule::table('mod_acumulus_connect')->where('id', $invoiceId)->exists()) {
-            // No token exists, so let's send the invoice;
+            // No token exists, send the invoice.
+            logActivity(__FUNCTION__ . "($invoiceId): sending");
             acumulus_connect_sendInvoice($config, $invoiceId);
         } else {
-            logActivity("acumulus - Skipped sending Invoice ID: $invoiceId by hook 'triggerInvoiceCreationPreEmailHook' because it already was sent.");
+            logActivity(__FUNCTION__ . "($invoiceId): not sending, already sent");
         }
     } else {
-        logActivity("acumulus - Skipped sending Invoice ID: $invoiceId by hook 'triggerInvoiceCreationPreEmailHook' because it is disabled.");
+        logActivity(__FUNCTION__ . "($invoiceId): not sending, hook disabled");
     }
 }
 
@@ -59,9 +58,10 @@ function acumulus_connect_triggerInvoicePaidHook(array $vars): void
     $invoiceId = $vars['invoiceid'];
     $config = acumulus_connect_getConfig();
     if ($config['acumulus_hook_invoice_paid_enabled'] === 'on') {
+        logActivity(__FUNCTION__ . "($invoiceId): updating");
         acumulus_connect_updateInvoice($config, $invoiceId);
     } else {
-        logActivity("acumulus - Skipped updating invoice ID: $invoiceId by hook 'acumulus_connect_triggerInvoicePaidHook' because it is disabled.");
+        logActivity(__FUNCTION__ . "($invoiceId): not updating, hook disabled");
     }
 }
 
@@ -76,7 +76,8 @@ function acumulus_connect_triggerInvoiceChangeGatewayHook(array $vars): void
     $config = acumulus_connect_getConfig();
     $invoiceId = $vars['invoiceid'];
     $paymentMethod = $vars['paymentmethod'];
-    acumulus_connect_updateInvoicePaymentMethode($config, $invoiceId, $paymentMethod);
+    logActivity(__FUNCTION__ . "($invoiceId): changing payment method to $paymentMethod");
+    acumulus_connect_updateInvoicePaymentMethod($config, $invoiceId, $paymentMethod);
 }
 
 /**
@@ -90,9 +91,10 @@ function acumulus_connect_triggerInvoiceCanceledHook(array $vars): void
     $invoiceId = $vars['invoiceid'];
     $config = acumulus_connect_getConfig();
     if ($config['acumulus_hook_invoice_canceled_enabled'] === 'on') {
+        logActivity(__FUNCTION__ . "($invoiceId): creating credit invoice");
         acumulus_connect_InvoiceCanceled($config, $invoiceId);
     } else {
-        logActivity("acumulus_connect - Skipped creating credit invoice for ID: $invoiceId by hook 'acumulus_connect_triggerInvoiceCanceledHook' because it is disabled.");
+        logActivity(__FUNCTION__ . "($invoiceId): not creating credit invoice, hook disabled");
     }
 }
 

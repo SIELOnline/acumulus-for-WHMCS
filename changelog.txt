@@ -110,8 +110,13 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
         - Fixed: Company name was filled with person name if the customer was not a company.
 3.3     2022 Jan ??
         - Addon is now maintained by Buro RaDer.
+        - Bugs:
+          - Presenting Acumulus accounts went wrong if no account number is defined
+            in Acumulus for a certain account (e.g. cash or -1: outside Acumulus).
+          - Added accepting undocumented entryproc "no changes made'.
+          - Removed use of functions from the mysql extension (removed as of PHP 7.0).
         - Refactored:
-          - Code style and formatting (PSR-2).
+          - Code style and formatting (PSR-12).
           - Readme, Licences, links to online GPLv3 license.
           - Changed Acumulus Connect to just Acumulus in UI texts and comments.
           - Removed all &reg; (®) signs.
@@ -119,19 +124,15 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
           - Typos, CRLF -> LF, new array style ([]).
           - Added PHPDoc blocks and type-info to parameters and function returns.
           - Removed warnings and errors found by PhpStorm inspections.
-          - Removed use of functions from the mysql extension (already removed in PHP 7.0!).
           - Changed contents of the <connector> tag in XML messages to the Acumulus API.
           - Added a file with stubs of functions and classes used from WHMCS that
             aids - at development time - with autocompletion, static (type)
             checking, etc. This file is never loaded at runtime.
           - Added a wrapper around localAPI() that adds error logging.
           - Replaced a number of string concatenations by variable expansion in double-quoted strings.
-          - Changed calls to logActivity via localAPI to direct calls to logActivity.
+          - Changed calls to logActivity via localAPI() to direct calls to logActivity().
           - Added logging to hooks, e.g. if they are not enabled.
           - Added a function for generic exception logging.
-          - Removed all use of $adminUser when calling the API.
+          - Removed all use of $adminuser when calling the API.
           - Removed unused function acumulus_connect_getPaymentGatewayUsed().
-        - Bugs:
-          - Presenting Acumulus accounts went wrong if no account number is defined
-            in Acumulus for a certain account (e.g. cash or -1: outside Acumulus).
-          - Added accepting undocumented entryproc "no changes made'.
+          - Removed unnecessary uses of unset().

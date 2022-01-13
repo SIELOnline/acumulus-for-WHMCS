@@ -16,7 +16,7 @@ function logException(Exception $e)
             $message .= ' ' . $e->getCode() . ': ';
         }
         $message .= ': ';
-        $message .= $e->__toString();
+        $message .= $e->getMessage();
         $message .= " in $callingFunction:$callingLine";
         logActivity($message);
     }
@@ -41,10 +41,10 @@ function logException(Exception $e)
  *
  * @throws \RuntimeException
  */
-function acumulusLocalAPI(string $command, array $values): array
+function acumulus_localAPI(string $command, array $values): array
 {
     $results = localAPI($command, $values);
-    if ($results['result'] !== "success") {
+    if ($results['result'] !== 'success') {
         $callingFunction = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
         $mainArg = '';
         if (count($values) >= 1) {
@@ -94,20 +94,6 @@ function acumulus_connect_getConfig(): array
 }
 
 /**
- * WHMCS API Call to retrieve administrators.
- *
- * @return array
- */
-function acumulus_connect_get_admins(): array
-{
-    $results = [];
-    foreach(Capsule::table("tbladmins")->orderBy("username")->get("username") as $record) {
-        $results[] = $record->username;
-    }
-    return $results;
-}
-
-/**
  * WHMCS API Call to retrieve custom fields.
  *
  * @return array
@@ -133,7 +119,7 @@ function acumulus_connect_getclient(int $clientid): array
     // https://developers.whmcs.com/api-reference/getclientsdetails/
     $command = 'GetClientsDetails';
     $values = ['clientid' => $clientid, 'stats' => false];
-    $results = acumulusLocalAPI($command, $values);
+    $results = acumulus_localAPI($command, $values);
 
     return $results["client"];
 }
@@ -151,7 +137,7 @@ function acumulus_connect_getinvoice(int $invoiceid, bool $expand = true): array
     // https://developers.whmcs.com/api-reference/getinvoice/
     $command = "GetInvoice";
     $values = ['invoiceid' => $invoiceid];
-    $results = acumulusLocalAPI($command, $values);
+    $results = acumulus_localAPI($command, $values);
 
     // Add some custom fields to the invoice.
     if ($expand) {
@@ -171,7 +157,7 @@ function acumulus_connect_getWHMCSAccountNumbers(): array
     // https://developers.whmcs.com/api-reference/getpaymentmethods/
     $command = "GetPaymentMethods";
     $values = [];
-    $results = acumulusLocalAPI($command, $values);
+    $results = acumulus_localAPI($command, $values);
     return $results['paymentmethods']["paymentmethod"];
 }
 
@@ -182,8 +168,7 @@ function acumulus_connect_getWHMCSAccountNumbers(): array
  */
 function acumulus_connect_getWHMCSVersion(): string
 {
-    $version = Capsule::table('tblconfiguration')->where('setting', 'Version')->first();
-    return $version->value;
+    return Capsule::table('tblconfiguration')->where('setting', 'Version')->value('value');
 }
 
 /**
@@ -360,11 +345,9 @@ function acumulus_connect_getCostcenters(): array
 
     // Load the xml result.
     $xml = simplexml_load_string($response, null, LIBXML_NOCDATA);
-    $rawCostcenters = $xml->costcenters;
     // Convert XML to json and then convert to Array.
-    $jsonCostcenters = json_encode($rawCostcenters);
-    $costcenters = json_decode($jsonCostcenters, true);
-    // If there are more than 1 cost center in Acumulus, keep returning the
+    $costcenters = json_decode(json_encode($xml->costcenters), true);
+    // If there are more than 1 cost centers in Acumulus, keep returning the
     // same array construction.
     if (isset($costcenters['costcenter'][1])) {
         $costcenters = $costcenters['costcenter'];
@@ -508,11 +491,7 @@ function acumulus_connect_isCountryinEU(string $countrycode, string $date): bool
         $eu_countries = array_diff($eu_countries, ['GB']);
     }
 
-    $isEU = in_array($countrycode, $eu_countries);
-
-    unset($eu_countries);
-
-    return $isEU;
+    return in_array($countrycode, $eu_countries);
 }
 
 /**
@@ -613,9 +592,7 @@ function acumulus_connect_sendInvoicetoAccumulus(array $config, array $invoice, 
 
     $rawdata = curl_exec($ch);
     $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
-    // @todo: extract $replaceVars into a constant.
-    logModuleCall("acumulus_connect", "Send Invoice to Acumulus", $xml->asXML(), $rawdata, $result,
-        [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']]);
+    logModuleCall("acumulus_connect", "Send Invoice to Acumulus", $xml->asXML(), $rawdata, $result, acumulus_connect_get_replace_vars($config));
 
     if (isset($result["status"])) {
         switch ($result["status"]) {
@@ -639,8 +616,19 @@ function acumulus_connect_sendInvoicetoAccumulus(array $config, array $invoice, 
         logActivity("acumulus_connect - Error reaching acumulus website to send Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"]);
     }
     curl_close($ch);
+}
 
-    unset($url, $xml_string, $ch, $rawdata, $result, $result, $warnings);
+/**
+ *
+ *
+ * @param array $config
+ *
+ * @return array
+ *
+ */
+function acumulus_connect_get_replace_vars(array $config): array
+{
+    return [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']];
 }
 
 /**
@@ -656,54 +644,36 @@ function acumulus_connect_setinvoicetoken(array $invoice, string $invoicetoken, 
     // Don't save the token to the reference table if paid, no need to store
     // references.
     if ($invoice["status"] === "Paid") {
-        // @todo: logActivity?
-        logModuleCall("acumulus_connect", "Add invoicetoken to database", 'Invoice is already Paid, no need to store invoicetoken.',
-            '', '', []);
+        logActivity(__FUNCTION__ . 'Invoice is already Paid, no need to store invoice token.');
         return;
     }
 
     // check if invoiceid and invoicetoken are already stored and, if so, update.
     if (!Capsule::table('mod_acumulus_connect')->where('id', $invoice["invoiceid"])->exists()) {
         // No token exists, so let's add the token.
-        try {
-            if (Capsule::table('mod_acumulus_connect')->insert(
-                [
-                    'id' => $invoice["invoiceid"],
-                    'token' => $invoicetoken,
-                    'entryid' => $entryid,
-                    'created_at' => date("Y-m-d H:i:s"),
-                ]
-            )
-            ) {
-                // @todo: logActivity?
-                logModuleCall("acumulus_connect", "Add invoicetoken to database", '',
-                    'Added successful: ' . $invoice["invoiceid"] . ' - ' . $invoicetoken . ' - ' . $entryid, '', []);
-            }
-        } catch (Exception $e) {
-            // @todo: logActivity?
-            logModuleCall("acumulus_connect", "Add invoicetoken to database", '', 'Error in SQL Query: ' . $e->getMessage(),
-                '', []);
+        if (Capsule::table('mod_acumulus_connect')->insert([
+            'id' => $invoice["invoiceid"],
+            'token' => $invoicetoken,
+            'entryid' => $entryid,
+            'created_at' => date("Y-m-d H:i:s"),
+        ])) {
+            logActivity(__FUNCTION__ . "({$invoice['invoiceid']}): inserted");
+        } else {
+            logActivity(__FUNCTION__ . "({$invoice['invoiceid']}): not inserted");
         }
     } else {
         // A token already exists, so lets update the token.
-        try {
-            $updatedUserCount = Capsule::table('mod_acumulus_connect')
-                                       ->where('id', $invoice["invoiceid"])
-                                       ->update(
-                                           [
-                                               'token' => $invoicetoken,
-                                               'entryid' => $entryid,
-                                               'updated_at' => date("Y-m-d H:i:s"),
-                                           ]
-                                       );
-            if ($updatedUserCount > 0) {
-                // @todo: logActivity?
-                logModuleCall("acumulus_connect", "Update invoicetoken in database", '',
-                    'Changed successfull: ' . $invoice["invoiceid"] . ' - ' . $invoicetoken, '', []);
-            }
-        } catch (Exception $e) {
-            // @todo: logActivity?
-            logModuleCall("acumulus_connect", "Update invoicetoken in database", '', 'Error in SQL Query: ' . $e->getMessage(), '', []);
+        $updateCount = Capsule::table('mod_acumulus_connect')
+            ->where('id', $invoice["invoiceid"])
+            ->update([
+                'token' => $invoicetoken,
+                'entryid' => $entryid,
+                'updated_at' => date("Y-m-d H:i:s"),
+            ]);
+        if ($updateCount > 0) {
+            logActivity(__FUNCTION__ . "({$invoice['invoiceid']}): updated");
+        } else {
+            logActivity(__FUNCTION__ . "({$invoice['invoiceid']}): not updated");
         }
     }
 }
@@ -778,16 +748,14 @@ function acumulus_connect_getPaymentStatus(array $config, string $token): array
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
     $rawdata = curl_exec($ch);
     $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
-    // @todo: extract $replaceVars into a constant.
-    logModuleCall("acumulus_connect", "invoice_paymentstatus_get()", $xml->asXML(), $rawdata, $result,
-        [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']]);
+    logModuleCall("acumulus_connect", "invoice_paymentstatus_get()", $xml->asXML(), $rawdata, $result, acumulus_connect_get_replace_vars($config));
     curl_close($ch);
 
     return $result['invoice'];
 }
 
 /**
- * Helper function to inverse the amounts for teh credit invoice.
+ * Helper function to inverse the amounts for a credit invoice.
  *
  * @param array $invoice
  *
@@ -870,38 +838,45 @@ function acumulus_connect_XMLPrepareCustomerDetails(array $config, array $invoic
         $country = '';
     }
 
-    // Get the id of the custom field corresponding the VAT title and loop
-    // through the clients custom fields for the VAT value.
-    $vatNr = '';
-    try {
-        $customFieldId = Capsule::table('tblcustomfields')->where('fieldname', $config["acumulus_whmcs_vatfield"])->first()->id;
+    // Since WHMCS 7.7, WHMCS has a vat id field of its own. Before that, this
+    // module supported a custom field to register this information. We still
+    // support that custom field if no vat id has been set in the proper
+    // WHMCS field and the name of the custom field has been set.
+    $vatNr = $client['tax_id'];
+    if (empty($vatNr) && !empty($config["acumulus_whmcs_vatfield"])) {
+        // Get the id of the custom field corresponding the VAT title and loop
+        // through the clients custom fields for the VAT value.
+        $customFieldId = Capsule::table('tblcustomfields')->where('fieldname', $config["acumulus_whmcs_vatfield"])->value('id');
         foreach ($client["customfields"] as $val) {
             if ($val['id'] === $customFieldId) {
                 $vatNr = $val['value'];
-            }
-            if (empty($vatNr)) {
-                $vatNr = $client['tax_id'];
+                break;
             }
         }
-        // @todo: do not catch and dismiss exceptions.
-    } catch (Exception $e) {}
+    }
 
-    // Get the id of the custom field corresponding the IBAN title and loop
+    // Get the id of the custom field corresponding to the IBAN field and loop
     // through the clients custom fields for the IBAN value.
     $IBAN = '';
-    try {
+    if (!empty($config["acumulus_whmcs_ibanfield"])) {
         $customFieldId = Capsule::table('tblcustomfields')->where('fieldname', $config["acumulus_whmcs_ibanfield"])->first()->id;
         foreach ($client["customfields"] as $val) {
             if ($val['id'] === $customFieldId) {
                 $IBAN = $val['value'];
+                break;
             }
         }
-        // @todo: do not catch and dismiss exceptions.
-    } catch (Exception $e) {}
+    }
 
-    $firstname = (isset($client['firstname'])) ? $client['firstname'] : '';
-    $lastname = (isset($client['lastname'])) ? $client['lastname'] : '';
-    $fullname = $firstname . ' ' . $lastname;
+    $fullName = '';
+    $prefix = '';
+    if(!empty($client['firstname'])) {
+        $fullName .= $client['firstname'];
+        $prefix = ' ';
+    }
+    if(!empty($client['lastname'])) {
+        $fullName .= $prefix . $client['lastname'];
+    }
 
     // Set how the customer is being imported into Acumulus
     // 1 = debtor, 2 = creditor, 3 = debtor/creditor (neutral)
@@ -929,7 +904,7 @@ function acumulus_connect_XMLPrepareCustomerDetails(array $config, array $invoic
             $contactstatus = '1';
     }
 
-    // Use Automatic prefill of countryname based on supplied countrycode,
+    // Use Automatic prefill of country name based on supplied country code,
     // Yes with Nederland or Leave the same as in WHMCS?.
     switch ($config['acumulus_customer_countryautoname']) {
         case 'Automatic prefill based on country code':
@@ -951,7 +926,7 @@ function acumulus_connect_XMLPrepareCustomerDetails(array $config, array $invoic
         $customerDetails['companyname1'] = $companyname;
         $customerDetails['companyname2'] = '';
     }
-    $customerDetails['fullname'] = $fullname;
+    $customerDetails['fullname'] = $fullName;
     $customerDetails['salutation'] = '';
     $customerDetails['address1'] = (isset($client['address1'])) ? $client['address1'] : '';
     $customerDetails['address2'] = (isset($client['address2'])) ? $client['address2'] : '';
@@ -969,9 +944,6 @@ function acumulus_connect_XMLPrepareCustomerDetails(array $config, array $invoic
     $customerDetails['bankaccountnumber'] = $IBAN;
     $customerDetails['mark'] = acumulus_connect_replaceVarsInText($config['acumulus_cusromer_mark'], $invoice, $client);
     $customerDetails['disableduplicates'] = (isset($config['acumulus_customer_disableduplicates'])) ? ($config['acumulus_customer_disableduplicates'] === 'on') ? '1' : '0' : '0';  // 0 = Leave older duplicate contacts as is, 1 = Mark duplicate contacts as disabled
-
-    // Cleanup and return the array.
-    unset($firstname, $lastname, $fullname, $companyname, $config, $client, $type, $contactstatus, $countryautoname);
 
     return $customerDetails;
 }
@@ -1295,9 +1267,6 @@ function acumulus_connect_generatexml(array $config, array $invoice, array $clie
         }
     }
 
-    // Cleanup and return the XML object.
-    unset($config, $invoice, $client, $customerDetails, $customer, $customerDetails);
-
     return $xml;
 }
 
@@ -1313,7 +1282,7 @@ function acumulus_connect_generatexml(array $config, array $invoice, array $clie
  */
 function acumulus_connect_sendInvoice(array $config, int $invoiceid): void
 {
-    // Run whmcsapi to retrieve the invoice and customer.
+    // Retrieve the invoice and customer.
     $invoice = acumulus_connect_getinvoice($invoiceid);
     $client = acumulus_connect_getclient($invoice['userid']);
 
@@ -1334,27 +1303,21 @@ function acumulus_connect_sendInvoice(array $config, int $invoiceid): void
 function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $usedate = null): void
 {
     $invoice = acumulus_connect_getinvoice($invoiceid);
-    $client = acumulus_connect_getclient($invoice['userid']);
 
     // Retrieve the token from the mod_acumulus_connect table
-    try {
-        $token = Capsule::table('mod_acumulus_connect')->where('id', $invoice["invoiceid"])->value('token');
-    } catch (Exception $e) {
-        // @todo: logActivity?
-        logModuleCall("acumulus_connect", "Hook[InvoicePaid][acumulus_connect_updateInvoice]", '', 'Error in SQL Query: ' . $e->getMessage(), '', []);
-    }
+    $token = Capsule::table('mod_acumulus_connect')->where('id', $invoice['invoiceid'])->value('token');
     // if the token exists update the invoice in Acumulus, else send entire invoice.
-    if (!empty($token)) {
-
-        // Update paymentgateway if use last paymentmethode is enabled and if it differs from the invoice set payment methode.
-        if ($config['acumulus_invoice_use_last_paymentmethod'] == "on") {
-            if (!empty($invoice["transactions"]["transaction"])) {
-                $lastpaymentgateway = end($invoice["transactions"]["transaction"])["gateway"];
+    if ($token !== null) {
+        // Update payment gateway if "use last payment method" is enabled and if it differs from the invoice set payment method.
+        if ($config['acumulus_invoice_use_last_paymentmethod'] === 'on') {
+            if (!empty($invoice['transactions']['transaction'])) {
+                $lastpaymentgateway = end($invoice['transactions']['transaction'])['gateway'];
             } else {
                 $lastpaymentgateway = null;
             }
             if ($invoice['paymentmethod'] !== $lastpaymentgateway) {
-                acumulus_connect_updateInvoicePaymentMethode($config, $invoiceid, $lastpaymentgateway);
+                logActivity(__FUNCTION__ . "($invoiceid): updating payment method in WHMCS");
+                acumulus_connect_updateInvoicePaymentMethod($config, $invoiceid, $lastpaymentgateway);
                 // Update the payment method of the invoice in whmcs.
                 // https://developers.whmcs.com/api-reference/updateinvoice/
                 $command = 'UpdateInvoice';
@@ -1362,9 +1325,7 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
                     'invoiceid' => $invoiceid,
                     'paymentmethod' => $lastpaymentgateway,
                 ];
-                $results = acumulusLocalAPI($command, $postData);
-                // @todo: logActivity?
-                logModuleCall("acumulus_connect", "[acumulus_connect_updateInvoice in whmcs]", 'API CALL:UpdateInvoice: ' . implode(',', $postData), $results, '', []);
+                acumulus_localAPI($command, $postData);
             }
         }
 
@@ -1390,41 +1351,36 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         $rawdata = curl_exec($ch);
         $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
-        // @todo: extract $replaceVars into a constant.
-        logModuleCall("acumulus_connect", "Update Invoice paid status in Acumulus", $xml->asXML(), $rawdata, $result,
-            [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']]);
+        logModuleCall('acumulus_connect', 'invoice_paymentstatus_set', $xml->asXML(), $rawdata, $result, acumulus_connect_get_replace_vars($config));
 
-        // @todo: change to call to logActivity()?
-        $command = "logactivity";
-        if (isset($result["status"])) {
-            $values["userid"] = $client["userid"];
-            switch ($result["status"]) {
-                case "1":  //failed
-                    $errors = print_r($result['error'], true);
-                    $values["description"] = "acumulus_connect - Error updateing Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"] . " Errors:" . $errors;
+        if (isset($result['status'])) {
+            switch ($result['status']) {
+                case "0":  // Success
+                    $resultStatus = 'success';
+                    $messages = '';
                     break;
-                case "0":  //success without warnings
-                    $values["description"] = "acumulus_connect - Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"] . " Updated successfully";
-                    //acumulus_connect_delete_invoicetoken($invoiceid,$config);
+                case "1":  // Failed.
+                    $resultStatus = 'error(s)';
+                    $messages = print_r($result['error'], true);
                     break;
-                case "2":  //success with warnings
-                    $warnings = print_r($result['warning'], true);
-                    $values["description"] = "acumulus_connect - Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"] . " Updated with " . $result["countwarnings"] . " warnings:" . $warnings;
-                    //acumulus_connect_delete_invoicetoken($invoiceid,$config);
+                case "2":  // Success with warnings.
+                    $resultStatus = 'warning(s)';
+                    $messages = print_r($result['warning'], true);
                     break;
-                default:
-                    $values["description"] = "acumulus_connect - Unspecified Error Updating Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"];
+                default: // Unknown code.
+                    $resultStatus = 'error';
+                    $messages = "Unspecified Error code {$result['status']}";
             }
         } else {
-            $values["description"] = "acumulus_connect - API Error reaching acumulus website to update Invoice ID: " . $invoice["invoiceid"] . " for User ID: " . $client["userid"];
+            // Exception/curl error.
+            $resultStatus = 'exception';
+            $messages = 'Error reaching acumulus API webservice';
         }
-        acumulusLocalAPI($command, $values);
+        logActivity(__FUNCTION__ . "($invoiceid): $resultStatus $messages.");
         curl_close($ch);
     } else {
-        // Token not found make a module log entry and sent entire invoice;
-        // @todo: logActivity?
-        logModuleCall("acumulus_connect", "Hook[InvoicePaid][acumulus_connect_updateInvoice]", '',
-            'Token for id : "' . $invoice["invoiceid"] . '" not found so sending entire invoice.', '', []);
+        // Token not found make a module log entry and send entire invoice.
+        logActivity(__FUNCTION__ . "($invoiceid) not yet sent, sending.");
         acumulus_connect_sendInvoice($config, $invoiceid);
     }
 }
@@ -1436,7 +1392,7 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceid, string $u
  * @param int $invoiceid
  * @param string $paymentmethod
  */
-function acumulus_connect_updateInvoicePaymentMethode(array $config, int $invoiceid, string $paymentmethod): void
+function acumulus_connect_updateInvoicePaymentMethod(array $config, int $invoiceid, string $paymentmethod): void
 {
     $entryid = Capsule::table('mod_acumulus_connect')->where('id', $invoiceid)->value('entryid');
 
@@ -1459,30 +1415,32 @@ function acumulus_connect_updateInvoicePaymentMethode(array $config, int $invoic
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         $rawdata = curl_exec($ch);
         $result = json_decode(json_encode((array) simplexml_load_string($rawdata)), 1);
-        // @todo: extract $replaceVars into a constant.
-        logModuleCall("acumulus_connect", "Update accountnumber in invoice", $xml->asXML(), $rawdata, $result,
-            [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']]);
+        logModuleCall('acumulus_connect', 'entry_update', $xml->asXML(), $rawdata, $result, acumulus_connect_get_replace_vars($config));
 
-        // @todo: change to call to logActivity()?
-        $command = "logactivity";
-        if (isset($result['entry']['entryproc'])) {
-            switch ($result['entry']['entryproc']) {
-                case 'updated':  // Success.
-                    $values['description'] = "acumulus_connect - Changing payment method for Invoice ID: $invoiceid to {$config['account_numbers'][$paymentmethod]['name']} ($paymentmethod)";
+        if (isset($result['status'])) {
+            switch ($result['status']) {
+                case "0":  // Success
+                    $resultStatus = 'success';
+                    $messages = '';
                     break;
-                case 'no changes made':  // Success.
-                    $values['description'] = "acumulus_connect - Not changing payment method for Invoice ID: $invoiceid, already equals {$config['account_numbers'][$paymentmethod]['name']} ($paymentmethod)";
+                case "1":  // Failed.
+                    $resultStatus = 'error(s)';
+                    $messages = print_r($result['error'], true);
                     break;
-                case 'error':  //success without warnings.
-                    $values['description'] = "acumulus_connect - Error changing payment method for Invoice ID: $invoiceid. Not able to propagate the update.";
+                case "2":  // Success with warnings.
+                    $resultStatus = 'warning(s)';
+                    $messages = print_r($result['warning'], true);
                     break;
-                default:
-                    $values['description'] = "acumulus_connect - Error changing payment method for Invoice ID: $invoiceid. Undocumented entrproc ({$result['entry']['entryproc']}), payment methode probably not updated in Acumulus.";
+                default: // Unknown code.
+                    $resultStatus = 'error';
+                    $messages = "Unspecified Error code {$result['status']}";
             }
         } else {
-            $values['description'] = "acumulus_connect - API Error reaching acumulus website to update payment methode ID: $invoiceid";
+            // Exception/curl error.
+            $resultStatus = 'exception';
+            $messages = 'Error reaching acumulus API webservice';
         }
-        acumulusLocalAPI($command, $values);
+        logActivity(__FUNCTION__ . "($invoiceid): $resultStatus $messages.");
         curl_close($ch);
     }
 }
@@ -1495,9 +1453,6 @@ function acumulus_connect_updateInvoicePaymentMethode(array $config, int $invoic
  */
 function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
 {
-    // @todo: logActivity?
-    logModuleCall("acumulus_connect", "Hook[InvoiceCancelled][DEBUG[CONFIG]]", $config, '', '', []);
-
     // Run whmcs api to retrieve the invoice and customer.
     $invoice = acumulus_connect_getinvoice($invoiceid, false);
     $client = acumulus_connect_getclient($invoice['userid']);
@@ -1510,8 +1465,7 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
         try {
             $token = Capsule::table('mod_acumulus_connect')->where('id', $invoice["invoiceid"])->value('token');
         } catch (Exception $e) {
-            // @todo: logActivity?
-            logModuleCall("acumulus_connect", "Hook[InvoiceCancelled][getToken]", '', 'Error in SQL Query: ' . $e->getMessage(), '', []);
+            logException($e);
         }
         // If the token exists update the invoice in Acumulus, else send the
         // entire invoice.
@@ -1530,10 +1484,10 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceid): void
             // Make the xml file.
             $xml = acumulus_connect_generatexml($config, $negativeInvoice, $client, true);
 
-            //Send new credit invoice (xml) to Acumulus.
+            // Send new credit invoice (xml) to Acumulus.
             acumulus_connect_sendInvoicetoAccumulus($config, $negativeInvoice, $client, $xml);
         } else {
-            logActivity("acumulus - Credit invoice not created no token found for {$invoice['invoiceid']} for User ID: {$client['userid']}");
+            logActivity(__FUNCTION__ . "($invoiceid): no credit invoice created because no invoice was sent.");
         }
     } else {
         logActivity("acumulus - Credit invoice not created not using acumulus sequential invoice numbering. ($invoiceid for User ID: {$client['userid']})");
