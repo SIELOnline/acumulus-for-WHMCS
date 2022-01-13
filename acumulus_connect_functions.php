@@ -594,28 +594,32 @@ function acumulus_connect_sendInvoiceToAcumulus(array $config, array $invoice, a
     $result = json_decode(json_encode((array) simplexml_load_string($rawData)), 1);
     logModuleCall('acumulus_connect', 'Send Invoice to Acumulus', $xml->asXML(), $rawData, $result, acumulus_connect_getReplaceVars($config));
 
-    // @todo: make logActivity calls like in other places.
     if (isset($result['status'])) {
         switch ($result['status']) {
-            case '1':  //failed
-                $errors = print_r($result['error'], true);
-                logActivity("acumulus_connect - Error sending Invoice ID: " . $invoice['invoiceid'] . " for User ID: " . $client['userid'] . " Errors:" . $errors);
-                break;
-            case '0':  //success without warnings
-                logActivity("acumulus_connect - Invoice ID: " . $invoice['invoiceid'] . " for User ID: " . $client['userid'] . ' Sent successfully');
+            case '0':  // Success.
+                $resultStatus = 'Success';
+                $messages = '';
                 acumulus_connect_setInvoiceToken($invoice, $result['invoice']['token'], $result['invoice']['entryid']);
                 break;
-            case '2':  //success with warnings
-                $warnings = print_r($result['warning'], true);
-                logActivity("acumulus_connect - Invoice ID: " . $invoice['invoiceid'] . " for User ID: " . $client['userid'] . ' Sent with ' . $result['countwarnings'] . " warnings:" . $warnings);
+            case '1':  // Error(s).
+                $resultStatus = 'error(s)';
+                $messages = print_r($result['error'], true);
+                break;
+            case '2':  // Success with warning(s).
+                $resultStatus = 'warning(s)';
+                $messages = print_r($result['warning'], true);
                 acumulus_connect_setInvoiceToken($invoice, $result['invoice']['token'], $result['invoice']['entryid']);
                 break;
             default:
-                logActivity("acumulus_connect - Unspecified Error sending Invoice ID: " . $invoice['invoiceid'] . " for User ID: " . $client['userid']);
+                $resultStatus = 'error';
+                $messages = "Unknown status code {$result['status']}";
         }
     } else {
-        logActivity("acumulus_connect - Error reaching acumulus website to send Invoice ID: " . $invoice['invoiceid'] . " for User ID: " . $client['userid']);
+        // Exception/curl error.
+        $resultStatus = 'exception';
+        $messages = 'Error reaching acumulus API webservice';
     }
+    logActivity(__FUNCTION__ . "({$invoice['invoiceid']}): $resultStatus $messages.");
     curl_close($ch);
 }
 
