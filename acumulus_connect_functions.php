@@ -573,11 +573,10 @@ function acumulus_connect_getVatType(array $config, array $invoice, array $clien
  *
  * @param array $config
  * @param array $invoice
- * @param array $client
  * @param \SimpleXMLElement $xml
  *
  */
-function acumulus_connect_sendInvoiceToAcumulus(array $config, array $invoice, array $client, SimpleXMLElement $xml)
+function acumulus_connect_sendInvoiceToAcumulus(array $config, array $invoice, SimpleXMLElement $xml)
 {
     $url = 'https://api.sielsystems.nl/acumulus/stable/invoices/invoice_add.php';
     $xml_string = urlencode($xml->asXML());
@@ -1295,7 +1294,7 @@ function acumulus_connect_sendInvoice(array $config, int $invoiceId): void
     $xml = acumulus_connect_generateXml($config, $invoice, $client);
 
     //Send xml to Acumulus
-    acumulus_connect_sendInvoiceToAcumulus($config, $invoice, $client, $xml);
+    acumulus_connect_sendInvoiceToAcumulus($config, $invoice, $xml);
 }
 
 /**
@@ -1490,7 +1489,7 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceId): void
             $xml = acumulus_connect_generateXml($config, $negativeInvoice, $client, true);
 
             // Send new credit invoice (xml) to Acumulus.
-            acumulus_connect_sendInvoiceToAcumulus($config, $negativeInvoice, $client, $xml);
+            acumulus_connect_sendInvoiceToAcumulus($config, $negativeInvoice, $xml);
         } else {
             logActivity(__FUNCTION__ . "($invoiceId): no credit invoice created because no invoice was sent.");
         }

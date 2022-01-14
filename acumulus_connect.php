@@ -771,7 +771,7 @@ function acumulus_connect_constructFullConfigFields(): array
 }
 
 /**
- * Returns a highly visible section header.
+ * Returns a (highly visible) section header.
  *
  * @param string $section
  *
