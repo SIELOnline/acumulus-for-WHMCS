@@ -145,3 +145,4 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
           - Camel cased variables (where phpstorm warns about typo).
           - Prefer single quotes where possible.
           - Camel case function names (after the prefix acumulus_connect).
+          - Added test data to allow adding unit testing in the future.
