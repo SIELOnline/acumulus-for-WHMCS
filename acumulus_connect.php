@@ -73,7 +73,7 @@ function acumulus_connect_config(): array
         } else {
             // the entered credentials are not valid.
             $config_array = acumulus_connect_constructBasicConfigFields();
-            $config_array['fields'][] = [
+            $config_array['fields']['acumulus_credentials_check'] = [
                 'FriendlyName' => 'Credential check',
                 'Description' => '<font color="red"><b>' . 'The credentials are not correct.' . '</b></font>'
             ];
@@ -81,7 +81,7 @@ function acumulus_connect_config(): array
     } else {
         // one or more required credentials are not given.
         $config_array = acumulus_connect_constructBasicConfigFields();
-        $config_array['fields'][] = [
+        $config_array['fields']['acumulus_credentials_check'] = [
             'FriendlyName' => 'Credential check',
             'Description' => '<font color="blue"><b>' . 'Please enter your credentials and click "Save Changes", to continue configuring the Acumulus module.' . '</b></font>',
         ];
@@ -110,13 +110,11 @@ function acumulus_connect_activate(): array
                 $table->timestamps();
             }
         );
+        return ['status' => 'success', 'description' => 'The Acumulus module has been installed successfully, please continue by filling in the configuration data.'];
     } catch (Exception $e) {
-        logActivity('Acumulus_Connect: Installing the module failed Unable to create my_table: ' . $e->getMessage());
-        return ['status' => 'error', 'description' => 'Installing the module failed Unable to create my_table: ' . $e->getMessage()];
+        acumulus_logException($e);
+        return ['status' => 'error', 'description' => 'Installing the module failed Unable to create table mod_acumulus_connect: ' . $e->getMessage()];
     }
-
-    // Return the result.
-    return ['status' => 'success', 'description' => 'The Acumulus module is installed Successfully, please fill in the configuration data.'];
 }
 
 /**
@@ -133,20 +131,18 @@ function acumulus_connect_deactivate(): array
 {
     try {
         Capsule::schema()->drop('mod_acumulus_connect');
+        return ['status' => 'success', 'description' => 'The Acumulus module has been deactivated successfully'];
     } catch (Exception $e) {
-        logActivity('Acumulus_Connect: Deactivating the module failed: ' . $e->getMessage());
+        acumulus_logException($e);
         return ['status' => 'error', 'description' => 'Deactivating the module failed: ' . $e->getMessage()];
     }
-
-    // Return the result
-    return ['status' => 'success', 'description' => 'The Acumulus module is deactivated Successfully'];
 }
 
 
 /**
  * Performs custom actions on upgrading this module.
  */
-function acumulus_connect_upgrade($vars)
+function acumulus_connect_upgrade($vars): void
 {
     $version = $vars['version'];
 
@@ -161,9 +157,12 @@ function acumulus_connect_upgrade($vars)
                     $table->timestamps();
                 }
             );
+            logActivity(__FUNCTION__ . 'The Acumulus module has been upgraded successfully');
         } catch (Exception $e) {
-            echo 'Caught exception: ', $e->getMessage(), "\n";
+            acumulus_logException($e);
         }
+    } else {
+        logActivity(__FUNCTION__ . 'The Acumulus module has been upgraded successfully: no update actions were necessary');
     }
 }
 
@@ -202,7 +201,7 @@ function acumulus_connect_sidebar(array $vars): string
  *   - '_lang': the contents of the language file of the user's language.
  *   - 'module': name of this module
  *   - 'modulelink': internal link (part after http(s)example.com/admin/ to the
- *     page that should be output.
+ *     page that should be output).
  *   - 'version': version of this module
  *   - 'acumulus_...': the complete config of this module.
  */
@@ -363,7 +362,7 @@ function acumulus_connect_constructBasicConfigFields(): array
         'description' => 'The Acumulus module connects to the Acumulus online financial administration application.',
         // This is where the module version is defined!:
         'version' => '3.3',
-        'author' => 'SIEL & Buro RaDer',
+        'author' => 'SIEL',
         'language' => 'english',
         'fields' => [
             'acumulus_code' => [
@@ -442,7 +441,7 @@ function acumulus_connect_constructFullConfigFields(): array
     }
     $acumulusAccounts = implode(',', $acumulusAccountList);
 
-    $config_array['fields'][] = ['FriendlyName' => 'Credential check', 'Description' => 'Credentials are correct.'];
+    $config_array['fields']['acumulus_credentials_check'] = ['FriendlyName' => 'Credential check', 'Description' => 'Credentials are correct.'];
 
     // Features.
     $config_array['fields']['acumulus_features_hook_invoice_message1'] = [
@@ -780,10 +779,7 @@ function acumulus_connect_constructFullConfigFields(): array
  */
 function acumulus_connect_newConfigSection(string $section): string
 {
-    $linebreak = str_repeat('&diams;', 100);
-    $linebreak .= "<br>&diams;&nbsp;&nbsp;$section<br>";
-    $linebreak .= str_repeat('&diams;', 100);
-    return $linebreak;
+    return "<h2 style='padding-top:3em;font-weight:bold;font-size:larger'>$section</h2>";
 }
 
 /**
