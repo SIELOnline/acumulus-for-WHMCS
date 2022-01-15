@@ -108,7 +108,7 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
 3.2     2021 Apr 25
         - Fixed a Vat rate warning when an invoice was sent to a person in a non EU country.
         - Fixed: Company name was filled with person name if the customer was not a company.
-3.3     2022 Jan 14
+3.3     2022 Jan 15
         - Addon is now maintained by Buro RaDer.
         - Bugs:
           - Presenting Acumulus accounts went wrong if no account number is defined
@@ -146,3 +146,5 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
           - Prefer single quotes where possible.
           - Camel case function names (after the prefix acumulus_connect).
           - Added test data to allow adding unit testing in the future.
+          - Extracted name and version of addon as constants.
+

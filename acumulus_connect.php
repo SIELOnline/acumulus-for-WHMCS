@@ -29,6 +29,9 @@ if (!defined('WHMCS')) {
 
 use WHMCS\Database\Capsule;
 
+const AcumulusName = 'Acumulus';
+const AcumulusVersion = '3.3';
+
 require_once('acumulus_connect_functions.php');
 /** @noinspection PhpIncludeInspection  false positive */
 require_once('assets/gplv3.php');
@@ -36,7 +39,6 @@ require_once('assets/gplv3.php');
 /*
  *  Module Mandatory functions.
  */
-
 /**
  * Function to return the configuration fields for the Acumulus module.
  *
@@ -157,12 +159,12 @@ function acumulus_connect_upgrade($vars): void
                     $table->timestamps();
                 }
             );
-            logActivity(__FUNCTION__ . 'The Acumulus module has been upgraded successfully');
+            logActivity(__FUNCTION__ . "The Acumulus module has been upgraded successfully from $version to " . AcumulusVersion);
         } catch (Exception $e) {
             acumulus_logException($e);
         }
     } else {
-        logActivity(__FUNCTION__ . 'The Acumulus module has been upgraded successfully: no update actions were necessary');
+        logActivity(__FUNCTION__ . "The Acumulus module has been upgraded successfully from $version to " . AcumulusVersion . ': no update actions were necessary');
     }
 }
 
@@ -358,10 +360,9 @@ function acumulus_connect_constructBasicConfigFields(): array
 {
     return [
         // This is where the module name is defined!:
-        'name' => 'Acumulus',
+        'name' => AcumulusName,
         'description' => 'The Acumulus module connects to the Acumulus online financial administration application.',
-        // This is where the module version is defined!:
-        'version' => '3.3',
+        'version' => AcumulusVersion,
         'author' => 'SIEL',
         'language' => 'english',
         'fields' => [

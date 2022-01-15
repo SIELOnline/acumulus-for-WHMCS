@@ -642,6 +642,9 @@ function acumulus_connect_getReplaceVars(array $config): array
  * @param string $token
  * @param int $entryId
  *
+ * @todo: Always store token and entry-id: we need it when this invoice gets
+ *   cancelled and, possible future addition, to have links to the acumulus pdf,
+ *   packing slip and to visualise the status like we do in the other plugins.
  */
 function acumulus_connect_setInvoiceToken(array $invoice, string $token, int $entryId)
 {
