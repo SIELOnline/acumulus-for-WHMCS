@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<myxml>
+  <contract>
+    <contractcode>******</contractcode>
+    <username>*****************</username>
+    <password>*****************</password>
+    <emailonerror>support@burorader.com</emailonerror>
+    <emailonwarning>support@burorader.com</emailonwarning>
+  </contract>
+  <connector>
+    <application>WHMCS 8.3.2-release.1</application>
+    <webkoppel>Acumulus 3.3</webkoppel>
+    <development>SIEL - Buro RaDer</development>
+    <remark>PHP 7.4.16</remark>
+    <sourceuri>https://github.com/SIELOnline/acumulus-for-WHMCS</sourceuri>
+  </connector>
+  <customer>
+    <type>1</type>
+    <contactyourid>1</contactyourid>
+    <contactstatus>0</contactstatus>
+    <fullname>Erwin Derksen</fullname>
+    <address1>6 avenue de Clermont</address1>
+    <postalcode>63240</postalcode>
+    <city>Mont-Dore, Puy-de-Dôme</city>
+    <country>France</country>
+    <countrycode>FR</countrycode>
+    <countryautoname>0</countryautoname>
+    <email>erwin@burorader.com</email>
+    <overwriteifexists>1</overwriteifexists>
+    <mark>WHMCS Klantnr: 1</mark>
+    <disableduplicates>1</disableduplicates>
+    <invoice>
+      <vattype>6</vattype>
+      <issuedate>2022-01-14</issuedate>
+      <paymentstatus>1</paymentstatus>
+      <description>WHMCS Factuur: TMP1</description>
+      <line>
+        <product>Hosting - erwinderksen.com (14/01/2022 - 13/01/2023)</product>
+        <nature>Service</nature>
+        <unitprice>60</unitprice>
+        <vatrate>20.000</vatrate>
+        <quantity>1</quantity>
+      </line>
+      <line>
+        <product>Domein registratie - erwinderksen.com - 1 Jaar (14/01/2022 - 13/01/2023)</product>
+        <nature>Service</nature>
+        <unitprice>14.95</unitprice>
+        <vatrate>20.000</vatrate>
+        <quantity>1</quantity>
+      </line>
+    </invoice>
+  </customer>
+</myxml>

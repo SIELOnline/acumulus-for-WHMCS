@@ -46,6 +46,7 @@ function logActivity(string $message, int $userId = 0) {}
  * ommitted from module log entries.
  *
  * From: {@see https://developers.whmcs.com/advanced/logging/}
+ * See {@see https://developers.whmcs.com/provisioning-modules/module-logging/}
  *
  * @param string $module The name of the module
  * @param string $action The name of the action being performed

@@ -20,8 +20,11 @@
  *     queries, including "order by" columns.
  *
  * So by using the query builder and not constructing our own queries we are
- * safe against sql injection attacks (and differences in the slq dialect of the
+ * safe against sql injection attacks (and differences in the sql dialect of the
  * actual database used).
+ *
+ * A note on error logging:
+ * https://docs.whmcs.com/Error_Management#Controlling_How_Errors_Are_Managed
  */
 if (!defined('WHMCS')) {
     die('This file cannot be accessed directly');
@@ -30,7 +33,7 @@ if (!defined('WHMCS')) {
 use WHMCS\Database\Capsule;
 
 const AcumulusName = 'Acumulus';
-const AcumulusVersion = '3.3';
+const AcumulusVersion = '3.4';
 
 require_once('acumulus_connect_functions.php');
 /** @noinspection PhpIncludeInspection  false positive */

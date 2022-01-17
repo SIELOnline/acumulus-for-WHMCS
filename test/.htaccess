@@ -1,0 +1,13 @@
+Deny from all
+
+# Turn off all options we don't need.
+Options None
+Options +FollowSymLinks
+
+# Set the catch-all handler to prevent scripts from being executed.
+SetHandler Security_Do_Not_Remove
+
+<Files *>
+  # Override the handler again if we're run later in the evaluation list.
+  SetHandler Security_Do_Not_Remove
+</Files>

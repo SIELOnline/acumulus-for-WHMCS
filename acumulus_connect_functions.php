@@ -87,8 +87,7 @@ function acumulus_connect_get_config(): array
     }
 
     // Global WHMCS Settings.
-    $configRecordTaxType = Capsule::table('tbladdonmodules')->where('setting', 'TaxType')->first();
-    $config['TaxType'] = $configRecordTaxType->value ?? null;
+    $config['TaxType'] = Capsule::table('tblconfiguration')->where('setting', 'TaxType')->value('value');
 
     return $config;
 }

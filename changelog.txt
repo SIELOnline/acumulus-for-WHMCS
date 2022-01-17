@@ -1,6 +1,59 @@
-Changelog Acumulus-Connect koppeling
-=================================
+Changelog Acumulus WHMCS koppeling
+==================================
 
+3.4 (2022-01-17)
+----------------
+Bugs:
+- The refactorings introduced a serious error where the setting whether prices
+  are inclusive or exclusive vat was not read.
+
+3.3 (2022-01-15)
+----------------
+This addon is now maintained by Buro RaDer.
+
+Bugs:
+- Presenting Acumulus accounts went wrong if no account number is defined
+  in Acumulus for a certain account (e.g. cash or -1: outside Acumulus).
+- Added accepting undocumented entryproc "no changes made'.
+- Removed use of functions from the mysql extension (removed as of PHP 7.0).
+- Entry with id '0' was created in config for the Acumulus module.
+
+Features:
+- New section header styling.
+- Readme, Licences, links to online GPLv3 license.
+- Changed Acumulus Connect to just Acumulus in UI texts and comments.
+- Removed all &reg; (®) signs.
+- Changed contents of the <connector> tag in XML messages to the Acumulus API.
+- Much improved logging:
+  - More and more consistent logging.
+  - Added error logging to calls to localAPI().
+  - Added exception logging.
+  - Added logging to hooks for all possible flows, e.g. if they are not enabled.
+
+Refactored:
+- Code style and formatting (PSR-12).
+- Readme, Licences, links to online GPLv3 license.
+- Changed texts and links to author and support.
+- Typos, CRLF -> LF, new array style ([]).
+- Added PHPDoc blocks and type-info to parameters and function returns.
+- Removed warnings and errors found by PhpStorm inspections.
+- Added a file with stubs of functions and classes used from WHMCS that
+  aids - at development time - with autocompletion, static (type)
+  checking, etc. This file is never loaded at runtime.
+- Replaced a number of string concatenations by variable expansion in double-quoted strings.
+- Changed calls to logActivity via localAPI() to direct calls to logActivity().
+- Removed all use of $adminuser when calling the API.
+- Removed unused function acumulus_connect_getPaymentGatewayUsed().
+- Removed unnecessary uses of unset().
+- Camel cased variables (where phpstorm warns about typo).
+- Prefer single quotes where possible.
+- Camel case function names (after the prefix acumulus_connect).
+- Added test data to allow adding unit testing in the future.
+- Extracted name and version of addon as constants.
+
+
+Old changelog
+=============
 
 Acumulus-Connect 1.0.3
 -------------
@@ -108,43 +161,3 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
 3.2     2021 Apr 25
         - Fixed a Vat rate warning when an invoice was sent to a person in a non EU country.
         - Fixed: Company name was filled with person name if the customer was not a company.
-3.3     2022 Jan 15
-        - Addon is now maintained by Buro RaDer.
-        - Bugs:
-          - Presenting Acumulus accounts went wrong if no account number is defined
-            in Acumulus for a certain account (e.g. cash or -1: outside Acumulus).
-          - Added accepting undocumented entryproc "no changes made'.
-          - Removed use of functions from the mysql extension (removed as of PHP 7.0).
-          - Entry with id '0' was created in config for the Acumulus module.
-        - Features:
-          - New section header styling.
-          - Readme, Licences, links to online GPLv3 license.
-          - Changed Acumulus Connect to just Acumulus in UI texts and comments.
-          - Removed all &reg; (®) signs.
-          - Changed contents of the <connector> tag in XML messages to the Acumulus API.
-          - Much improved logging:
-            - More and more consistent logging.
-            - Added error logging to calls to localAPI().
-            - Added exception logging.
-            - Added logging to hooks for all possible flows, e.g. if they are not enabled.
-        - Refactored:
-          - Code style and formatting (PSR-12).
-          - Readme, Licences, links to online GPLv3 license.
-          - Changed texts and links to author and support.
-          - Typos, CRLF -> LF, new array style ([]).
-          - Added PHPDoc blocks and type-info to parameters and function returns.
-          - Removed warnings and errors found by PhpStorm inspections.
-          - Added a file with stubs of functions and classes used from WHMCS that
-            aids - at development time - with autocompletion, static (type)
-            checking, etc. This file is never loaded at runtime.
-          - Replaced a number of string concatenations by variable expansion in double-quoted strings.
-          - Changed calls to logActivity via localAPI() to direct calls to logActivity().
-          - Removed all use of $adminuser when calling the API.
-          - Removed unused function acumulus_connect_getPaymentGatewayUsed().
-          - Removed unnecessary uses of unset().
-          - Camel cased variables (where phpstorm warns about typo).
-          - Prefer single quotes where possible.
-          - Camel case function names (after the prefix acumulus_connect).
-          - Added test data to allow adding unit testing in the future.
-          - Extracted name and version of addon as constants.
-
