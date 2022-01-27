@@ -928,28 +928,33 @@ function acumulus_connect_XmlPrepareCustomerDetails(array $config, array $invoic
     $customerDetails['contactid'] = '';
     $customerDetails['contactyourid'] = (isset($client['userid'])) ? $client['userid'] : '';
     $customerDetails['contactstatus'] = $contactstatus;
-    if (!empty($companyname)) {
-        $customerDetails['companyname1'] = $companyname;
+    if (!empty($client['companyname']))) {
+        $customerDetails['companyname1'] = $client['companyname']);
         $customerDetails['companyname2'] = '';
     }
     $customerDetails['fullname'] = $fullName;
     $customerDetails['salutation'] = '';
     $customerDetails['address1'] = (isset($client['address1'])) ? $client['address1'] : '';
     $customerDetails['address2'] = (isset($client['address2'])) ? $client['address2'] : '';
-    $customerDetails['postalcode'] = (isset($client['postcode'])) ? preg_replace('/\s+/', '',
-        $client['postcode']) : '';   //Remove any whitespaces from teh postcode
+    // Remove any whitespaces from the postcode
+    $customerDetails['postalcode'] = (isset($client['postcode']))
+        ? preg_replace('/\s+/', '', $client['postcode'])
+        : '';
     $customerDetails['city'] = ((isset($client['city'])) ? $client['city'] : '') . ((!empty($client['state'])) ? ',  ' . $client['state'] : '');
     $customerDetails['country'] = $country;
     $customerDetails['countrycode'] = (isset($client['countrycode'])) ? $client['countrycode'] : '';
-    $customerDetails['countryautoname'] = $countryautoname;                             //Automatic prefill of countryname based on supplied countrycode ?
+    //Automatic prefill of countryname based on supplied countrycode ?
+    $customerDetails['countryautoname'] = $countryautoname;
     $customerDetails['vatnumber'] = $vatNr;
     $customerDetails['telephone'] = (isset($client['phonenumber'])) ? $client['phonenumber'] : '';
     $customerDetails['fax'] = '';
     $customerDetails['email'] = (isset($client['email'])) ? $client['email'] : '';
-    $customerDetails['overwriteifexists'] = (isset($config['acumulus_customer_overwriteifexists'])) ? ($config['acumulus_customer_overwriteifexists'] === 'on') ? '1' : '0' : '0';  // 0 = No update made, 1 = Overwrite all customer contact details
+    // 0 = No update made, 1 = Overwrite all customer contact details
+    $customerDetails['overwriteifexists'] = (isset($config['acumulus_customer_overwriteifexists']) && $config['acumulus_customer_overwriteifexists'] === 'on') ? '1' : '0';
     $customerDetails['bankaccountnumber'] = $IBAN;
     $customerDetails['mark'] = acumulus_connect_replaceVarsInText($config['acumulus_cusromer_mark'], $invoice, $client);
-    $customerDetails['disableduplicates'] = (isset($config['acumulus_customer_disableduplicates'])) ? ($config['acumulus_customer_disableduplicates'] === 'on') ? '1' : '0' : '0';  // 0 = Leave older duplicate contacts as is, 1 = Mark duplicate contacts as disabled
+    // 0 = Leave older duplicate contacts as is, 1 = Mark duplicate contacts as disabled
+    $customerDetails['disableduplicates'] = (isset($config['acumulus_customer_disableduplicates']) && $config['acumulus_customer_disableduplicates'] === 'on') ? '1' : '0';
 
     return $customerDetails;
 }

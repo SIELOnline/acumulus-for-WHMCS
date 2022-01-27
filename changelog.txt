@@ -1,6 +1,12 @@
 Changelog Acumulus WHMCS koppeling
 ==================================
 
+3.5 (2022-01-27)
+----------------
+Bugs:
+- Company name was not set (commented out in 3.2, therefore removed in 3.3
+  (feature parity)).
+
 3.4 (2022-01-17)
 ----------------
 Bugs:
