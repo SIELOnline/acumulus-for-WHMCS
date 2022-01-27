@@ -33,7 +33,7 @@ if (!defined('WHMCS')) {
 use WHMCS\Database\Capsule;
 
 const AcumulusName = 'Acumulus';
-const AcumulusVersion = '3.4';
+const AcumulusVersion = '3.5';
 
 require_once('acumulus_connect_functions.php');
 /** @noinspection PhpIncludeInspection  false positive */
