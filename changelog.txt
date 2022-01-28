@@ -1,6 +1,12 @@
 Changelog Acumulus WHMCS koppeling
 ==================================
 
+3.6 (2022-01-28)
+----------------
+Bugs:
+- A syntax error has gotten into the code between testing and committing it
+  (focus on the wrong window?)
+
 3.5 (2022-01-27)
 ----------------
 Bugs:

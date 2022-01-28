@@ -51,3 +51,50 @@
     </invoice>
   </customer>
 </myxml>
+<?xml version="1.0" encoding="utf-8"?>
+<myxml>
+<contract>
+  <contractcode>******</contractcode>
+  <username>*****************</username>
+  <password>*****************</password>
+  <emailonerror>support@burorader.com</emailonerror>
+  <emailonwarning>support@burorader.com</emailonwarning>
+</contract>
+<connector>
+  <application>WHMCS 8.3.2-release.1</application>
+  <webkoppel>Acumulus 3.5</webkoppel>
+  <development>SIEL - Buro RaDer</development>
+  <remark>PHP 7.4.16</remark>
+  <sourceuri>https://github.com/SIELOnline/acumulus-for-WHMCS</sourceuri>
+</connector>
+<customer>
+  <type>1</type>
+  <contactyourid>3</contactyourid>
+  <contactstatus>0</contactstatus>
+  <companyname1>Buro RaDer</companyname1>
+  <fullname>Info Derksen</fullname>
+  <address1>6 avenue de Clermont</address1>
+  <city>Mont-Dore, Puy-de-Dôme</city>
+  <country>France</country>
+  <countrycode>FR</countrycode>
+  <countryautoname>0</countryautoname>
+  <vatnumber>FR05502086580</vatnumber>
+  <email>info@burorader.com</email>
+  <overwriteifexists>1</overwriteifexists>
+  <mark>WHMCS Klantnr: 3</mark>
+  <disableduplicates>1</disableduplicates>
+  <invoice>
+    <vattype>3</vattype>
+    <issuedate>2022-01-28</issuedate>
+    <paymentstatus>1</paymentstatus>
+    <description>WHMCS Factuur: WHA20223</description>
+    <line>
+      <product>Hosting - burorader.com (28/01/2022 - 27/01/2023)</product>
+      <nature>Service</nature>
+      <unitprice>60</unitprice>
+      <vatrate>0.00</vatrate>
+      <quantity>1</quantity>
+    </line>
+  </invoice>
+</customer>
+</myxml>

@@ -928,8 +928,8 @@ function acumulus_connect_XmlPrepareCustomerDetails(array $config, array $invoic
     $customerDetails['contactid'] = '';
     $customerDetails['contactyourid'] = (isset($client['userid'])) ? $client['userid'] : '';
     $customerDetails['contactstatus'] = $contactstatus;
-    if (!empty($client['companyname']))) {
-        $customerDetails['companyname1'] = $client['companyname']);
+    if (!empty($client['companyname'])) {
+        $customerDetails['companyname1'] = $client['companyname'];
         $customerDetails['companyname2'] = '';
     }
     $customerDetails['fullname'] = $fullName;
