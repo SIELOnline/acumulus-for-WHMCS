@@ -3,8 +3,8 @@
  * @noinspection HtmlDeprecatedAttribute
  * @noinspection HtmlDeprecatedTag
  * @noinspection HtmlRequiredAltAttribute
- * @noinspection DuplicatedCode  remove at a later stage and extract those
- * duplicates into helper functions.
+ * @noinspection DuplicatedCode  Remove at a later stage and extract those
+ *   duplicates into helper functions.
  * @noinspection PhpUnused  The functions in this file are called by WHMCS based
  *   on naming patterns.
  * @todo: remove these inspections and the warnings that will show again.

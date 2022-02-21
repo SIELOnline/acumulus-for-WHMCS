@@ -1,6 +1,13 @@
 Changelog Acumulus WHMCS koppeling
 ==================================
 
+3.7 (2022-02-21)
+----------------
+Bugs:
+- Since API v5.0.1 (2022-02-15, see https://www.siel.nl/acumulus/API/Changelog/)
+  this module produced warnings like "400 Deprecated Request - Please use
+  numeric identifier for costcenter. - WW83E0ZZ".
+
 3.6 (2022-01-28)
 ----------------
 Bugs:

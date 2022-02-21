@@ -974,7 +974,7 @@ function acumulus_connect_XmlPrepareInvoiceDetails(array $config, array $invoice
     // Format: yyyy-mm-dd.
     $invoiceDetails['issuedate'] = $invoice['date'];
     // When omitted, or when no match has been made possible, the first available cost center in the contract will be selected.
-    $invoiceDetails['costcenter'] = $config['acumulus_invoice_default_costcentername'];
+    $invoiceDetails['costcenter'] = $config['acumulus_invoice_default_costcenterid'];
     // 1 = Due (default), 2 = Paid
     $invoiceDetails['paymentstatus'] = ($invoice['status'] === 'Paid' ? '2' : '1');
     // Change the format from  yyyy-mm-dd hh:mm:ss   to  yyyy-mm-dd.  and unset var if eq 0000-00-00.
