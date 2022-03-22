@@ -33,7 +33,7 @@ if (!defined('WHMCS')) {
 use WHMCS\Database\Capsule;
 
 const AcumulusName = 'Acumulus';
-const AcumulusVersion = '3.7';
+const AcumulusVersion = '3.8-beta1';
 
 require_once('acumulus_connect_functions.php');
 /** @noinspection PhpIncludeInspection  false positive */
@@ -100,7 +100,7 @@ function acumulus_connect_config(): array
  * - Create DB table
  *
  * @return string[]
- *   Results of the activation.
+ *   Result of the activation: 2 strings keyed by 'status''and 'description'.
  */
 function acumulus_connect_activate(): array
 {
@@ -116,7 +116,7 @@ function acumulus_connect_activate(): array
             }
         );
         return ['status' => 'success', 'description' => 'The Acumulus module has been installed successfully, please continue by filling in the configuration data.'];
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         acumulus_logException($e);
         return ['status' => 'error', 'description' => 'Installing the module failed Unable to create table mod_acumulus_connect: ' . $e->getMessage()];
     }
@@ -130,14 +130,14 @@ function acumulus_connect_activate(): array
  * @todo: should we always drop the table or can we ask for confirmation?
  *
  * @return string[]
- *   Results of the activation.
+ *   Result of the deactivation: 2 strings keyed by 'status''and 'description'.
  */
 function acumulus_connect_deactivate(): array
 {
     try {
         Capsule::schema()->drop('mod_acumulus_connect');
         return ['status' => 'success', 'description' => 'The Acumulus module has been deactivated successfully'];
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         acumulus_logException($e);
         return ['status' => 'error', 'description' => 'Deactivating the module failed: ' . $e->getMessage()];
     }
@@ -163,7 +163,7 @@ function acumulus_connect_upgrade($vars): void
                 }
             );
             logActivity(__FUNCTION__ . "The Acumulus module has been upgraded successfully from $version to " . AcumulusVersion);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             acumulus_logException($e);
         }
     } else {
@@ -227,12 +227,9 @@ function acumulus_connect_output(array $vars)
                 $invoices = [];
                 switch ($searchon) {
                     case 'invoiceno':
-                        try {
-                            $invoices[] = Capsule::table('tblinvoices')->select('id')->where('invoicenum', $invoiceid)->get()[0]->id;
-                        } catch (Exception $e) {
-                            echo "<br><h2>" . $lang['No records found message'] . "</h2>";
-                            echo '<br><a href="addonmodules.php?module=acumulus_connect" class="btn btn-warning">' . $lang['Return'] . '</a>';
-                            return;
+                        $collection = Capsule::table('tblinvoices')->select('id')->where('invoicenum', $invoiceid)->get();
+                        if (count($collection) > 0) {
+                            $invoices[] = $collection[0]->id;
                         }
                         break;
                     default:
@@ -483,11 +480,12 @@ function acumulus_connect_constructFullConfigFields(): array
         'Description' => 'Update or Create Invoice in Acumulus directly when paid for.',
         'Default' => 'on',
     ];
+    // @todo: correct to British English (like the WHMCS hook) but add an update function to retain value.
     $config_array['fields']['acumulus_hook_invoice_canceled_enabled'] = [
-        'FriendlyName' => 'Enable Canceled invoice hook',
+        'FriendlyName' => 'Enable Cancelled invoice hook',
         'Type' => 'yesno',
         'Size' => '25',
-        'Description' => 'Create Credit invoice in Acumulus when a invoice is being canceled.',
+        'Description' => 'Create Credit invoice in Acumulus when a invoice is being cancelled.',
         'Default' => 'on',
     ];
 

@@ -7,7 +7,7 @@ Acumulus for WHMCS
 @support: [Webkoppelingen - Acumulus Forum](https://forum.acumulus.nl/index.php?board=17.0)  
 @source: [Acumulus web service API client library](https://github.com/SIELOnline/libAcumulus)  
 @support: [whmcs@acumulus.nl](mailto:whmcs@acumulus.nl)  
-@version: 3.3, january 2022
+@version: See the const \AcumulusVersion in file acumulus_connect.php around line 36. 
 
 Introduction
 ------------

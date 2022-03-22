@@ -11,23 +11,43 @@ class ISO3166
 
     const KEY_ALPHA2 = 'alpha2';
 
-    public function getByAlpha2($alpha2)
+    /**
+     * @param string $alpha2
+     *
+     * @return array
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function getByAlpha2(string $alpha2): array
     {
         if (!preg_match('/^[a-zA-Z]{2}$/', $alpha2)) {
-            throw new DomainException('Not a valid alpha2: ' . $alpha2);
+            throw new InvalidArgumentException('Not a valid alpha2: ' . $alpha2);
         }
 
         return $this->getBy(self::KEY_ALPHA2, $alpha2);
     }
 
-    private function getBy($key, $value)
+    /**
+     * @param string $key
+     *   The key to search for $value: 1 of the keys in the entries of the
+     *   $this->>countries array, typically self::KEY_ALPHA2.
+     * @param string $value
+     *   The value to search for.
+     *
+     * @return array
+     *   The entry of the $this->countries array tha has $value as value for
+     *   $key.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function getBy(string $key, string $value): array
     {
         foreach ($this->countries as $country) {
             if (0 === strcasecmp($value, $country[$key])) {
                 return $country;
             }
         }
-        throw new OutOfBoundsException('ISO 3166-1 does not contain: ' . $value);
+        throw new InvalidArgumentException('ISO 3166-1 does not contain: ' . $value);
     }
 
     protected $countries = [

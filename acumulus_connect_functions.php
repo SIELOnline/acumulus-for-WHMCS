@@ -6,7 +6,7 @@
 
 use WHMCS\Database\Capsule;
 
-function acumulus_logException(Exception $e)
+function acumulus_logException(Throwable $e)
 {
     if ($e->getCode() !== 'ACUMULUS') {
         $callingFunction = $e->getTrace()[0]['function'];
@@ -840,7 +840,7 @@ function acumulus_connect_XmlPrepareCustomerDetails(array $config, array $invoic
     $ISO3166 = new ISO3166;
     try {
         $country = $ISO3166->getByAlpha2($client['countrycode'])['name'];
-    } catch (Exception $e) {
+    } catch (InvalidArgumentException $e) {
         $country = '';
     }
 
@@ -1462,7 +1462,7 @@ function acumulus_connect_updateInvoicePaymentMethod(array $config, int $invoice
  * @param array $config
  * @param int $invoiceId
  */
-function acumulus_connect_InvoiceCanceled(array $config, int $invoiceId): void
+function acumulus_connect_InvoiceCancelled(array $config, int $invoiceId): void
 {
     // Run whmcs api to retrieve the invoice and customer.
     $invoice = acumulus_connect_getInvoice($invoiceId, false);
@@ -1473,16 +1473,12 @@ function acumulus_connect_InvoiceCanceled(array $config, int $invoiceId): void
         // Check if the token exists, otherwise just create an activity record
         // and do nothing else.
         // Retrieve the token from the mod_acumulus_connect table.
-        try {
-            $token = Capsule::table('mod_acumulus_connect')->where('id', $invoice['invoiceid'])->value('token');
-        } catch (Exception $e) {
-            acumulus_logException($e);
-        }
-        // If the token exists update the invoice in Acumulus, else send the
+        $token = Capsule::table('mod_acumulus_connect')->where('id', $invoice['invoiceid'])->value('token');
+        // If the token exists, update the invoice in Acumulus, else send the
         // entire invoice.
-        if (!empty($token)) {
+        if ($token !== null) {
             // Set invoice to paid if its unpaid (get status from acumulus api).
-            $paymentStatus = acumulus_connect_getPaymentStatus($config, $token);   // [paymentstatus] => 1 ,  [paymentdate] => 2018-01-20
+            $paymentStatus = acumulus_connect_getPaymentStatus($config, $token);
             if ($paymentStatus == '0') {
                 $paymentDate = date('Y-m-d');
                 acumulus_connect_updateInvoice($config, $invoiceId, $paymentDate);

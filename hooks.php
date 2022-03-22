@@ -16,11 +16,17 @@ use WHMCS\Database\Capsule;
 
 require_once('acumulus_connect_functions.php');
 
+/**
+ * Hook 'InvoiceCreated'.
+ */
 function acumulus_connect_hook_invoiceCreated(array $vars): void
 {
     acumulus_connect_invoiceCreated($vars, 'InvoiceCreated');
 }
 
+/**
+ * Hook 'InvoiceCreationPreEmail'.
+ */
 function acumulus_connect_hook_invoiceCreationPreEmail(array $vars): void
 {
     acumulus_connect_invoiceCreated($vars, 'InvoiceCreationPreEmail');
@@ -57,12 +63,14 @@ function acumulus_connect_invoiceCreated(array $vars, string $hook): void
         } else {
             logActivity(__FUNCTION__ . "($invoiceId, '$hook'): not sending, hook disabled");
         }
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         acumulus_logException($e);
     }
 }
 
 /**
+ * Hook 'invoicePaid'.
+ *
  * This hook is run when:
  * - An invoice is paid prior to any email or automation tasks associated with
  *   the payment action having been run.
@@ -81,12 +89,14 @@ function acumulus_connect_hook_invoicePaid(array $vars): void
         } else {
             logActivity(__FUNCTION__ . "($invoiceId): not updating, hook disabled");
         }
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         acumulus_logException($e);
     }
 }
 
 /**
+ * Hook 'invoiceChangeGateway'.
+ *
  * This hook is run when:
  * - Changing the gateway on an invoice.
  *
@@ -101,18 +111,20 @@ function acumulus_connect_hook_invoiceChangeGateway(array $vars): void
         $paymentMethod = $vars['paymentmethod'];
         logActivity(__FUNCTION__ . "($invoiceId): changing payment method to $paymentMethod");
         acumulus_connect_updateInvoicePaymentMethod($config, $invoiceId, $paymentMethod);
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         acumulus_logException($e);
     }
 }
 
 /**
+ * Hook 'invoiceCancelled'.
+ *
  * This hook is run when:
- * - An invoice is canceled. This function reacts by creating a credit invoice.
+ * - An invoice is cancelled. This function reacts by creating a credit invoice.
  *
  * @param array $vars
  */
-function acumulus_connect_hook_invoiceCanceled(array $vars): void
+function acumulus_connect_hook_invoiceCancelled(array $vars): void
 {
     logActivity(__FUNCTION__ . ': start');
     try {
@@ -120,11 +132,11 @@ function acumulus_connect_hook_invoiceCanceled(array $vars): void
         $config = acumulus_connect_get_config();
         if ($config['acumulus_hook_invoice_canceled_enabled'] === 'on') {
             logActivity(__FUNCTION__ . "($invoiceId): creating credit invoice");
-            acumulus_connect_InvoiceCanceled($config, $invoiceId);
+            acumulus_connect_InvoiceCancelled($config, $invoiceId);
         } else {
             logActivity(__FUNCTION__ . "($invoiceId): not creating credit invoice, hook disabled");
         }
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         acumulus_logException($e);
     }
 }
@@ -133,4 +145,4 @@ add_hook('InvoiceCreated', 500, 'acumulus_connect_hook_invoiceCreated');
 add_hook('InvoiceCreationPreEmail', 500, 'acumulus_connect_hook_invoiceCreationPreEmail');
 add_hook('InvoicePaid', 1, 'acumulus_connect_hook_invoicePaid');
 add_hook('InvoiceChangeGateway', 1, 'acumulus_connect_hook_invoiceChangeGateway');
-add_hook('InvoiceCancelled', 1, 'acumulus_connect_hook_invoiceCanceled');
+add_hook('InvoiceCancelled', 1, 'acumulus_connect_hook_invoiceCancelled');
