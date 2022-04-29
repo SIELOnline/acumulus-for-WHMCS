@@ -1,14 +1,20 @@
 Changelog Acumulus WHMCS koppeling
 ==================================
 
-3.8 (2022-03-??)
+3.8 (2022-04-29)
 ----------------
+Bugs:
+- TypeError: Argument 3 passed to acumulus_connect_updateInvoicePaymentMethod()
+  must be of the type string, null given, called in acumulus_connect_functions.php
+  on line 1331 and defined in acumulus_connect_functions.php:1406.
+- Canceled -> Cancelled (except for the config key).
+
+Refactorings:
 - Refined exception handling:
   - Catch "all" (at the top level) are now: catch (Throwable $e).
   - While catch "any exception" around e.g. function calls, are more specialised
     by only catching the type thrown by  that function, and thus not exceptions
     thrown at e.g. the database layer.
-- Canceled -> Cancelled (except for the config key).
 - Removed @version from readme.md (or actually, that now refers to the const
   AcumulusVersion).
 

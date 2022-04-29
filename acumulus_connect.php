@@ -33,10 +33,9 @@ if (!defined('WHMCS')) {
 use WHMCS\Database\Capsule;
 
 const AcumulusName = 'Acumulus';
-const AcumulusVersion = '3.8-beta1';
+const AcumulusVersion = '3.8';
 
 require_once('acumulus_connect_functions.php');
-/** @noinspection PhpIncludeInspection  false positive */
 require_once('assets/gplv3.php');
 
 /*
@@ -78,17 +77,19 @@ function acumulus_connect_config(): array
         } else {
             // the entered credentials are not valid.
             $config_array = acumulus_connect_constructBasicConfigFields();
+            /** @noinspection XmlDeprecatedElement  @todo: remove deprecated tag. */
             $config_array['fields']['acumulus_credentials_check'] = [
                 'FriendlyName' => 'Credential check',
-                'Description' => '<font color="red"><b>' . 'The credentials are not correct.' . '</b></font>'
+                'Description' => '<font color="red"><b>The credentials are not correct.</b></font>'
             ];
         }
     } else {
         // one or more required credentials are not given.
         $config_array = acumulus_connect_constructBasicConfigFields();
+        /** @noinspection XmlDeprecatedElement  @todo: remove deprecated tag. */
         $config_array['fields']['acumulus_credentials_check'] = [
             'FriendlyName' => 'Credential check',
-            'Description' => '<font color="blue"><b>' . 'Please enter your credentials and click "Save Changes", to continue configuring the Acumulus module.' . '</b></font>',
+            'Description' => '<font color="blue"><b>Please enter your credentials and click "Save Changes", to continue configuring the Acumulus module.</b></font>',
         ];
     }
     return $config_array;

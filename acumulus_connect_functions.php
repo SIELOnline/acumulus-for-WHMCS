@@ -8,6 +8,7 @@ use WHMCS\Database\Capsule;
 
 function acumulus_logException(Throwable $e)
 {
+    /** @noinspection PhpStrictComparisonWithOperandsOfDifferentTypesInspection */
     if ($e->getCode() !== 'ACUMULUS') {
         $callingFunction = $e->getTrace()[0]['function'];
         $callingLine = $e->getLine();
@@ -124,10 +125,12 @@ function acumulus_connect_getClient(int $clientId): array
 }
 
 /**
- * WHMCS API Call to retrieve invoice details.
+ * Retrieves a local WHMCS invoice.
  *
  * @param int $invoiceId
  * @param bool $expand
+ *   Whether to expand the WHMCS invoice with customer data and some custom
+ *   values, e.g. line totals.
  *
  * @return array
  */
@@ -835,7 +838,6 @@ function acumulus_connect_basicXml(bool $includeWarnings = true): SimpleXMLEleme
 function acumulus_connect_XmlPrepareCustomerDetails(array $config, array $invoice, array $client): array
 {
     // Convert country code to country name.
-    /** @noinspection PhpIncludeInspection  false positive */
     include_once('assets/ISO3166.php');
     $ISO3166 = new ISO3166;
     try {
@@ -1305,13 +1307,13 @@ function acumulus_connect_sendInvoice(array $config, int $invoiceId): void
 }
 
 /**
- * Updates the payment status of an invoice at Acumulus.
+ * Updates the payment status of an invoice entry at Acumulus.
  *
  * @param array $config
  * @param int $invoiceId
- * @param ?string $usedate
+ * @param ?string $useDate
  */
-function acumulus_connect_updateInvoice(array $config, int $invoiceId, string $usedate = null): void
+function acumulus_connect_updateInvoice(array $config, int $invoiceId, string $useDate = null): void
 {
     $invoice = acumulus_connect_getInvoice($invoiceId);
 
@@ -1322,21 +1324,19 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceId, string $u
         // Update payment gateway if 'use last payment method' is enabled and if it differs from the invoice set payment method.
         if ($config['acumulus_invoice_use_last_paymentmethod'] === 'on') {
             if (!empty($invoice['transactions']['transaction'])) {
-                $lastpaymentgateway = end($invoice['transactions']['transaction'])['gateway'];
-            } else {
-                $lastpaymentgateway = null;
-            }
-            if ($invoice['paymentmethod'] !== $lastpaymentgateway) {
-                logActivity(__FUNCTION__ . "($invoiceId): updating payment method in WHMCS");
-                acumulus_connect_updateInvoicePaymentMethod($config, $invoiceId, $lastpaymentgateway);
-                // Update the payment method of the invoice in whmcs.
-                // https://developers.whmcs.com/api-reference/updateinvoice/
-                $command = 'UpdateInvoice';
-                $postData = [
-                    'invoiceid' => $invoiceId,
-                    'paymentmethod' => $lastpaymentgateway,
-                ];
-                acumulus_localAPI($command, $postData);
+                $lastPaymentGateway = end($invoice['transactions']['transaction'])['gateway'];
+                if ($invoice['paymentmethod'] !== $lastPaymentGateway) {
+                    logActivity(__FUNCTION__ . "($invoiceId): updating payment method in WHMCS");
+                    acumulus_connect_updateInvoicePaymentMethod($config, $invoiceId, $lastPaymentGateway);
+                    // Update the payment method of the invoice in whmcs.
+                    // https://developers.whmcs.com/api-reference/updateinvoice/
+                    $command = 'UpdateInvoice';
+                    $postData = [
+                        'invoiceid' => $invoiceId,
+                        'paymentmethod' => $lastPaymentGateway,
+                    ];
+                    acumulus_localAPI($command, $postData);
+                }
             }
         }
 
@@ -1344,10 +1344,10 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceId, string $u
         $xml = acumulus_connect_basicXml();
         $xml->addChild('token', $token);
         $xml->addChild('paymentstatus', '2');
-        if (empty($usedate)) {
+        if (empty($useDate)) {
             $xml->addChild('paymentdate', substr($invoice['datepaid'], 0, 10));
         } else {
-            $xml->addChild('paymentdate', $usedate);
+            $xml->addChild('paymentdate', $useDate);
         }
 
         $url = 'https://api.sielsystems.nl/acumulus/stable/invoices/invoice_paymentstatus_set.php';
@@ -1397,18 +1397,18 @@ function acumulus_connect_updateInvoice(array $config, int $invoiceId, string $u
 }
 
 /**
- * Updates the payment method of an invoice.
+ * Updates the account number of an invoice entry in Acumulus.
  *
  * @param array $config
  * @param int $invoiceId
- * @param string $paymentmethod
+ * @param string $paymentMethod
  */
-function acumulus_connect_updateInvoicePaymentMethod(array $config, int $invoiceId, string $paymentmethod): void
+function acumulus_connect_updateInvoicePaymentMethod(array $config, int $invoiceId, string $paymentMethod): void
 {
     $entryId = Capsule::table('mod_acumulus_connect')->where('id', $invoiceId)->value('entryid');
 
     if (!empty($entryId)) {
-        $accountNumber = $config['account_numbers'][$paymentmethod]['id'];
+        $accountNumber = $config['account_numbers'][$paymentMethod]['id'];
         //Update the entry account number
         $xml = acumulus_connect_basicXml();
         $xml->addChild('entryid', $entryId);
