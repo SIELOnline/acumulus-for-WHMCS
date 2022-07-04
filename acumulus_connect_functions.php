@@ -280,14 +280,20 @@ function acumulus_connect_expandInvoiceWithCustomValues(array $invoice, array $c
 /**
  * Helper function to replace text with dynamic values.
  *
- * @param string $text
+ * @param string|null $text
  * @param array $invoice
  * @param array $client
  *
- * @return array|string|string[]
+ * @return string
  */
-function acumulus_connect_replaceVarsInText(string $text, array $invoice, array $client): string
+function acumulus_connect_replaceVarsInText(?string $text, array $invoice, array $client): string
 {
+    // @todo: A user got a 'TypeError: Argument 1 passed to
+    //   acumulus_connect_replaceVarsInText() must be of the type string, null
+    //   given'. As it is unknown which call provoked it, I solved it like this.
+    if ($text === null) {
+        return '';
+    }
     $vars = [
         '{USERID}' => $client['userid'] ?? '',
         '{FIRSTNAME}' => $client['firstname'] ?? '',
@@ -1185,39 +1191,39 @@ function acumulus_connect_generateXml(array $config, array $invoice, array $clie
     }
 
     // Add Invoice details to the XML.
-    $xlmInvoice = $customer->addChild('invoice');
+    $xmlInvoice = $customer->addChild('invoice');
     if (!empty($invoiceDetails['number'])) {
-        $xlmInvoice->addChild('number', $invoiceDetails['number']);
+        $xmlInvoice->addChild('number', $invoiceDetails['number']);
     }
     if (!empty($invoiceDetails['vattype'])) {
-        $xlmInvoice->addChild('vattype', $invoiceDetails['vattype']);
+        $xmlInvoice->addChild('vattype', $invoiceDetails['vattype']);
     }
     if (!empty($invoiceDetails['issuedate'])) {
-        $xlmInvoice->addChild('issuedate', $invoiceDetails['issuedate']);
+        $xmlInvoice->addChild('issuedate', $invoiceDetails['issuedate']);
     }
     if (!empty($invoiceDetails['costcenter'])) {
-        $xlmInvoice->addChild('costcenter', $invoiceDetails['costcenter']);
+        $xmlInvoice->addChild('costcenter', $invoiceDetails['costcenter']);
     }
     if (!empty($invoiceDetails['accountnumber'])) {
-        $xlmInvoice->addChild('accountnumber', $invoiceDetails['accountnumber']);
+        $xmlInvoice->addChild('accountnumber', $invoiceDetails['accountnumber']);
     }
     if (!empty($invoiceDetails['paymentdate'])) {
-        $xlmInvoice->addChild('paymentdate', $invoiceDetails['paymentdate']);
+        $xmlInvoice->addChild('paymentdate', $invoiceDetails['paymentdate']);
     }
     if (!empty($invoiceDetails['paymentstatus'])) {
-        $xlmInvoice->addChild('paymentstatus', $invoiceDetails['paymentstatus']);
+        $xmlInvoice->addChild('paymentstatus', $invoiceDetails['paymentstatus']);
     }
     if (!empty($invoiceDetails['description'])) {
-        $xlmInvoice->addChild('description', $invoiceDetails['description']);
+        $xmlInvoice->addChild('description', $invoiceDetails['description']);
     }
     if (!empty($invoiceDetails['descriptiontext'])) {
-        $xlmInvoice->addChild('descriptiontext', $invoiceDetails['descriptiontext']);
+        $xmlInvoice->addChild('descriptiontext', $invoiceDetails['descriptiontext']);
     }
     if (!empty($invoiceDetails['template'])) {
-        $xlmInvoice->addChild('template', $invoiceDetails['template']);
+        $xmlInvoice->addChild('template', $invoiceDetails['template']);
     }
     if (!empty($invoiceDetails['invoicenotes'])) {
-        $xlmInvoice->addChild('invoicenotes', $invoiceDetails['invoicenotes']);
+        $xmlInvoice->addChild('invoicenotes', $invoiceDetails['invoicenotes']);
     }
 
     // Add Invoice lines to the XML
@@ -1228,7 +1234,7 @@ function acumulus_connect_generateXml(array $config, array $invoice, array $clie
                 $invoiceLine['unitprice'] = '0.000';
             }
 
-            $xlmInvoiceLine = $xlmInvoice->addChild('line');
+            $xlmInvoiceLine = $xmlInvoice->addChild('line');
             if (!empty($invoiceLine['itemnumber'])) {
                 $xlmInvoiceLine->addChild('itemnumber', $invoiceLine['itemnumber']);
             }
@@ -1255,7 +1261,7 @@ function acumulus_connect_generateXml(array $config, array $invoice, array $clie
 
     // Let Acumulus Send invoice to client
     if ($config['acumulus_emailaspdf'] == 'on') {
-        $xlmInvoicePdfData = $xlmInvoice->addChild('emailaspdf');    // Imported invoices can be send as pdf file using email by Acumulus.
+        $xlmInvoicePdfData = $xmlInvoice->addChild('emailaspdf');    // Imported invoices can be send as pdf file using email by Acumulus.
         if (!empty($customerDetails['email'])) {
             $xlmInvoicePdfData->addChild('emailto', $customerDetails['email']);
         }

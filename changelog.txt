@@ -1,6 +1,16 @@
 Changelog Acumulus WHMCS koppeling
 ==================================
 
+3.9 (2022-07-04)
+----------------
+Bugs:
+- TypeError: Argument 1 passed to acumulus_connect_replaceVarsInText() must be
+  of the type string, null given.
+
+Refactorings:
+- changed name of local variable xlmInvoice to xmlInvoice.
+
+
 3.8 (2022-04-29)
 ----------------
 Bugs:
@@ -18,6 +28,7 @@ Refactorings:
 - Removed @version from readme.md (or actually, that now refers to the const
   AcumulusVersion).
 
+
 3.7 (2022-02-21)
 ----------------
 Bugs:
@@ -25,11 +36,13 @@ Bugs:
   this module produced warnings like "400 Deprecated Request - Please use
   numeric identifier for costcenter. - WW83E0ZZ".
 
+
 3.6 (2022-01-28)
 ----------------
 Bugs:
 - A syntax error has gotten into the code between testing and committing it
   (focus on the wrong window?)
+
 
 3.5 (2022-01-27)
 ----------------
