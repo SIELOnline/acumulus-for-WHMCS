@@ -1,6 +1,12 @@
 Changelog Acumulus WHMCS koppeling
 ==================================
 
+3.10 (2022-10-??)
+----------------
+Bugs:
+- ISO code for Greece ('GR') not part of hard coded country list ('EL' was).
+
+
 3.9 (2022-07-04)
 ----------------
 Bugs:

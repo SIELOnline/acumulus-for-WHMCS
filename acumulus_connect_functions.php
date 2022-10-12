@@ -461,7 +461,7 @@ function acumulus_connect_isCountryInEU(string $countryCode, string $date): bool
         'EE',
         'FI',
         'FR',
-        'EL',
+        'GR',
         'HU',
         'IE',
         'IT',
