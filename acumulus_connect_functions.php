@@ -482,6 +482,7 @@ function acumulus_connect_isCountryInEU(string $countryCode, string $date): bool
         'SE',
         'GB',
         'UK',
+        'GR'
     ];
     // Convert string to date.
     $date = strtotime($date);
