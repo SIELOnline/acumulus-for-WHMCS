@@ -482,6 +482,7 @@ function acumulus_connect_isCountryInEU(string $countryCode, string $date): bool
         'SE',
         'GB',
         'UK',
+        'GR'
     ];
     // Convert string to date.
     $date = strtotime($date);
@@ -979,6 +980,8 @@ function acumulus_connect_XmlPrepareCustomerDetails(array $config, array $invoic
  */
 function acumulus_connect_XmlPrepareInvoiceDetails(array $config, array $invoice, array $client, bool $isCredit = false): array
 {
+    $config = acumulus_connect_get_config();
+
     // Format: yyyy-mm-dd.
     $invoiceDetails['issuedate'] = $invoice['date'];
     // When omitted, or when no match has been made possible, the first available cost center in the contract will be selected.
