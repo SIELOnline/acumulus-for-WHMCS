@@ -981,6 +981,16 @@ function acumulus_connect_XmlPrepareCustomerDetails(array $config, array $invoic
  */
 function acumulus_connect_XmlPrepareInvoiceDetails(array $config, array $invoice, array $client, bool $isCredit = false): array
 {
+    // https://github.com/SIELOnline/acumulus-for-WHMCS/issues/2: Sending
+    //   invoices manually always uses default account.
+    // I'm not sure that this is the right solution but according to the
+    // issue poster it works for them. looking at the call tree,
+    // acumulus_connect_get_config() will for all possible execution paths
+    // already have been called. But perhaps, it is called too early, when not
+    // all data of WHMCS itself has been initialised/is readily available???
+    // Calling it once more seems to be a quite innocent action...
+    $config = acumulus_connect_get_config();
+
     // Format: yyyy-mm-dd.
     $invoiceDetails['issuedate'] = $invoice['date'];
     // When omitted, or when no match has been made possible, the first available cost center in the contract will be selected.

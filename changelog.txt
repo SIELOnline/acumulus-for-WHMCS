@@ -9,7 +9,8 @@ Bugs:
   payment status = paid. However, we still should store the token for when the
   invoice gets cancelled (and, perhaps for the future, to be able to show a link
   to the Acumulus invoice pdf.
-
+- https://github.com/SIELOnline/acumulus-for-WHMCS/issues/2: Sending invoices
+  manually always uses default account.
 
 3.9 (2022-07-04)
 ----------------
