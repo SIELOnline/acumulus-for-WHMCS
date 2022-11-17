@@ -658,10 +658,12 @@ function acumulus_connect_setInvoiceToken(array $invoice, string $token, int $en
 {
     // Don't save the token to the reference table if paid, no need to store
     // references.
-    if ($invoice['status'] === 'Paid') {
-        logActivity(__FUNCTION__ . 'Invoice is already Paid, no need to store invoice token.');
-        return;
-    }
+    // ED 2022-11-17, [SIEL #189593]: We do need to store the token for when the
+    //   invoice gets cancelled.
+//    if ($invoice['status'] === 'Paid') {
+//        logActivity(__FUNCTION__ . 'Invoice is already Paid, no need to store invoice token.');
+//        return;
+//    }
 
     // check if invoice id and invoice token are already stored and, if so, update.
     if (!Capsule::table('mod_acumulus_connect')->where('id', $invoice['invoiceid'])->exists()) {

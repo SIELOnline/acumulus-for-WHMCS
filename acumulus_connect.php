@@ -33,7 +33,7 @@ if (!defined('WHMCS')) {
 use WHMCS\Database\Capsule;
 
 const AcumulusName = 'Acumulus';
-const AcumulusVersion = '3.9';
+const AcumulusVersion = '3.10';
 
 require_once('acumulus_connect_functions.php');
 require_once('assets/gplv3.php');

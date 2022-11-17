@@ -1,10 +1,14 @@
 Changelog Acumulus WHMCS koppeling
 ==================================
 
-3.10 (2022-10-??)
-----------------
+3.10 (2022-11-17)
+-----------------
 Bugs:
 - ISO code for Greece ('GR') not part of hard coded country list ('EL' was).
+- [SIEL #189593]: Token was not stored when invoice is sent to Acumulus in
+  payment status = paid. However, we still should store the token for when the
+  invoice gets cancelled (and, perhaps for the future, to be able to show a link
+  to the Acumulus invoice pdf.
 
 
 3.9 (2022-07-04)
