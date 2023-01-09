@@ -1,13 +1,19 @@
 Changelog Acumulus WHMCS koppeling
 ==================================
 
+3.11 (2023-01-09)
+-----------------
+Refactorings:
+- Updated code to use PHP 7.4 constructs.
+- Corrected code for most PHPStorm (EA) inspections.
+
 3.10 (2022-11-17)
 -----------------
 Bugs:
 - ISO code for Greece ('GR') not part of hard coded country list ('EL' was).
 - [SIEL #189593]: Token was not stored when invoice is sent to Acumulus in
   payment status = paid. However, we still should store the token for when the
-  invoice gets cancelled (and, perhaps for the future, to be able to show a link
+  invoice gets cancelled and, perhaps for the future, to be able to show a link
   to the Acumulus invoice pdf.
 - https://github.com/SIELOnline/acumulus-for-WHMCS/issues/2: Sending invoices
   manually always uses default account.
@@ -74,7 +80,7 @@ This addon is now maintained by Buro RaDer.
 Bugs:
 - Presenting Acumulus accounts went wrong if no account number is defined
   in Acumulus for a certain account (e.g. cash or -1: outside Acumulus).
-- Added accepting undocumented entryproc "no changes made'.
+- Added accepting undocumented entryproc "no changes made".
 - Removed use of functions from the mysql extension (removed as of PHP 7.0).
 - Entry with id '0' was created in config for the Acumulus module.
 
@@ -128,7 +134,7 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
  1.3    2014 Jan 3   - Fixed some Bug fixes and spelling errors.
  1.4    2014 Jan 7   - Added new filters to batch.
                      - Added option to send unpaid invoices with batch.
- 1.5    2014 Sep 6   - Added Multilanguage support.
+ 1.5    2014 Sep 6   - Added Multi lingual support.
                      - Changed Addon Module config, to show logo and hyperlink.
                      - Changed Addon Module license key position from bottom to top.
 
@@ -143,11 +149,11 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
                      - Reference in the invoice token table is now being deleted when it is not needed anymore.
  1.0.3  2015 May 27  - Added update check and notification at admin login
                      - Removed Fixed Invoice numbering when send to Acumulus. The sequential numbering is now handled by Acumulus.
-                     - Added a option to re-enable the Fixed invoice numbering.
+                     - Added an option to re-enable the Fixed invoice numbering.
                      - Module supports including VAT settings.
                      - Added option to add a prefix to the invoice description.
                      - Fixed several issue's for WHMCS version 6
- 1.0.4	2015 Jul 25  - Added a extra filter option "payment methode" to the batch import. (No public release)
+ 1.0.4	2015 Jul 25  - Added an extra filter option "payment methode" to the batch import. (No public release)
  1.0.5  2015 Sep 7   - Fixed a bug where the filter "payment methode" sometimes did not work.
                      - Replace username,password,code with * in the debug module logging.
                      - Renamed several functions to make sure they stay unique.
@@ -160,7 +166,7 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
  2.0.0  2017 Feb 11  - Completely rebuild.
 		     - Changed the way to access the database using the new laravel’s preferred methode.
                      - Added Acumulus credential check before showing other configuring options.
-		     - Added a new feature to let invoices being send by Acumulus
+		     - Added a new feature to let invoices being sent by Acumulus
 		     - Added a new option to select which Acumulus template will be used.
 		     - Added a new feature to add a correction invoice line based on estimate totals.
                      - Added a new option to decide if customer information is being sent with the invoice.
@@ -171,7 +177,7 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
 		     - Added a new option to dynamically change invoice notes.
 		     - Added a new option to dynamically change invoice additional remarks.
     		     - Changed the account translation table with select fields.
-  		     - Added a option to enter different email addresses for warnings & errors.
+  		     - Added an option to enter different email addresses for warnings & errors.
  		     - Added support for PHP 7.x
 		     - Added better support for MOSS invoices.
 		     - Added invoice notes with API information.
@@ -192,10 +198,10 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
              - Fixed InvoiceID not being used when EU VAT ADDON Sequal invoice is not being used.
              - Added a new option to search for invoice number or invoice id when sending invoices manually.
 2.4     2017 December 1
-             - Fixed issue where a linebreaks in a invoice line where translated to "n" in Acumulus.
+             - Fixed issue where a linebreaks in an invoice line where translated to "n" in Acumulus.
              - Added a function that updates the invoice in Acumulus when the payment gateway is changed.
 2.5     2018 January 28
-             - Added Credit invoice import in Acumulus when a invoice is canceled in WHMCS.
+             - Added Credit invoice import in Acumulus when an invoice is canceled in WHMCS.
              - Added Config settings to support credit invoicing.
              - Added Custom field for IBAN so the bank account numbers is updated in Acumulus.
              - Fixed When another payment gateway is used when an invoice is paid for, now updates the WHMCS invoice as well.
@@ -203,7 +209,7 @@ Met de nieuwe naam Acumulus-Connect is ook de code uitsluitend beschikbaar onder
 2.6     2018 May 27
             - Fixed issue where an argument was not passed  generation in a php error while creating an invoice.
 2.7	2019 Jan 17
-	    - Fixed issue for php 7.2/7.3 where variables where passed instead of a array triggered by invoice paid hook.
+	    - Fixed issue for php 7.2/7.3 where variables where passed instead of an array triggered by invoice paid hook.
 	    - Fixed issue for php 7.2 when using billable items.
 	    - Added function to use the native TAX field implemented in WHMCS 7.7.
 2.8 	2019 Jul 17

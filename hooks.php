@@ -8,13 +8,16 @@
  * @noinspection PhpUnused  Hooks are called from the WHMCS system based on
  *    naming patterns.
  */
+
+declare(strict_types=1);
+
 if (!defined('WHMCS')) {
     die('This file cannot be accessed directly');
 }
 
 use WHMCS\Database\Capsule;
 
-require_once('acumulus_connect_functions.php');
+require_once(__DIR__ . '/acumulus_connect_functions.php');
 
 /**
  * Hook 'InvoiceCreated'.

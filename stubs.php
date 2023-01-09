@@ -1,5 +1,8 @@
 <?php
 /**
+ * @noinspection AutoloadingIssuesInspection
+ * @noinspection EmptyClassInspection
+ * @noinspection PhpMissingDocCommentInspection
  * @noinspection PhpIllegalPsrClassPathInspection
  * @noinspection PhpMultipleClassesDeclarationsInOneFile
  * @noinspection PhpFullyQualifiedNameUsageInspection
@@ -14,6 +17,8 @@
  * - type checking
  * - code analysis
  */
+
+declare(strict_types=1);
 
 /**
  * Global namespace: available functions
@@ -32,7 +37,7 @@ namespace
  * @param string $message The message to log
  * @param int $userId An optional user id to which the log entry relates
  */
-function logActivity(string $message, int $userId = 0) {}
+function logActivity(string $message, int $userId = 0):void {}
 
 /**
  * Log module call.
@@ -55,7 +60,7 @@ function logActivity(string $message, int $userId = 0) {}
  * @param string|array $processedData The resulting data after any post processing (eg. json decode, xml decode, etc...)
  * @param array $replaceVars An array of strings for replacement
  */
-function logModuleCall(string $module, string $action, $requestString, $responseData, $processedData, array $replaceVars) {}
+function logModuleCall(string $module, string $action, $requestString, $responseData, $processedData, array $replaceVars): void {}
 
 /**
  * The Internal API should be used when making API calls from within the WHMCS system.
@@ -71,10 +76,6 @@ function logModuleCall(string $module, string $action, $requestString, $response
  * See {@see https://developers.whmcs.com/api/api-index/} for an overview of
  * available API calls with details per call on separate pages.
  *
- * @param string $command
- * @param array $values
- * @param string $adminUserName
- *
  * @return array
  *  Array with keys:
  *  - result: string: success or error.
@@ -88,7 +89,7 @@ function localAPI(string $command, array $values, string $adminUserName = ''): a
  * Register hook function call.
  *
  * @param string $hookPoint The hook point to call
- * @param integer $priority The priority for the given hook function
+ * @param int $priority The priority for the given hook function
  * @param callable $function Function name to call or anonymous function.
  *
  * @return mixed
@@ -99,8 +100,6 @@ function add_hook(string $hookPoint, int $priority, callable $function) {}
 /**
  * Converts a date entered in the system setting format to a MySQL Date/Timestamp
  *
- * @param string $userInputDate
- *
  * @return string Format: 2016-12-30 23:59:59
  */
 function toMySQLDate(string $userInputDate): string {}
@@ -110,8 +109,6 @@ function toMySQLDate(string $userInputDate): string {}
  * @param string $datetimestamp The MySQL Date/Timestamp value
  * @param bool $includeTime Pass true to include the time in the result
  * @param bool $applyClientDateFormat Set true to apply Localisation > Client Date Format
- *
- * @return string
  */
 function fromMySQLDate(string $datetimestamp, bool $includeTime = false, bool $applyClientDateFormat = false): string {}
 /**
@@ -120,8 +117,6 @@ function fromMySQLDate(string $datetimestamp, bool $includeTime = false, bool $a
  * By default, returns the format defined in General Settings > Localisation > Date Format
  *
  * @param bool $applyClientDateFormat Set true to apply Localisation > Client Date Format
- *
- * @return string
  */
 function getTodaysDate(bool $applyClientDateFormat = false): string {}
 }

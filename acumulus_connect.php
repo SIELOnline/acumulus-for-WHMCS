@@ -1,13 +1,17 @@
 <?php
 /**
+ * @noinspection PhpMissingStrictTypesDeclarationInspection
+ *   The impact of strict types cannot be overseen, we stick with strong
+ *   parameter types.
  * @noinspection HtmlDeprecatedAttribute
  * @noinspection HtmlDeprecatedTag
  * @noinspection HtmlRequiredAltAttribute
- * @noinspection DuplicatedCode  Remove at a later stage and extract those
- *   duplicates into helper functions.
- * @noinspection PhpUnused  The functions in this file are called by WHMCS based
- *   on naming patterns.
- * @todo: remove these inspections and the warnings that will show again.
+ * @noinspection DuplicatedCode
+ *   Remove at a later stage and extract those duplicates into helper functions.
+ * @noinspection PhpUnused
+ *   The functions in this file are called by WHMCS based on naming patterns.
+ * @todo
+ *   remove these inspections and the warnings that will show again.
  *
  * A note on security:
  * https://laravel.com/docs/8.x/queries#introduction says:
@@ -33,25 +37,24 @@ if (!defined('WHMCS')) {
 use WHMCS\Database\Capsule;
 
 const AcumulusName = 'Acumulus';
-const AcumulusVersion = '3.10';
+const AcumulusVersion = '3.11';
 
-require_once('acumulus_connect_functions.php');
-require_once('assets/gplv3.php');
+require_once(__DIR__ . '/acumulus_connect_functions.php');
+require_once(__DIR__ . '/assets/gplv3.php');
 
 /*
  *  Module Mandatory functions.
  */
+
 /**
  * Function to return the configuration fields for the Acumulus module.
- *
- * @return array
  */
 function acumulus_connect_config(): array
 {
     $config = acumulus_connect_get_config();
 
     //Check if any credentials are given or show the basic config.
-    if ((!empty($config["acumulus_code"])) && (!empty($config["acumulus_username"])) && (!empty($config["acumulus_password"]))) {
+    if ((!empty($config['acumulus_code'])) && (!empty($config['acumulus_username'])) && (!empty($config['acumulus_password']))) {
         // Construct the xml for the Acumulus API check
 
         $xml = acumulus_connect_basicXml(false); //construct the basic xml without email on errors or warnings.
@@ -59,7 +62,7 @@ function acumulus_connect_config(): array
         $xml_string = urlencode($xml->asXML());
 
         // Let's check the credentials against the Acumulus API.
-        $url = "https://api.sielsystems.nl/acumulus/stable/general/general_about.php";
+        $url = 'https://api.sielsystems.nl/acumulus/stable/general/general_about.php';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, 1);
@@ -128,7 +131,8 @@ function acumulus_connect_activate(): array
  *
  * - Remove Custom DB Table
  *
- * @todo: should we always drop the table or can we ask for confirmation?
+ * @todo
+ *   Should we always drop the table or can we ask for confirmation?
  *
  * @return string[]
  *   Result of the deactivation: 2 strings keyed by 'status''and 'description'.
@@ -178,10 +182,6 @@ function acumulus_connect_upgrade($vars): void
  */
 /**
  * Return html to add to the sidebar.
- *
- * @param array $vars
- *
- * @return string
  */
 function acumulus_connect_sidebar(array $vars): string
 {
@@ -210,12 +210,14 @@ function acumulus_connect_sidebar(array $vars): string
  *     page that should be output).
  *   - 'version': version of this module
  *   - 'acumulus_...': the complete config of this module.
+ *
+ * @noinspection PhpFunctionCyclomaticComplexityInspection
  */
 function acumulus_connect_output(array $vars)
 {
     global $_SESSION;
     $lang = $vars['_lang'];
-    if (isset($_POST["action"])) {
+    if (isset($_POST['action'])) {
         if (empty($_POST['resentinvoice']) && ($_POST['action'] === 'sendinvoice')) {
             echo "<br><h2>{$lang['No records found message']}</h2>";
             echo "<br><a href='addonmodules.php?module=acumulus_connect' class='btn btn-warning'>{$lang['Return']}</a>";
@@ -226,6 +228,7 @@ function acumulus_connect_output(array $vars)
                 $invoiceid = $_POST['resentinvoice'];
                 $searchon = $_POST['search_on'];
                 $invoices = [];
+                /** @noinspection DegradedSwitchInspection */
                 switch ($searchon) {
                     case 'invoiceno':
                         $collection = Capsule::table('tblinvoices')->select('id')->where('invoicenum', $invoiceid)->get();
@@ -237,7 +240,7 @@ function acumulus_connect_output(array $vars)
                         $invoices[] = $invoiceid;
                 }
                 if (empty($invoices[0])) {
-                    echo "<br><h2>" . $lang['No records found message'] . "</h2>";
+                    echo '<br><h2>' . $lang['No records found message'] . '</h2>';
                     echo '<br><a href="addonmodules.php?module=acumulus_connect" class="btn btn-warning">' . $lang['Return'] . '</a>';
                     return;
                 }
@@ -284,15 +287,15 @@ function acumulus_connect_output(array $vars)
                                               ->get();
                         } else {
                             $results = Capsule::table('tblinvoices')->select('id')
-                                              ->where('date', ">=", $dateFrom)
-                                              ->where('date', "<=", $dateTo)
+                                              ->where('date', '>=', $dateFrom)
+                                              ->where('date', '<=', $dateTo)
                                               ->where('status', 'Unpaid')
                                               ->where('paymentmethod', $filterBy2)
                                               ->get();
                         }
                         break;
                     case 'Paid Invoices by invoicedate':
-                        if ($filterBy2 == 'All Gateways') {
+                        if ($filterBy2 === 'All Gateways') {
                             $results = Capsule::table('tblinvoices')->select('id')
                                               ->where('date', '>=', $dateFrom)
                                               ->where('date', '<=', $dateTo)
@@ -308,7 +311,7 @@ function acumulus_connect_output(array $vars)
                         }
                         break;
                     default:
-                        if ($filterBy2 == 'All Gateways') {
+                        if ($filterBy2 === 'All Gateways') {
                             $results = Capsule::table('tblinvoices')->select('id')
                                               ->where('date', '>=', $dateFrom)
                                               ->where('date', '<=', $dateTo)
@@ -354,8 +357,6 @@ function acumulus_connect_output(array $vars)
 
 /**
  * Helper function to create the basic config array used to enter credentials.
- *
- * @return array
  */
 function acumulus_connect_constructBasicConfigFields(): array
 {
@@ -394,8 +395,6 @@ function acumulus_connect_constructBasicConfigFields(): array
 /**
  * Helper function to create the full config array used after credentials are
  * correct.
- *
- * @return array
  */
 function acumulus_connect_constructFullConfigFields(): array
 {
@@ -408,7 +407,7 @@ function acumulus_connect_constructFullConfigFields(): array
     foreach (acumulus_connect_getCostCenters() as $costcenter) {
         $stringCostCenters .= $costcenter['costcenterid'] . ' ' . str_replace(',', ' ', $costcenter['costcentername']) . ',';
     }
-    $stringCostCenters = rtrim($stringCostCenters, ",");
+    $stringCostCenters = rtrim($stringCostCenters, ',');
 
     // Get the invoice templates from Acumulus and put then in a comma separated
     // string.
@@ -416,7 +415,7 @@ function acumulus_connect_constructFullConfigFields(): array
     foreach (acumulus_connect_getTemplates() as $template) {
         $stringTemplates .= $template['invoicetemplateid'] . ' ' . str_replace(',', ' ', $template['invoicetemplatename']) . ',';
     }
-    $stringTemplates = rtrim($stringTemplates, ",");
+    $stringTemplates = rtrim($stringTemplates, ',');
 
     // Get the Account numbers from Acumulus and put them in a comma separated
     // string.
@@ -454,7 +453,7 @@ function acumulus_connect_constructFullConfigFields(): array
         'FriendlyName' => 'Let Acumulus send invoice',
         'Type' => 'yesno',
         'Size' => '25',
-        'Description' => "When enabled imported invoices will be sent as pdf file using Acumulus.<br><i>* When importing invoices with the bulk import, this setting is ignored and no invoices will be sent by Acumulus.</i>",
+        'Description' => 'When enabled imported invoices will be sent as pdf file using Acumulus.<br><i>* When importing invoices with the bulk import, this setting is ignored and no invoices will be sent by Acumulus.</i>',
         'Default' => 'no',
     ];
 
@@ -471,7 +470,7 @@ function acumulus_connect_constructFullConfigFields(): array
         'FriendlyName' => 'Enable create hook',
         'Type' => 'yesno',
         'Size' => '25',
-        'Description' => "Send Invoice to Acumulus directly when a new invoice has been generated by the cron, order process, API, when converting a quote to an invoice, or when published a draft invoice with email.",
+        'Description' => 'Send Invoice to Acumulus directly when a new invoice has been generated by the cron, order process, API, when converting a quote to an invoice, or when published a draft invoice with email.',
         'Default' => 'on',
     ];
     $config_array['fields']['acumulus_hook_invoice_paid_enabled'] = [
@@ -500,14 +499,14 @@ function acumulus_connect_constructFullConfigFields(): array
         $config_array['fields']['acumulus_customer_type'] = [
             'FriendlyName' => 'Customer Type',
             'Type' => 'dropdown',
-            'Options' => "Debtor,Creditor,Debtor/Creditor (neutral)",
+            'Options' => 'Debtor,Creditor,Debtor/Creditor (neutral)',
             'Description' => 'Select under what type the customer needs to be registered in Acumulus.',
-            'Default' => "Debtor/Creditor (neutral)",
+            'Default' => 'Debtor/Creditor (neutral)',
         ];
         $config_array['fields']['acumulus_customer_countryautoname'] = [
             'FriendlyName' => 'Customer country',
             'Type' => 'dropdown',
-            'Options' => "Use the same country as the customer in WHMCS,Automatic prefill based on country code,Automatic prefill based on country code including Nederland",
+            'Options' => 'Use the same country as the customer in WHMCS,Automatic prefill based on country code,Automatic prefill based on country code including Nederland',
             'Description' => 'Select which customer country setting needs to be used in Acumulus.',
             'Default' => 'Use the same country as the customer in WHMCS',
         ];
@@ -527,14 +526,14 @@ function acumulus_connect_constructFullConfigFields(): array
         $config_array['fields']['acumulus_whmcs_vatfield'] = [
             'FriendlyName' => 'TAX or VAT field',
             'Type' => 'dropdown',
-            'Options' => implode(",", acumulus_connect_getClientCustomFields()) . ',[VAT Number]',
-            'Description' => "WHMCS Vat field or Custom client field that represents the TAX ID or VAT number. The option [VAT Number] is the new vat field since WHMCS 7.7",
-            'Default' => "[VAT Number]",
+            'Options' => implode(',', acumulus_connect_getClientCustomFields()) . ',[VAT Number]',
+            'Description' => 'WHMCS Vat field or Custom client field that represents the TAX ID or VAT number. The option [VAT Number] is the new vat field since WHMCS 7.7',
+            'Default' => '[VAT Number]',
         ];
         $config_array['fields']['acumulus_whmcs_ibanfield'] = [
             'FriendlyName' => 'IBAN field',
             'Type' => 'dropdown',
-            'Options' => implode(",", acumulus_connect_getClientCustomFields()),
+            'Options' => implode(',', acumulus_connect_getClientCustomFields()),
             'Description' => 'Custom client field that represents the clients IBAN number.',
             'Default' => '',
         ];
@@ -543,8 +542,8 @@ function acumulus_connect_constructFullConfigFields(): array
             'FriendlyName' => 'Client Mark',
             'Type' => 'text',
             'Size' => '40',
-            'Description' => "Extra label or mark. <i>(See manual for variables that can be used.)</i>",
-            'Default' => "WHMCS Klantnr: {USERID}",
+            'Description' => 'Extra label or mark. <i>(See manual for variables that can be used.)</i>',
+            'Default' => 'WHMCS Klantnr: {USERID}',
         ];
     }
 
@@ -574,7 +573,7 @@ function acumulus_connect_constructFullConfigFields(): array
         'FriendlyName' => 'Use Acumulus invoice numbering',
         'Type' => 'yesno',
         'Size' => '25',
-        'Description' => "When enabled, WHMCS ignors the invoice number and uses Acumulus sequential invoice numbering.<br>",
+        'Description' => 'When enabled, WHMCS ignors the invoice number and uses Acumulus sequential invoice numbering.<br>',
         'Default' => 'on',
     ];
 
@@ -582,16 +581,16 @@ function acumulus_connect_constructFullConfigFields(): array
         'FriendlyName' => 'Invoice title',
         'Type' => 'text',
         'Size' => '40',
-        'Description' => "Overall description of the invoice, invoice title.<br><i>(See manual for varibles that can be used.)</i>",
-        'Default' => "WHMCS Factuur: {INVOICENUMBER}",
+        'Description' => 'Overall description of the invoice, invoice title.<br><i>(See manual for varibles that can be used.)</i>',
+        'Default' => 'WHMCS Factuur: {INVOICENUMBER}',
     ];
 
     $config_array['fields']['acumulus_creditinvoice_description'] = [
         'FriendlyName' => 'Credit Invoice title',
         'Type' => 'text',
         'Size' => '40',
-        'Description' => "Overall description for the Credit invoice, credit invoice title.<br><i>(See manual for varibles that can be used.)</i>",
-        'Default' => "Credit Factuur:  WHMCS: {INVOICENUMBER}",
+        'Description' => 'Overall description for the Credit invoice, credit invoice title.<br><i>(See manual for varibles that can be used.)</i>',
+        'Default' => 'Credit Factuur:  WHMCS: {INVOICENUMBER}',
     ];
 
     $config_array['fields']['acumulus_invoice_descriptiontext'] = [
@@ -599,8 +598,8 @@ function acumulus_connect_constructFullConfigFields(): array
         'Type' => 'textarea',
         'Rows' => '4',
         'Cols' => '47',
-        'Description' => "Multiline field for extended description of the invoice. Content will appear on invoice and associated emails.<br><i>(See manual for varibles that can be used.) note: tabs cannot be used here</i>",
-        'Default' => "{INVOICENOTES}",
+        'Description' => 'Multiline field for extended description of the invoice. Content will appear on invoice and associated emails.<br><i>(See manual for varibles that can be used.) note: tabs cannot be used here</i>',
+        'Default' => '{INVOICENOTES}',
     ];
 
     $config_array['fields']['acumulus_invoice_invoicenotes'] = [
@@ -608,7 +607,7 @@ function acumulus_connect_constructFullConfigFields(): array
         'Type' => 'textarea',
         'Rows' => '4',
         'Cols' => '47',
-        'Description' => "Multiline field for additional remarks.  Contents is placed in notes/comments section of the invoice. Content <b>will not appear</b> on the actual invoice or associated emails.<br><i>(See manual for varibles that can be used.) (Use {TAB} for tabs)</i>",
+        'Description' => 'Multiline field for additional remarks.  Contents is placed in notes/comments section of the invoice. Content <b>will not appear</b> on the actual invoice or associated emails.<br><i>(See manual for varibles that can be used.) (Use {TAB} for tabs)</i>',
         'Default' => '',
     ];
 
@@ -616,7 +615,7 @@ function acumulus_connect_constructFullConfigFields(): array
         'FriendlyName' => 'Invoice Template',
         'Type' => 'dropdown',
         'Options' => $stringTemplates,
-        'Description' => "Name of the template that will be used by Acumulus. When omitted, the first available template in the contract will be selected.",
+        'Description' => 'Name of the template that will be used by Acumulus. When omitted, the first available template in the contract will be selected.',
         'Default' => '',
     ];
 
@@ -638,32 +637,32 @@ function acumulus_connect_constructFullConfigFields(): array
         'FriendlyName' => 'Invoice Correction',
         'Type' => 'yesno',
         'Size' => '25',
-        'Description' => "When enabled, the module will try to estimate the totals (WHMCS and ACUMULUS) and add a correction line when needed.",
+        'Description' => 'When enabled, the module will try to estimate the totals (WHMCS and ACUMULUS) and add a correction line when needed.',
         'Default' => '',
     ];
     if ($config['acumulus_invoice_correction'] === 'on') {
         $config_array['fields']['acumulus_invoice_correction_text'] = [
-            'FriendlyName' => "Invoice correction line description<br>",
+            'FriendlyName' => 'Invoice correction line description<br>',
             'Type' => 'text',
             'Size' => '40',
-            'Description' => "The text that will appear on the invoice if there is a correction needed.<br><i>(See manual for variables that can be used.)</i>",
+            'Description' => 'The text that will appear on the invoice if there is a correction needed.<br><i>(See manual for variables that can be used.)</i>',
             'Default' => 'WHMCS correction',
         ];
     }
     if ($config['acumulus_summarize_invoice'] === 'on') {
         $config_array['fields']['acumulus_summarization_text_taxed'] = [
-            'FriendlyName' => "Invoice line Sumarization description<br>including TAX",
+            'FriendlyName' => 'Invoice line Sumarization description<br>including TAX',
             'Type' => 'text',
             'Size' => '40',
-            'Description' => "The text that will be used on the summerized invoice line for items with tax.<br><i>(See manual for varibles that can be used.)</i>",
+            'Description' => 'The text that will be used on the summerized invoice line for items with tax.<br><i>(See manual for varibles that can be used.)</i>',
             'Default' => 'Totaal WHMCS Factuur belast met BTW',
         ];
 
         $config_array['fields']['acumulus_summarization_text_untaxed'] = [
-            'FriendlyName' => "Invoice line Summarization description<br>excluding TAX",
+            'FriendlyName' => 'Invoice line Summarization description<br>excluding TAX',
             'Type' => 'text',
             'Size' => '40',
-            'Description' => "The text that will be used on the summarized invoice line for items without tax.<br><i>(See manual for varibles that can be used.)</i>",
+            'Description' => 'The text that will be used on the summarized invoice line for items without tax.<br><i>(See manual for varibles that can be used.)</i>',
             'Default' => 'Totaal WHMCS Factuur zonder BTW',
         ];
     }
@@ -672,7 +671,7 @@ function acumulus_connect_constructFullConfigFields(): array
         'FriendlyName' => 'Use last payment method',
         'Type' => 'yesno',
         'Size' => '25',
-        'Description' => "When enabled, the module will change the account numbers invoice in Acumulus to use the last payment method.",
+        'Description' => 'When enabled, the module will change the account numbers invoice in Acumulus to use the last payment method.',
         'Default' => 'on',
     ];
 
@@ -684,7 +683,7 @@ function acumulus_connect_constructFullConfigFields(): array
 
     foreach (acumulus_connect_getWHMCSAccountNumbers() as $accountNumber) {
         $config_array['fields']['acumulus_AccountNumber_' . $accountNumber['module']] = [
-            'FriendlyName' => "WHMCS Payment Gateway: <b>" . $accountNumber['displayname'] . "</b>",
+            'FriendlyName' => 'WHMCS Payment Gateway: <b>' . $accountNumber['displayname'] . '</b>',
             'Type' => 'dropdown',
             'Options' => $acumulusAccounts,
             'Description' => 'Select the matching Acumulus AccountNumber.',
@@ -693,7 +692,7 @@ function acumulus_connect_constructFullConfigFields(): array
     }
 
     // Send email as pdf from Acumulus.
-    if ($config['acumulus_emailaspdf'] == 'on') {
+    if ($config['acumulus_emailaspdf'] === 'on') {
 
         $config_array['fields']['acumulus_emailaspdf_message1'] = [
             'FriendlyName' => '',
@@ -708,21 +707,21 @@ function acumulus_connect_constructFullConfigFields(): array
             'FriendlyName' => 'E-mail BCC',
             'Type' => 'text',
             'Size' => '40',
-            'Description' => "Use valid email addresses. Multiple addresses can be used when separated with a comma or semicolon. If emailto is not set, the emailbcc will be ignored and skipped.",
+            'Description' => 'Use valid email addresses. Multiple addresses can be used when separated with a comma or semicolon. If emailto is not set, the emailbcc will be ignored and skipped.',
             'Default' => '',
         ];
         $config_array['fields']['acumulus_emailaspdf_emailfrom'] = [
             'FriendlyName' => 'Email From',
             'Type' => 'text',
             'Size' => '40',
-            'Description' => "Use a single valid email address. If omitted, the email address of the invoice template, with fallback to the account owner will be used. Most pretty results are obtained when using fully configured invoice templates in Acumulus and leaving this option empty (recommended).",
+            'Description' => 'Use a single valid email address. If omitted, the email address of the invoice template, with fallback to the account owner will be used. Most pretty results are obtained when using fully configured invoice templates in Acumulus and leaving this option empty (recommended).',
             'Default' => '',
         ];
         $config_array['fields']['acumulus_emailaspdf_subject'] = [
             'FriendlyName' => 'E-mail Subject',
             'Type' => 'text',
             'Size' => '40',
-            'Description' => "ASCII-only allowed. Be sure to provide xml-escaped html entities for UTF-8 characters.<br>If omitted or left empty, the subject will be: Factuur [number] [description]<br><i>(See manual for variables that can be used.)</i>",
+            'Description' => 'ASCII-only allowed. Be sure to provide xml-escaped html entities for UTF-8 characters.<br>If omitted or left empty, the subject will be: Factuur [number] [description]<br><i>(See manual for variables that can be used.)</i>',
             'Default' => '',
         ];
         $config_array['fields']['acumulus_emailaspdf_message'] = [
@@ -730,7 +729,7 @@ function acumulus_connect_constructFullConfigFields(): array
             'Type' => 'textarea',
             'Rows' => '4',
             'Cols' => '47',
-            'Description' => "Currently, ASCII-only allowed. Mileage may vary when trying to submit multiple lines.<br>If omitted, the email text composed in the template will be used (recommended)<br><i>(See manual for variables that can be used.)</i>.",
+            'Description' => 'Currently, ASCII-only allowed. Mileage may vary when trying to submit multiple lines.<br>If omitted, the email text composed in the template will be used (recommended)<br><i>(See manual for variables that can be used.)</i>.',
             'Default' => '',
         ];
         $config_array['fields']['acumulus_emailaspdf_confirmreading'] = [
@@ -745,14 +744,14 @@ function acumulus_connect_constructFullConfigFields(): array
     // Warnings & Error Variables.
     $config_array['fields']['acumulus_warning_message2'] = [
         'FriendlyName' => '',
-        'Description' => acumulus_connect_newConfigSection("Warnings & Errors"),
+        'Description' => acumulus_connect_newConfigSection('Warnings & Errors'),
     ];
 
     $config_array['fields']['acumulus_warning_email_address'] = [
         'FriendlyName' => 'Email address for warnings',
         'Type' => 'text',
         'Size' => '25',
-        'Description' => "Enter an email address where api warning messages should be send to.<br> When omitted no warnings will be sent.",
+        'Description' => 'Enter an email address where api warning messages should be sent to.<br> When omitted no warnings will be sent.',
         'Default' => '',
     ];
 
@@ -760,7 +759,7 @@ function acumulus_connect_constructFullConfigFields(): array
         'FriendlyName' => 'Email address for errors',
         'Type' => 'text',
         'Size' => '25',
-        'Description' => "Enter an email address where api error messages should be sent to.<br>When omitted no errors will be sent.",
+        'Description' => 'Enter an email address where api error messages should be sent to.<br>When omitted no errors will be sent.',
         'Default' => '',
     ];
 
@@ -775,20 +774,14 @@ function acumulus_connect_constructFullConfigFields(): array
 
 /**
  * Returns a (highly visible) section header.
- *
- * @param string $section
- *
- * @return string
  */
 function acumulus_connect_newConfigSection(string $section): string
 {
-    return "<h2 style='padding-top:3em;font-weight:bold;font-size:larger'>$section</h2>";
+    return "<h2 style='padding-top:3em;font-weight:bold;font-size:larger;'>$section</h2>";
 }
 
 /**
  * Helper function to show the Module form.
- *
- * @param array $vars
  */
 function acumulus_connect_showModuleForm(array $vars)
 {
@@ -819,7 +812,7 @@ function acumulus_connect_showModuleForm(array $vars)
             <td class=\"fieldarea\">
              <select name=\"search_on\">
                 <option value=\"invoiceno\" selected>" . $lang['Invoice No'] . "</option>
-                <option value=\"invoiceid\">" . $lang['Invoice ID'] . "</option>
+                <option value=\"invoiceid\">" . $lang['Invoice ID'] . '</option>
              </select>
             </td>
            </tr>
@@ -828,7 +821,7 @@ function acumulus_connect_showModuleForm(array $vars)
 
         <br><br>
         <p>
-           <b>" . $lang['Send multiple invoices header'] . "</b>
+           <b>' . $lang['Send multiple invoices header'] . "</b>
         </p>
     </form>
 
@@ -837,7 +830,7 @@ function acumulus_connect_showModuleForm(array $vars)
         <input type=\"hidden\" name=\"action\" value=\"sendbatch\">
         <table class=\"form\" width=\"100%\" border=\"0\" cellspacing=\"2\" cellpadding=\"3\">
         <tbody>
-           <tr><td colspan=\"2\"><div class=\"infobox\"><strong><span class=\"title\">" . $lang['Batch import'] . "</span></strong><br />" . $lang['Batch import time warning'] . "</div> </td></tr>
+           <tr><td colspan=\"2\"><div class=\"infobox\"><strong><span class=\"title\">" . $lang['Batch import'] . '</span></strong><br />' . $lang['Batch import time warning'] . "</div> </td></tr>
            <tr><td colspan=\"2\"><p>" . $lang['Batch import detail text'] . "</p></td></tr>
            <tr>
                 <td class=\"fieldlabel\">" . $lang['Filter By'] . "</td>
@@ -846,7 +839,7 @@ function acumulus_connect_showModuleForm(array $vars)
            <tr>
                 <td class=\"fieldlabel\">" . $lang['Payment Method'] . "</td>
                 <td class=\"fieldarea\"><select name=\"filterby2\">
-                        <option>All Gateways</option><option>" . implode("</option><option>", $gateways) . "</option></td>
+                        <option>All Gateways</option><option>" . implode('</option><option>', $gateways) . "</option></td>
            </tr>
 
 
@@ -881,11 +874,6 @@ function acumulus_connect_showModuleForm(array $vars)
 
 /**
  * Return an HTML string with a summary of the invoices.
- *
- * @param array $invoices
- * @param array $vars
- *
- * @return string
  */
 function acumulus_connect_getInvoicesSummary(array $invoices, array $vars): string
 {
@@ -906,7 +894,7 @@ function acumulus_connect_getInvoicesSummary(array $invoices, array $vars): stri
         // Check if invoice number exists or use the invoice id instead.
         $invoiceNumber = $data['invoicenum'] === '' ? $data['invoiceid'] : $data['invoicenum'];
 
-        $data['clientname'] = $client['companyname'] != '' ? "{$client['companyname']} - {$client['firstname']} {$client['lastname']}" : "{$client['firstname']} {$client['lastname']}";
+        $data['clientname'] = !empty($client['companyname']) ? "{$client['companyname']} - {$client['firstname']} {$client['lastname']}" : "{$client['firstname']} {$client['lastname']}";
         $summaryLines .= '<tr>';
         $summaryLines .= "<td> <a href='invoices.php?action=edit&id={$data['invoiceid']}'>{$data['invoiceid']}</a></td>";
         $summaryLines .= "<td>$invoiceNumber</td>";
@@ -915,11 +903,11 @@ function acumulus_connect_getInvoicesSummary(array $invoices, array $vars): stri
         $summaryLines .= '<td>' . fromMySQLDate($data['datepaid']) . '</td>';
         $summaryLines .= "<td>{$data['total']}</td>";
         $summaryLines .= "<td>{$data['paymentmethod']}</td>";
-        if (strtolower($data['status']) == 'paid') {
+        if (strtolower($data['status']) === 'paid') {
             $summaryLines .= "<td><span class='textgreen'>{$lang['Paid']}</span></td>";
-        } elseif (strtolower($data['status']) == 'unpaid') {
+        } elseif (strtolower($data['status']) === 'unpaid') {
             $summaryLines .= "<td><span class='textred'>{$lang['Unpaid']}</span></td>";
-        } elseif (strtolower($data['status']) == 'cancelled') {
+        } elseif (strtolower($data['status']) === 'cancelled') {
             $summaryLines .= "<td><span>{$lang['Cancelled']}</span></td>";
         } else {
             $summaryLines .= "<td><span>{$data['status']}</span></td>";
