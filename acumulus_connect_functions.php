@@ -518,7 +518,7 @@ function acumulus_connect_getVatType(array $config, array $invoice, array $clien
                 // Bedrijf.
                 $taxRate = '0.00';
             }
-        } elseif (empty($client['companyname'])) {
+        } elseif (empty($client['tax_id'])) {
             // Particulier.
             // WHMCS zijn digitale diensten.
             $vatType = '6';
