@@ -1,0 +1,30 @@
+{
+  "name": "siel/acumulus-whmcs",
+  "description": "Integrates WHMCS with your Siel Acumulus online administration",
+  "type": "whmcs-addon",
+  "version": "8.8.0",
+  "license": [
+    "GPL-3.0"
+  ],
+  "require": {
+    "php": "^8.2",
+    "siel/acumulus": "^8.7.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10"
+  },
+  "autoload": {
+    "psr-4": {
+      "Siel\\Whmcs\\Acumulus\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Siel\\Acumulus\\Tests\\": [
+        "tests/",
+        "vendor/siel/acumulus/tests/"
+      ],
+      "Siel\\Acumulus\\TestWebShop\\": "vendor/siel/acumulus/tests/TestWebShop/"
+    }
+  }
+}

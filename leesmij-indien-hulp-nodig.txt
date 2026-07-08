@@ -1,0 +1,35 @@
+Deze Acumulus webshopkoppeling is ontwikkeld door Buro Rader
+(https://burorader.com/)
+
+De koppeling is uitvoerig getest tegen een standaard installatie van een
+recente, stabiele versie van de webshop software. Indien u over een installatie
+beschikt waarin aangepaste of conflicterende plugins opgenomen zijn dan zou de
+koppeling niet naar verwachting kunnen werken.
+
+Mocht u in deze situatie, of in een standaardomgeving problemen met de
+installatie of werking ondervinden dan kunt u:
+- een ticket openen door uw probleem te sturen naar het e-mailadres hieronder
+  waarin de naam van het door u gebruikte webshoppakket is verwerkt:
+  * hikashop@acumulus.nl
+  * magento@acumulus.nl
+  * opencart@acumulus.nl
+  * prestashop@acumulus.nl
+  * virtuemart@acumulus.nl
+  * woocommerce@acumulus.nl
+- een vraag stellen op het Acumulus forum op
+  https://forum.acumulus.nl/index.php?board=17.0.
+
+Indien u van de ondersteuning van Buro Rader gebruik wilt maken dan dient u
+onderstaande gegevens mee te sturen:
+ - Een duidelijke probleem omschrijving.
+ - De huidige versie van de plugin.
+ - De huidige versie van uw webwinkel.
+ - Op het instellingenscherm van de Acumulus plugin kunt u de meeste van de
+   bovenstaande gegevens terugvinden. Als u bij dat scherm kunt komen kopieer
+   dan die informatie in uw mail.
+ - Eventuele gemaakte aanpassingen.
+ - Logbestanden.
+ - Als u een mail heeft ontvangen van de Acumulus plugin of de Acumulus server
+   dient u die mail ook mee te sturen (of apart door te sturen).
+
+Stuur alleen inloggegevens als daar uitdrukkelijk om gevraagd wordt!

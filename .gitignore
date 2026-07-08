@@ -1,0 +1,18 @@
+# Ignore dependencies that are managed with Composer.
+# We only want to commit our own stuff, that is unique to this project. So we do not
+# commit the vendor directory, not even autoload.php and vendor/siel/acumulus. If you want
+# to use this project from GitHub instead or via the WHMCS marketplace, you will have to
+# run "composer update --no-dev" yourself.
+composer.lock
+/vendor/*
+
+# We use test classes and utilities that are not our own, but from the WordPress and
+# WooCommerce projects, but are not defined as composer packages. These are also stored
+# under the tests dir via custom actions, but not committed.
+/tests/.phpunit.result.cache
+/tests/wordpress-develop/
+# Our own tests are committed, but not the *.latest.* files
+**/Data/**/*.latest.*
+
+# PHPStorm
+.idea/*
