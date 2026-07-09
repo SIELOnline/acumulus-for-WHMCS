@@ -1,9 +1,11 @@
 <?php
 /**
- * @noinspection SpellCheckingInspection 255 spell check hints
+ * @noinspection LongLine
+ * @noinspection SpellCheckingInspection Lots of spell check hints
  * @noinspection JsonEncodingApiUsageInspection
  * @noinspection HtmlDeprecatedAttribute
  * @noinspection HtmlDeprecatedTag
+ * @noinspection XmlDeprecatedElement
  */
 
 declare(strict_types=1);
@@ -61,19 +63,18 @@ class Acumulus
         if (!isset($this->acumulusContainer)) {
             $shopNameSpace = 'Whmcs';
             $language = $_SESSION['Language'] ?? $_SESSION['adminlang'] ?? Setting::getValue('Language');
-            /** @noinspection PhpUnhandledExceptionInspection */
             $this->acumulusContainer = new Container($shopNameSpace, $language);
         }
     }
 
     public function getName(): string
     {
-        return Acumulus::Name;
+        return self::Name;
     }
 
     public function getVersion(): string
     {
-        return Acumulus::Version;
+        return self::Version;
     }
 
     public function getAcumulusContainer(): Container
@@ -111,7 +112,7 @@ class Acumulus
             // Let's check if the results with the entered credentials are valid,
             // if so display the full config or show credentials mismatch.
             $xml = simplexml_load_string($response);
-            if ((string)$xml->general->about) {
+            if ((string) $xml->general->about) {
                 $config_array = $this->constructFullConfigFields();
             } else {
                 // the entered credentials are not valid.
@@ -154,10 +155,16 @@ class Acumulus
                     $table->timestamps();
                 }
             );
-            return ['status' => 'success', 'description' => 'The Acumulus addon has been installed successfully, please continue by filling in the configuration data.'];
+            return [
+                'status' => 'success',
+                'description' => 'The Acumulus addon has been installed successfully, please continue by filling in the configuration data.',
+            ];
         } catch (Throwable $e) {
             $this->logException($e);
-            return ['status' => 'error', 'description' => 'Installing the addon failed Unable to create table mod_acumulus_connect: ' . $e->getMessage()];
+            return [
+                'status' => 'error',
+                'description' => 'Installing the addon failed Unable to create table mod_acumulus_connect: ' . $e->getMessage(),
+            ];
         }
     }
 
@@ -166,11 +173,11 @@ class Acumulus
      *
      * - Remove Custom DB Table
      *
+     * @return string[]
+     *   Result of the deactivation: 2 strings keyed by 'status''and 'description'.
      * @todo
      *   Should we always drop the table or can we ask for confirmation?
      *
-     * @return string[]
-     *   Result of the deactivation: 2 strings keyed by 'status''and 'description'.
      */
     public function deactivate(): array
     {
@@ -183,7 +190,6 @@ class Acumulus
             return ['status' => 'error', 'description' => 'Deactivating the module failed: ' . $e->getMessage()];
         }
     }
-
 
     /**
      * Performs custom actions on upgrading this module.
@@ -204,12 +210,14 @@ class Acumulus
                         $table->timestamps();
                     }
                 );
-                logActivity(__FUNCTION__ . "The Acumulus module has been upgraded successfully from $version to " . Acumulus::Version);
+                logActivity(__FUNCTION__ . "The Acumulus module has been upgraded successfully from $version to " . self::Version);
             } catch (Throwable $e) {
                 $this->logException($e);
             }
         } else {
-            logActivity(__FUNCTION__ . "The Acumulus module has been upgraded successfully from $version to " . Acumulus::Version . ': no update actions were necessary');
+            logActivity(
+                __FUNCTION__ . "The Acumulus module has been upgraded successfully from $version to " . self::Version . ': no update actions were necessary'
+            );
         }
     }
 
@@ -407,9 +415,9 @@ class Acumulus
     {
         return [
             // This is where the module name is defined!:
-            'name' => Acumulus::Name,
+            'name' => self::Name,
             'description' => 'The Acumulus module connects to the Acumulus online financial administration application.',
-            'version' => Acumulus::Version,
+            'version' => self::Version,
             'author' => 'SIEL',
             'language' => 'english',
             'fields' => [
@@ -674,7 +682,7 @@ class Acumulus
             'FriendlyName' => 'Summarize invoice lines',
             'Type' => 'yesno',
             'Size' => '25',
-            'Description' => "Combine all invoice lines to one total invoice line. <i>The field \"Invoice line description\" is used as the description on the invoice line.</i>",
+            'Description' => 'Combine all invoice lines to one total invoice line. <i>The field "Invoice line description" is used as the description on the invoice line.</i>',
             'Default' => '',
         ];
 
@@ -738,7 +746,6 @@ class Acumulus
 
         // Send email as pdf from Acumulus.
         if ($config['acumulus_emailaspdf'] === 'on') {
-
             $config_array['fields']['acumulus_emailaspdf_message1'] = [
                 'FriendlyName' => '',
                 'Description' => $this->newConfigSection('Acumulus E-Mail Settings'),
@@ -840,26 +847,26 @@ class Acumulus
             $gateways[] = $gateway['module'];
         }
 
-        echo "<form method=\"post\" action=\"addonmodules.php?module=acumulus_connect\">
-      <input type=\"hidden\" name=\"action\" value=\"sendinvoice\">
+        echo '<form method="post" action="addonmodules.php?module=acumulus_connect">
+      <input type="hidden" name="action" value="sendinvoice">
       <p>
-        <b>" . $lang['Single invoice "title'] . "</b>
+        <b>' . $lang['Single invoice "title'] . '</b>
       </p>
-        <table class=\"form\" width=\"100%\" border=\"0\" cellspacing=\"2\" cellpadding=\"3\">
+        <table class="form" width="100%" border="0" cellspacing="2" cellpadding="3">
         <tbody>
-           <tr><td colspan=\"2\"><p>" . $lang['Single invoice detail text'] . "</p></td></tr>
+           <tr><td colspan="2"><p>' . $lang['Single invoice detail text'] . '</p></td></tr>
            <tr>
-            <td width=\"25%\" class=\"fieldlabel\">" . $lang['Invoice ID'] . ":</td>
-            <td class=\"fieldarea\">
-             <input type=\"text\" name=\"resentinvoice\" size=\"30\" value=\"\"> <input type=\"submit\" value=\"" . $lang['Sent Invoice'] . "\">
+            <td width="25%" class="fieldlabel">' . $lang['Invoice ID'] . ':</td>
+            <td class="fieldarea">
+             <input type="text" name="resentinvoice" size="30" value=""> <input type="submit" value="' . $lang['Sent Invoice'] . '">
             </td>
            </tr>
            <tr>
-            <td width=\"25%\" class=\"fieldlabel\">" . $lang['Search on'] . ":</td>
-            <td class=\"fieldarea\">
-             <select name=\"search_on\">
-                <option value=\"invoiceno\" selected>" . $lang['Invoice No'] . "</option>
-                <option value=\"invoiceid\">" . $lang['Invoice ID'] . '</option>
+            <td width="25%" class="fieldlabel">' . $lang['Search on'] . ':</td>
+            <td class="fieldarea">
+             <select name="search_on">
+                <option value="invoiceno" selected>' . $lang['Invoice No'] . '</option>
+                <option value="invoiceid">' . $lang['Invoice ID'] . '</option>
              </select>
             </td>
            </tr>
@@ -868,35 +875,35 @@ class Acumulus
 
         <br><br>
         <p>
-           <b>' . $lang['Send multiple invoices header'] . "</b>
+           <b>' . $lang['Send multiple invoices header'] . '</b>
         </p>
     </form>
 
 
-    <form method=\"post\" action=\"addonmodules.php?module=acumulus_connect\">
-        <input type=\"hidden\" name=\"action\" value=\"sendbatch\">
-        <table class=\"form\" width=\"100%\" border=\"0\" cellspacing=\"2\" cellpadding=\"3\">
+    <form method="post" action="addonmodules.php?module=acumulus_connect">
+        <input type="hidden" name="action" value="sendbatch">
+        <table class="form" width="100%" border="0" cellspacing="2" cellpadding="3">
         <tbody>
-           <tr><td colspan=\"2\"><div class=\"infobox\"><strong><span class=\"title\">" . $lang['Batch import'] . '</span></strong><br />' . $lang['Batch import time warning'] . "</div> </td></tr>
-           <tr><td colspan=\"2\"><p>" . $lang['Batch import detail text'] . "</p></td></tr>
+           <tr><td colspan="2"><div class="infobox"><strong><span class="title">' . $lang['Batch import'] . '</span></strong><br />' . $lang['Batch import time warning'] . '</div> </td></tr>
+           <tr><td colspan="2"><p>' . $lang['Batch import detail text'] . '</p></td></tr>
            <tr>
-                <td class=\"fieldlabel\">" . $lang['Filter By'] . "</td>
-                <td class=\"fieldarea\"><select name=\"filterby\"><option>Invoice Date</option><option>Date Paid</option><option>Unpaid Invoices</option><option>Paid Invoices by invoicedate</option></select></td>
+                <td class="fieldlabel">' . $lang['Filter By'] . '</td>
+                <td class="fieldarea"><select name="filterby"><option>Invoice Date</option><option>Date Paid</option><option>Unpaid Invoices</option><option>Paid Invoices by invoicedate</option></select></td>
            </tr>
            <tr>
-                <td class=\"fieldlabel\">" . $lang['Payment Method'] . "</td>
-                <td class=\"fieldarea\"><select name=\"filterby2\">
-                        <option>All Gateways</option><option>" . implode('</option><option>', $gateways) . "</option></td>
+                <td class="fieldlabel">' . $lang['Payment Method'] . '</td>
+                <td class="fieldarea"><select name="filterby2">
+                        <option>All Gateways</option><option>' . implode('</option><option>', $gateways) . '</option></td>
            </tr>
 
 
 
            <tr>
-                <td class=\"fieldlabel\">" . $lang['Date Range'] . "</td>
-                <td class=\"fieldarea\"><input type=\"text\" name=\"datefrom\" value=\"" . $todaysdate . "\" class=\"datepick\" /> &nbsp;&nbsp;&nbsp;&nbsp;" . $lang['to'] . "&nbsp;&nbsp;&nbsp;&nbsp; <input type=\"text\" name=\"dateto\" value=\"" . $todaysdate . "\" class=\"datepick\" /></td>
+                <td class="fieldlabel">' . $lang['Date Range'] . '</td>
+                <td class="fieldarea"><input type="text" name="datefrom" value="' . $todaysdate . '" class="datepick" /> &nbsp;&nbsp;&nbsp;&nbsp;' . $lang['to'] . '&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" name="dateto" value="' . $todaysdate . '" class="datepick" /></td>
            </tr>
            <tr>
-             <td colspan=\"2\" align=\"center\"><input type=\"submit\" value=\"" . $lang['Submit invoices'] . "\"></td>
+             <td colspan="2" align="center"><input type="submit" value="' . $lang['Submit invoices'] . '"></td>
            </tr>
         </tbody>
         </table>
@@ -905,14 +912,14 @@ class Acumulus
 
 
 
-      <input type=\"hidden\" name=\"action\" value=\"rechecklicense\">
+      <input type="hidden" name="action" value="rechecklicense">
       <p>
-        <b>" . $lang['License Information'] . "</b>
+        <b>' . $lang['License Information'] . '</b>
       </p>
-        <table class=\"form\" width=\"100%\" border=\"0\" cellspacing=\"2\" cellpadding=\"3\">
+        <table class="form" width="100%" border="0" cellspacing="2" cellpadding="3">
         <tbody>
             <tr>
-                <td>" . $lang['License Information text'] . ' <a href="mailto: whmcs@acumulus.nl"> whmcs@acumulus.nl</a>.</td>
+                <td>' . $lang['License Information text'] . ' <a href="mailto: whmcs@acumulus.nl"> whmcs@acumulus.nl</a>.</td>
             </tr>
         </tbody>
         </table>
@@ -1169,37 +1176,37 @@ class Acumulus
                 /** @noinspection TypeUnsafeComparisonInspection  (property is named like a bool value) */
                 if ($item['taxed'] == 1) {
                     $invoice['items']['item'][$counter]['custom_tax_unrounded'] = round(
-                        ((float)$item['amount'] / 100) * (float)$invoice['taxrate'],
+                        ((float) $item['amount'] / 100) * (float) $invoice['taxrate'],
                         4
                     );  // (amount / 100) * Tax Rate
                     $invoice['items']['item'][$counter]['custom_tax_rounded'] = round(
-                        ((float)$item['amount'] / 100) * (float)$invoice['taxrate'],
+                        ((float) $item['amount'] / 100) * (float) $invoice['taxrate'],
                         2
                     );  // (amount / 100) * Tax Rate
                     $invoice['items']['item'][$counter]['custom_price_incl_tax_unrounded'] = round(
-                        ($item['amount'] + (((float)$item['amount'] / 100) * (float)$invoice['taxrate'])),
+                        ($item['amount'] + (((float) $item['amount'] / 100) * (float) $invoice['taxrate'])),
                         4
                     );   // amount + ((amount / 100) * Tax Rate)
                     $invoice['items']['item'][$counter]['custom_price_incl_tax_rounded'] = round(
                         ($item['amount'] + round(
-                                ((float)$item['amount'] / 100) * (float)$invoice['taxrate'],
+                                ((float) $item['amount'] / 100) * (float) $invoice['taxrate'],
                                 2
                             )),
                         2
                     ); // amount + ((amount / 100) * Tax Rate)
-                    $invoice['items']['item'][$counter]['custom_price_excl_tax_unrounded'] = round((float)$item['amount'], 4);
-                    $invoice['items']['item'][$counter]['custom_price_excl_tax_rounded'] = round((float)$item['amount'], 2);
-                    $invoice['custom']['subtotal_taxedItems_exclTax'] += (float)$item['amount'];
+                    $invoice['items']['item'][$counter]['custom_price_excl_tax_unrounded'] = round((float) $item['amount'], 4);
+                    $invoice['items']['item'][$counter]['custom_price_excl_tax_rounded'] = round((float) $item['amount'], 2);
+                    $invoice['custom']['subtotal_taxedItems_exclTax'] += (float) $item['amount'];
                     $invoice['custom']['subtotal_taxedItems_inclTax'] += round(
-                        ($item['amount'] + (((float)$item['amount'] / 100) * (float)$invoice['taxrate'])),
+                        ($item['amount'] + (((float) $item['amount'] / 100) * (float) $invoice['taxrate'])),
                         4
                     );   // amount + ((amount / 100) * Tax Rate)
                     $invoice['custom']['total_tax_roundedPerItem'] += round(
-                        ((float)$item['amount'] / 100) * (float)$invoice['taxrate'],
+                        ((float) $item['amount'] / 100) * (float) $invoice['taxrate'],
                         2
                     );   // amount + ((amount / 100) * Tax Rate)
                     $invoice['custom']['total_tax'] += round(
-                        ((float)$item['amount'] / 100) * (float)$invoice['taxrate'],
+                        ((float) $item['amount'] / 100) * (float) $invoice['taxrate'],
                         4
                     );   // amount + ((amount / 100) * Tax Rate)
                 } else {
@@ -1207,9 +1214,9 @@ class Acumulus
                     $invoice['items']['item'][$counter]['custom_tax_rounded'] = 0.0;
                     $invoice['items']['item'][$counter]['custom_price_incl_tax_unrounded'] = 0.0;
                     $invoice['items']['item'][$counter]['custom_price_incl_tax_rounded'] = 0.0;
-                    $invoice['items']['item'][$counter]['custom_price_excl_tax_unrounded'] = round((float)$item['amount'], 4);
-                    $invoice['items']['item'][$counter]['custom_price_excl_tax_rounded'] = round((float)$item['amount'], 2);
-                    $invoice['custom']['subtotal_untaxedItems'] += (float)$item['amount'];
+                    $invoice['items']['item'][$counter]['custom_price_excl_tax_unrounded'] = round((float) $item['amount'], 4);
+                    $invoice['items']['item'][$counter]['custom_price_excl_tax_rounded'] = round((float) $item['amount'], 2);
+                    $invoice['custom']['subtotal_untaxedItems'] += (float) $item['amount'];
                 }
                 $counter++;
             }
@@ -1219,44 +1226,44 @@ class Acumulus
                 /** @noinspection TypeUnsafeComparisonInspection property is named as if it is a bool */
                 if ($item['taxed'] == 1) {
                     $invoice['items']['item'][$counter]['custom_tax_unrounded'] = round(
-                        ((float)$item['amount'] / (100 + (float)$invoice['taxrate'])) * (float)$invoice['taxrate'],
+                        ((float) $item['amount'] / (100 + (float) $invoice['taxrate'])) * (float) $invoice['taxrate'],
                         4
                     );    // amount / (100 + Tax Rate)
                     $invoice['items']['item'][$counter]['custom_tax_rounded'] = round(
-                        ((float)$item['amount'] / (100 + (float)$invoice['taxrate'])) * (float)$invoice['taxrate'],
+                        ((float) $item['amount'] / (100 + (float) $invoice['taxrate'])) * (float) $invoice['taxrate'],
                         2
                     );   // amount / (100 + Tax Rate)
-                    $invoice['items']['item'][$counter]['custom_price_incl_tax_unrounded'] = round((float)$item['amount'], 4);
-                    $invoice['items']['item'][$counter]['custom_price_incl_tax_rounded'] = round((float)$item['amount'], 2);
+                    $invoice['items']['item'][$counter]['custom_price_incl_tax_unrounded'] = round((float) $item['amount'], 4);
+                    $invoice['items']['item'][$counter]['custom_price_incl_tax_rounded'] = round((float) $item['amount'], 2);
                     $invoice['items']['item'][$counter]['custom_price_excl_tax_unrounded'] = round(
-                        ((float)$item['amount'] / (100 + (float)$invoice['taxrate'])) * 100,
+                        ((float) $item['amount'] / (100 + (float) $invoice['taxrate'])) * 100,
                         4
                     );  // (amount / (100 + Tax Rate)) * 100
                     $invoice['items']['item'][$counter]['custom_price_excl_tax_rounded'] = round(
-                        ((float)$item['amount'] / (100 + (float)$invoice['taxrate'])) * 100,
+                        ((float) $item['amount'] / (100 + (float) $invoice['taxrate'])) * 100,
                         2
                     );  // (amount / (100 + Tax Rate)) * 100
                     $invoice['custom']['subtotal_taxedItems_exclTax'] += round(
-                        ((float)$item['amount'] / (100 + (float)$invoice['taxrate'])) * 100,
+                        ((float) $item['amount'] / (100 + (float) $invoice['taxrate'])) * 100,
                         4
                     );  // (amount / (100 + Tax Rate)) * 100 ;
-                    $invoice['custom']['subtotal_taxedItems_inclTax'] += round((float)$item['amount'], 4);
+                    $invoice['custom']['subtotal_taxedItems_inclTax'] += round((float) $item['amount'], 4);
                     $invoice['custom']['total_tax_roundedPerItem'] += round(
-                        ((float)$item['amount'] / (100 + (float)$invoice['taxrate'])) * (float)$invoice['taxrate'],
+                        ((float) $item['amount'] / (100 + (float) $invoice['taxrate'])) * (float) $invoice['taxrate'],
                         2
                     );   // amount / (100 + Tax Rate);
                     $invoice['custom']['total_tax'] += round(
-                        ((float)$item['amount'] / (100 + (float)$invoice['taxrate'])) * (float)$invoice['taxrate'],
+                        ((float) $item['amount'] / (100 + (float) $invoice['taxrate'])) * (float) $invoice['taxrate'],
                         4
                     );
                 } else {
                     $invoice['items']['item'][$counter]['custom_tax_unrounded'] = 0.0;
                     $invoice['items']['item'][$counter]['custom_tax_rounded'] = 0.0;
-                    $invoice['items']['item'][$counter]['custom_price_incl_tax_unrounded'] = round((float)$item['amount'], 4);
-                    $invoice['items']['item'][$counter]['custom_price_incl_tax_rounded'] = round((float)$item['amount'], 2);
-                    $invoice['items']['item'][$counter]['custom_price_excl_tax_unrounded'] = round((float)$item['amount'], 4);
-                    $invoice['items']['item'][$counter]['custom_price_excl_tax_rounded'] = round((float)$item['amount'], 2);
-                    $invoice['custom']['subtotal_untaxedItems'] += (float)$item['amount'];
+                    $invoice['items']['item'][$counter]['custom_price_incl_tax_unrounded'] = round((float) $item['amount'], 4);
+                    $invoice['items']['item'][$counter]['custom_price_incl_tax_rounded'] = round((float) $item['amount'], 2);
+                    $invoice['items']['item'][$counter]['custom_price_excl_tax_unrounded'] = round((float) $item['amount'], 4);
+                    $invoice['items']['item'][$counter]['custom_price_excl_tax_rounded'] = round((float) $item['amount'], 2);
+                    $invoice['custom']['subtotal_untaxedItems'] += (float) $item['amount'];
                 }
                 $counter++;
             }
@@ -1484,8 +1491,6 @@ class Acumulus
 
     /**
      * Helper function to calculate the vat type and tax rate by country, nature MOSS etc.
-     *
-     * @noinspection PhpSeparateElseIfInspection
      */
     public function getVatType(array $config, array $invoice, array $client): array
     {
@@ -1526,6 +1531,7 @@ class Acumulus
             }
         } else {
             // Invoice is Outside EU (WORLD).
+            /** @noinspection NestedPositiveIfStatementsInspection */
             if (strtolower($config['acumulus_invoice_default_nature']) === 'service') {
                 // The Default nature is a service (digitale diensten).
                 if (empty($client['companyname'])) {
@@ -1565,7 +1571,7 @@ class Acumulus
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 
         $rawData = curl_exec($ch);
-        $result = json_decode(json_encode((array)simplexml_load_string($rawData)), true);
+        $result = json_decode(json_encode((array) simplexml_load_string($rawData)), true);
         logModuleCall('acumulus_connect', 'Send Invoice to Acumulus', $xml->asXML(), $rawData, $result, $this->getReplaceVars($config));
 
         if (isset($result['status'])) {
@@ -1599,10 +1605,6 @@ class Acumulus
 
     /**
      * Gets the vars that should be hidden in the log
-     *
-     * @param array $config
-     *
-     * @return array
      */
     public function getReplaceVars(array $config): array
     {
@@ -1612,15 +1614,10 @@ class Acumulus
     /**
      * Helper function to update the token table for unpaid invoices.
      *
-     * @param array $invoice
-     * @param string $token
-     * @param int $entryId
-     *
      * @todo
      *   Always store token and entry-id: we need it when this invoice gets
      *   cancelled and, possible future addition, to have links to the acumulus pdf,
      *   packing slip and to visualise the status like we do in the other plugins.
-     * @noinspection PhpSeparateElseIfInspection
      */
     public function setInvoiceToken(array $invoice, string $token, int $entryId): void
     {
@@ -1641,6 +1638,7 @@ class Acumulus
             }
         } else {
             // No token exists, so let's add the token.
+            /** @noinspection NestedPositiveIfStatementsInspection */
             if (Capsule::table('mod_acumulus_connect')->insert([
                 'id' => $invoice['invoiceid'],
                 'token' => $token,
@@ -1663,8 +1661,8 @@ class Acumulus
         $totalAcumulus = 0;
 
         foreach ($invoice['items']['item'] as $item) {
-            $totalWhmcs += (float)$item ['custom_price_incl_tax_unrounded'];
-            $totalAcumulus += (float)$item ['custom_price_incl_tax_rounded'];
+            $totalWhmcs += (float) $item ['custom_price_incl_tax_unrounded'];
+            $totalAcumulus += (float) $item ['custom_price_incl_tax_rounded'];
         }
         $totalWhmcs = round($totalWhmcs, 2);
         $totalAcumulus = round($totalAcumulus, 2);
@@ -1712,7 +1710,7 @@ class Acumulus
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         $rawData = curl_exec($ch);
-        $result = json_decode(json_encode((array)simplexml_load_string($rawData)), true);
+        $result = json_decode(json_encode((array) simplexml_load_string($rawData)), true);
         logModuleCall('acumulus_connect', 'invoice_paymentstatus_get()', $xml->asXML(), $rawData, $result, $this->getReplaceVars($config));
         curl_close($ch);
 
@@ -1774,7 +1772,7 @@ class Acumulus
         $connector->addChild('application', 'WHMCS ' . $this->getWHMCSVersion());
         $connector->addChild('webkoppel', 'Acumulus ' . $config['version']);
         $connector->addChild('development', 'SIEL - Buro RaDer');
-        $connector->addChild('remark', 'PHP ' . phpversion());
+        $connector->addChild('remark', 'PHP ' . PHP_VERSION);
         $connector->addChild('sourceuri', 'https://github.com/SIELOnline/acumulus-for-WHMCS');
 
         return $xml;
@@ -1911,7 +1909,7 @@ class Acumulus
 
         // Format: yyyy-mm-dd.
         $invoiceDetails['issuedate'] = $invoice['date'];
-        // When omitted, or when no match has been made possible, the first available cost center in the contract will be selected.
+        // When omitted, or when no match has been made possible, the first available cost centre in the contract will be selected.
         $invoiceDetails['costcenter'] = $config['acumulus_invoice_default_costcenterid'];
         // 1 = Due (default), 2 = Paid
         $invoiceDetails['paymentstatus'] = ($invoice['status'] === 'Paid' ? '2' : '1');
@@ -2236,7 +2234,7 @@ class Acumulus
     }
 
     /*
-     * Functions called by Hooks
+     * Functions called by Hooks.
      */
 
     /**
@@ -2306,7 +2304,7 @@ class Acumulus
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
             $rawData = curl_exec($ch);
-            $result = json_decode(json_encode((array)simplexml_load_string($rawData)), true);
+            $result = json_decode(json_encode((array) simplexml_load_string($rawData)), true);
             logModuleCall('acumulus_connect', 'invoice_paymentstatus_set', $xml->asXML(), $rawData, $result, $this->getReplaceVars($config));
 
             if (isset($result['status'])) {
@@ -2366,7 +2364,7 @@ class Acumulus
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
             $rawData = curl_exec($ch);
-            $result = json_decode(json_encode((array)simplexml_load_string($rawData)), true);
+            $result = json_decode(json_encode((array) simplexml_load_string($rawData)), true);
             logModuleCall('acumulus_connect', 'entry_update', $xml->asXML(), $rawData, $result, $this->getReplaceVars($config));
 
             if (isset($result['status'])) {
@@ -2436,7 +2434,9 @@ class Acumulus
                 logActivity(__FUNCTION__ . "($invoiceId): no credit invoice created because no invoice was sent.");
             }
         } else {
-            logActivity("acumulus - Credit invoice not created not using acumulus sequential invoice numbering. ($invoiceId for User ID: {$client['userid']})");
+            logActivity(
+                "acumulus - Credit invoice not created not using acumulus sequential invoice numbering. ($invoiceId for User ID: {$client['userid']})"
+            );
         }
     }
 
