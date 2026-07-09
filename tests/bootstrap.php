@@ -35,5 +35,5 @@ chdir($whmcsRoot);
 //require_once $whmcsRoot . '/configuration.php';
 require_once $whmcsRoot . '/init.php';
 
-// Start up the Acumulus specific testing environment.z
+// Start up the Acumulus specific testing environment.
 require __DIR__ . '/bootstrap-acumulus.php';

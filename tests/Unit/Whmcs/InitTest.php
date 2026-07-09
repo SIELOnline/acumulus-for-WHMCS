@@ -7,15 +7,15 @@ namespace Siel\Acumulus\Tests\Unit\Whmcs;
 use Siel\Acumulus\Tests\Whmcs\TestCase;
 
 /**
- * Tests that WooCommerce and Acumulus have been initialized.
+ * Tests that WooCommerce and Acumulus have been initialised.
  */
 class InitTest extends TestCase
 {
     /**
      * A single test to see if the test framework (including the plugins) has been
-     * initialized correctly:
+     * initialised correctly:
      * 1 We have access to the Container.
-     * 2 WooCommerce has been initialized.
+     * 2 WHMCS has been initialised.
      */
     public function testInit(): void
     {
