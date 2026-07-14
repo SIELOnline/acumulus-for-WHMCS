@@ -29,8 +29,8 @@
 
 declare(strict_types=1);
 
-namespace
-{
+namespace {
+
     /*
      * Functions available in the global namespace.
      */
@@ -166,8 +166,8 @@ namespace
     }
 }
 
-namespace WHMCS
-{
+namespace WHMCS {
+
     class Application
     {
         public static function getVersion(): string
@@ -176,8 +176,8 @@ namespace WHMCS
     }
 }
 
-namespace WHMCS\Billing
-{
+namespace WHMCS\Billing {
+
     class Tax
     {
         /**
@@ -189,8 +189,8 @@ namespace WHMCS\Billing
     }
 }
 
-namespace WHMCS\Config
-{
+namespace WHMCS\Config {
+
     class Setting
     {
         public static function getValue(string $key): string
@@ -199,8 +199,8 @@ namespace WHMCS\Config
     }
 }
 
-namespace WHMCS\Database
-{
+namespace WHMCS\Database {
+
     class Capsule extends \Illuminate\Database\Capsule\Manager
     {
     }
