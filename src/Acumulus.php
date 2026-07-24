@@ -1005,40 +1005,6 @@ class Acumulus
     }
 
     /**
-     * Wrapper around the WHMCS localApi() function that adds some error handling.
-     * In case of an error:
-     * - an error message is logged.
-     * - A runtime exception is thrown.
-     *
-     * @return array
-     *  Array with keys:
-     *  - 'result': string: success or error.
-     *  - 'message': string: optional, error message in case of error.
-     *  - Other keys depend on the API function called, see
-     *    {@link https://developers.whmcs.com/api/api-index/}.
-     * @throws \RuntimeException
-     */
-    public function localAPI(string $command, array $values): array
-    {
-        $results = localAPI($command, $values);
-        if ($results['result'] !== 'success') {
-            $callingFunction = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
-            $mainArg = '';
-            if (count($values) >= 1) {
-                reset($values);
-                $value = current($values);
-                $mainArg = is_scalar($value) ? key($values) . ': ' . $value : '...';
-            }
-            $message = "$callingFunction($mainArg): $command failed: {$results['result']}: {$results['message']}";
-            logActivity($message);
-            /** @noinspection PhpStrictTypeCheckingInspection */
-            throw new RuntimeException($message, 'ACUMULUS');
-        }
-
-        return $results;
-    }
-
-    /**
      * Helper function to load the configuration data stored in the Database.
      */
     public function get_config(): array
@@ -1050,12 +1016,12 @@ class Acumulus
             $config[$record->setting] = $record->value;
         }
         // Split composite values into their parts.
-        $acumulusDefaultCostCenterParts = explode(' ', $config['acumulus_invoice_default_costcenter'], 2);
+        $acumulusDefaultCostCenterParts = explode(' ', $config['acumulus_invoice_default_costcenter'] ?? '0 Unknown', 2);
         $config['acumulus_invoice_default_costcenterid'] = $acumulusDefaultCostCenterParts[0];
         $config['acumulus_invoice_default_costcentername'] = $acumulusDefaultCostCenterParts[1];
-        $acumulusInvoiceTemplateParts = explode(' ', $config['acumulus_invoice_template'], 2);
-        $config['acumulus_invoice_templateid'] = $acumulusInvoiceTemplateParts[0];
-        $config['acumulus_invoice_templatename'] = $acumulusInvoiceTemplateParts[1];
+        $acumulusInvoiceTemplateParts = explode(' ', $config['acumulus_invoice_template'] ?? '0 Unknown', 2);
+        $config['acumulus_invoice_templateid'] = $acumulusInvoiceTemplateParts[0] ?? '0';
+        $config['acumulus_invoice_templatename'] = $acumulusInvoiceTemplateParts[1] ?? '';
         // Loop through all account numbers in WHMCS and split them as well.
         foreach ($this->getWHMCSAccountNumbers() as $accountNumber) {
             $accountParts = explode(' ', $config['acumulus_AccountNumber_' . $accountNumber['module']], 2);
@@ -1129,8 +1095,8 @@ class Acumulus
         $command = 'GetPaymentMethods';
         $values = [];
         $results = $this->localAPI($command, $values);
-
-        return $results['paymentmethods']['paymentmethod'];
+//        file_put_contents('C:/tmp/my.log', json_encode($results));
+        return $results['totalresults'] > 0 ? $results['paymentmethods']['paymentmethod'] : [];
     }
 
     /**
@@ -2462,5 +2428,38 @@ class Acumulus
             );
         }
         throw new RuntimeException(implode("\n", $messages));
+    }
+
+    /**
+     * Wrapper around the WHMCS localApi() function that adds some error handling.
+     * In case of an error:
+     * - an error message is logged.
+     * - A runtime exception is thrown.
+     *
+     * @return array
+     *  Array with keys:
+     *  - 'result': string: success or error.
+     *  - 'message': string: optional, error message in case of error.
+     *  - Other keys depend on the API function called, see
+     *    {@link https://developers.whmcs.com/api/api-index/}.
+     * @throws \RuntimeException
+     */
+    public function localAPI(string $command, array $values): array
+    {
+        $results = localAPI($command, $values);
+        if ($results['result'] !== 'success') {
+            $callingFunction = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
+            $mainArg = '';
+            if (count($values) >= 1) {
+                reset($values);
+                $value = current($values);
+                $mainArg = is_scalar($value) ? key($values) . ': ' . $value : '...';
+            }
+            $message = "$callingFunction($mainArg): $command failed: {$results['result']}: {$results['message']}";
+            logActivity($message);
+            throw new RuntimeException($message);
+        }
+
+        return $results;
     }
 }

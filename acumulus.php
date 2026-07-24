@@ -50,7 +50,7 @@ function acumulus_get(): ?Acumulus
  */
 function acumulus_config(): array
 {
-    return acumulus_get()()->config();
+    return acumulus_get()->config();
 }
 
 /**
@@ -64,7 +64,7 @@ function acumulus_config(): array
  */
 function acumulus_activate(): array
 {
-    return acumulus_get()()->activate();
+    return acumulus_get()->activate();
 }
 
 /**
@@ -82,7 +82,7 @@ function acumulus_activate(): array
  */
 function acumulus_deactivate(): array
 {
-    return acumulus_get()()->deactivate();
+    return acumulus_get()->deactivate();
 }
 
 
@@ -93,7 +93,7 @@ function acumulus_deactivate(): array
  */
 function acumulus_upgrade($vars): void
 {
-    acumulus_get()()->upgrade($vars);
+    acumulus_get()->upgrade($vars);
 }
 
 /*
@@ -108,7 +108,7 @@ function acumulus_upgrade($vars): void
  */
 function acumulus_sidebar(array $vars): string
 {
-    return acumulus_get()()->sidebar($vars);
+    return acumulus_get()->sidebar($vars);
 }
 
 /**
@@ -128,5 +128,5 @@ function acumulus_sidebar(array $vars): string
  */
 function acumulus_output(array $vars): void
 {
-    acumulus_get()()->output($vars);
+    acumulus_get()->output($vars);
 }
