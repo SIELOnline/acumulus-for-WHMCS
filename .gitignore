@@ -6,13 +6,12 @@
 composer.lock
 /vendor/*
 
-# We use test classes and utilities that are not our own, but from the WordPress and
-# WooCommerce projects, but are not defined as composer packages. These are also stored
-# under the tests dir via custom actions, but not committed.
+# Ignore some files we keep just for reference.
+/config.json
+src/AcumulusOld.php
+
+# PHPStorm and PHPUnit
+.idea/*
 /tests/.phpunit.result.cache
-/tests/wordpress-develop/
 # Our own tests are committed, but not the *.latest.* files
 **/Data/**/*.latest.*
-
-# PHPStorm
-.idea/*

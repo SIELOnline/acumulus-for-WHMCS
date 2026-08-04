@@ -63,6 +63,10 @@ class Acumulus
         if (!isset($this->acumulusContainer)) {
             $shopNameSpace = 'Whmcs';
             $language = $_SESSION['Language'] ?? $_SESSION['adminlang'] ?? Setting::getValue('Language');
+            if (!in_array($language, ['en', 'nl'])) {
+                // Unsupported language: fall back to English.
+                $language = 'en';
+            }
             $this->acumulusContainer = new Container($shopNameSpace, $language);
         }
     }
@@ -87,7 +91,7 @@ class Acumulus
      */
     public function config(): array
     {
-        $config = $this->get_config();
+        $config = $this->getConfig();
 
         //Check if any credentials are given or show the basic config.
         if ((!empty($config['acumulus_code'])) && (!empty($config['acumulus_username'])) && (!empty($config['acumulus_password']))) {
@@ -99,7 +103,6 @@ class Acumulus
 
             // Let's check the credentials against the Acumulus API.
             $url = 'https://api.sielsystems.nl/acumulus/stable/general/general_about.php';
-            /** @noinspection DuplicatedCode */
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -411,7 +414,7 @@ class Acumulus
     /**
      * Helper function to create the basic config array used to enter credentials.
      */
-    public function constructBasicConfigFields(): array
+    private function constructBasicConfigFields(): array
     {
         return [
             // This is where the module name is defined!:
@@ -449,9 +452,9 @@ class Acumulus
      * Helper function to create the full config array used after credentials are
      * correct.
      */
-    public function constructFullConfigFields(): array
+    private function constructFullConfigFields(): array
     {
-        $config = $this->get_config();
+        $config = $this->getConfig();
         $config_array = $this->constructBasicConfigFields();
 
         // Get the cost centers from Acumulus and put them in a comma separated
@@ -827,7 +830,7 @@ class Acumulus
     /**
      * Returns a (highly visible) section header.
      */
-    public function newConfigSection(string $section): string
+    private function newConfigSection(string $section): string
     {
         return "<h2 style='padding-top:3em;font-weight:bold;font-size:larger;'>$section</h2>";
     }
@@ -837,7 +840,7 @@ class Acumulus
      *
      * The form is echoed to the output, not returned as a string.
      */
-    public function showModuleForm(array $vars): void
+    private function showModuleForm(array $vars): void
     {
         $todaysdate = getTodaysDate();
         $lang = $vars['_lang'];
@@ -929,7 +932,7 @@ class Acumulus
     /**
      * Return an HTML string with a summary of the invoices.
      */
-    public function getInvoicesSummary(array $invoices, array $vars): string
+    private function getInvoicesSummary(array $invoices, array $vars): string
     {
         global $_SESSION;
         $lang = $vars['_lang'];
@@ -1007,7 +1010,7 @@ class Acumulus
     /**
      * Helper function to load the configuration data stored in the Database.
      */
-    public function get_config(): array
+    public function getConfig(): array
     {
         // @todo: what if table is empty?
         $configRecords = Capsule::table('tbladdonmodules')->where('module', 'acumulus')->get(['setting', 'value']);
@@ -1038,7 +1041,7 @@ class Acumulus
     /**
      * WHMCS API Call to retrieve custom fields.
      */
-    public function getClientCustomFields(): array
+    private function getClientCustomFields(): array
     {
         $results = [];
         foreach (Capsule::table('tblcustomfields')->where('type', 'client')->orderBy('fieldname')->get('fieldname') as $record) {
@@ -1051,7 +1054,7 @@ class Acumulus
     /**
      * WHMCS API Call to retrieve client details.
      */
-    public function getClient(int $clientId): array
+    private function getClient(int $clientId): array
     {
         // https://developers.whmcs.com/api-reference/getclientsdetails/
         $command = 'GetClientsDetails';
@@ -1068,7 +1071,7 @@ class Acumulus
      *   Whether to expand the WHMCS invoice with customer data and some custom
      *   values, e.g. line totals.
      */
-    public function getInvoice(int $invoiceId, bool $expand = true): array
+    private function getInvoice(int $invoiceId, bool $expand = true): array
     {
         // https://developers.whmcs.com/api-reference/getinvoice/
         $command = 'GetInvoice';
@@ -1089,13 +1092,13 @@ class Acumulus
      *
      * @return array[]
      */
-    public function getWHMCSAccountNumbers(): array
+    private function getWHMCSAccountNumbers(): array
     {
         // https://developers.whmcs.com/api-reference/getpaymentmethods/
         $command = 'GetPaymentMethods';
         $values = [];
         $results = $this->localAPI($command, $values);
-//        file_put_contents('C:/tmp/my.log', json_encode($results));
+        file_put_contents('C:/tmp/my.log', json_encode($results));
         return $results['totalresults'] > 0 ? $results['paymentmethods']['paymentmethod'] : [];
     }
 
@@ -1104,7 +1107,7 @@ class Acumulus
      *
      * @todo: use localApi WHMCSDetails.
      */
-    public function getWHMCSVersion(): string
+    private function getWHMCSVersion(): string
     {
         return Capsule::table('tblconfiguration')->where('setting', 'Version')->value('value');
     }
@@ -1114,9 +1117,9 @@ class Acumulus
      *
      * @noinspection PhpHalsteadMetricInspection
      */
-    public function expandInvoiceWithCustomValues(array $invoice, array $client): array
+    private function expandInvoiceWithCustomValues(array $invoice, array $client): array
     {
-        $config = $this->get_config();
+        $config = $this->getConfig();
 
         // Add some custom tax amounts
         $invoice['custom']['subtotal_taxedItems_exclTax'] = 0.0;
@@ -1249,7 +1252,7 @@ class Acumulus
      *
      * @noinspection PhpFunctionCyclomaticComplexityInspection
      */
-    public function replaceVarsInText(?string $text, array $invoice, array $client): string
+    private function replaceVarsInText(?string $text, array $invoice, array $client): string
     {
         // @todo: A user got a 'TypeError: Argument 1 passed to
         //   $this->replaceVarsInText() must be of the type string, null
@@ -1294,7 +1297,7 @@ class Acumulus
     /**
      * Helper function to retrieve the cost centers from Acumulus.
      */
-    public function getCostCenters(): array
+    private function getCostCenters(): array
     {
         // Construct the basic xml without email on errors or warnings.
         $xml = $this->basicXml(false);
@@ -1328,7 +1331,7 @@ class Acumulus
     /**
      * Helper function to retrieve the bank account numbers from Acumulus.
      */
-    public function getAccounts(): array
+    private function getAccounts(): array
     {
         $xml = $this->basicXml(false); //construct the basic xml without email on errors or warnings.
         $xml->addChild('format', 'xml');
@@ -1363,7 +1366,7 @@ class Acumulus
     /**
      * Helper function to retrieve the invoice templates from Acumulus.
      */
-    public function getTemplates(): array
+    private function getTemplates(): array
     {
         // Construct the basic xml without email on errors or warnings.
         $xml = $this->basicXml(false);
@@ -1401,7 +1404,7 @@ class Acumulus
      *
      * @todo: replace with Acumulus API call
      */
-    public function isCountryInEU(string $countryCode, string $date): bool
+    private function isCountryInEU(string $countryCode, string $date): bool
     {
         // $date is for future use like the brexit
         $eu_countries = [
@@ -1458,7 +1461,7 @@ class Acumulus
     /**
      * Helper function to calculate the vat type and tax rate by country, nature MOSS etc.
      */
-    public function getVatType(array $config, array $invoice, array $client): array
+    private function getVatType(array $config, array $invoice, array $client): array
     {
         /* Vattypes:
            1 	National 	Gewone nationale factuur 	DEFAULT
@@ -1523,7 +1526,7 @@ class Acumulus
     /**
      * Helper function to send the constructed XML to Acumulus with curl.
      */
-    public function sendInvoiceToAcumulus(array $config, array $invoice, SimpleXMLElement $xml): void
+    private function sendInvoiceToAcumulus(array $config, array $invoice, SimpleXMLElement $xml): void
     {
         $url = 'https://api.sielsystems.nl/acumulus/stable/invoices/invoice_add.php';
         $xml_string = urlencode($xml->asXML());
@@ -1572,7 +1575,7 @@ class Acumulus
     /**
      * Gets the vars that should be hidden in the log
      */
-    public function getReplaceVars(array $config): array
+    private function getReplaceVars(array $config): array
     {
         return [$config['acumulus_code'], $config['acumulus_username'], $config['acumulus_password']];
     }
@@ -1585,7 +1588,7 @@ class Acumulus
      *   cancelled and, possible future addition, to have links to the acumulus pdf,
      *   packing slip and to visualise the status like we do in the other plugins.
      */
-    public function setInvoiceToken(array $invoice, string $token, int $entryId): void
+    private function setInvoiceToken(array $invoice, string $token, int $entryId): void
     {
         // Check if invoice id and invoice token are already stored and, if so, update.
         if (Capsule::table('mod_acumulus_connect')->where('id', $invoice['invoiceid'])->exists()) {
@@ -1621,7 +1624,7 @@ class Acumulus
     /**
      * Helper function to estimate the totals like Acumulus would calculate.
      */
-    public function estimateTotals(array $config, array $invoice, array $client): array
+    private function estimateTotals(array $config, array $invoice, array $client): array
     {
         $totalWhmcs = 0;
         $totalAcumulus = 0;
@@ -1661,7 +1664,7 @@ class Acumulus
     /**
      * Helper function to get the current payment status from Acumulus.
      */
-    public function getPaymentStatus(array $config, string $token): array
+    private function getPaymentStatus(array $config, string $token): array
     {
         $xml = $this->basicXml();
         $xml->addChild('token', $token);
@@ -1686,7 +1689,7 @@ class Acumulus
     /**
      * Helper function to inverse the amounts for a credit invoice.
      */
-    public function inverseInvoiceAmounts(array $invoice): array
+    private function inverseInvoiceAmounts(array $invoice): array
     {
         $negativeItems = [];
         //Set invoice amounts  negative.
@@ -1707,9 +1710,9 @@ class Acumulus
     /**
      * Helper function to construct the basic XML.
      */
-    public function basicXml(bool $includeWarnings = true): SimpleXMLElement
+    private function basicXml(bool $includeWarnings = true): SimpleXMLElement
     {
-        $config = $this->get_config();
+        $config = $this->getConfig();
         // Create The XML FILE.
         $xml = new SimpleXMLElement('<?xml version="1.0" encoding="utf-8"?><myxml></myxml>');
         // Contract details
@@ -1749,7 +1752,7 @@ class Acumulus
      *
      * @noinspection PhpFunctionCyclomaticComplexityInspection
      */
-    public function xmlPrepareCustomerDetails(array $config, array $invoice, array $client): array
+    private function xmlPrepareCustomerDetails(array $config, array $invoice, array $client): array
     {
         // Convert country code to country name.
         $ISO3166 = new ISO3166();
@@ -1861,7 +1864,7 @@ class Acumulus
     /**
      * Helper function to prepare the invoice data for the XML.
      */
-    public function xmlPrepareInvoiceDetails(array $config, array $invoice, array $client, bool $isCredit = false): array
+    private function xmlPrepareInvoiceDetails(array $config, array $invoice, array $client, bool $isCredit = false): array
     {
         // https://github.com/SIELOnline/acumulus-for-WHMCS/issues/2: Sending
         //   invoices manually always uses default account.
@@ -1871,7 +1874,7 @@ class Acumulus
         // already have been called. But perhaps, it is called too early, when not
         // all data of WHMCS itself has been initialised/is readily available???
         // Calling it once more seems to be a quite innocent action...
-        $config = array_merge($config, $this->get_config());
+        $config = array_merge($config, $this->getConfig());
 
         // Format: yyyy-mm-dd.
         $invoiceDetails['issuedate'] = $invoice['date'];
@@ -1993,7 +1996,7 @@ class Acumulus
      *
      * @noinspection PhpFunctionCyclomaticComplexityInspection
      */
-    public function generateXml(array $config, array $invoice, array $client, bool $isCredit = false): SimpleXMLElement
+    private function generateXml(array $config, array $invoice, array $client, bool $isCredit = false): SimpleXMLElement
     {
         // Create the basic XML.
         $customerDetails = $this->xmlPrepareCustomerDetails($config, $invoice, $client);
@@ -2412,7 +2415,7 @@ class Acumulus
      * @throws \RuntimeException
      *   Always.
      */
-    public function raiseLibxmlError(): void
+    private function raiseLibxmlError(): void
     {
         $errors = libxml_get_errors();
         $messages = [];
@@ -2444,7 +2447,7 @@ class Acumulus
      *    {@link https://developers.whmcs.com/api/api-index/}.
      * @throws \RuntimeException
      */
-    public function localAPI(string $command, array $values): array
+    private function localAPI(string $command, array $values): array
     {
         $results = localAPI($command, $values);
         if ($results['result'] !== 'success') {

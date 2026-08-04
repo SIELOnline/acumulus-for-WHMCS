@@ -29,16 +29,13 @@ class Hooks
      *   converting a quote to an invoice, or when published a draft invoice with
      *   email. This is run before the invoice is sent to the client (hook
      *   'InvoiceCreationPreEmail').
-     *
-     * @param array $vars
-     * @param string $hook
      */
     public function invoiceCreated(array $vars, string $hook): void
     {
         logActivity(__FUNCTION__ . "('$hook'): start");
         try {
             $invoiceId = $vars['invoiceid'];
-            $config = $this->getAcumulus()->get_config();
+            $config = $this->getAcumulus()->getConfig();
             if ($config['acumulus_hook_invoice_create_enabled'] === 'on') {
                 // Check if invoice id and invoice token are already stored and, if so,
                 // skip sending the invoice.
@@ -62,15 +59,13 @@ class Hooks
      * This hook is run when:
      * - An invoice is paid prior to any email or automation tasks associated with
      *   the payment action having been run.
-     *
-     * @param array $vars
      */
     public function invoicePaid(array $vars): void
     {
         logActivity(__FUNCTION__ . ': start');
         try {
             $invoiceId = $vars['invoiceid'];
-            $config = $this->getAcumulus()->get_config();
+            $config = $this->getAcumulus()->getConfig();
             if ($config['acumulus_hook_invoice_paid_enabled'] === 'on') {
                 logActivity(__FUNCTION__ . "($invoiceId): updating");
                 $this->getAcumulus()->updateInvoice($config, $invoiceId);
@@ -86,14 +81,12 @@ class Hooks
      * Hook 'invoiceChangeGateway'.
      * This hook is run when:
      * - Changing the gateway on an invoice.
-     *
-     * @param array $vars
      */
     public function invoiceChangeGateway(array $vars): void
     {
         logActivity(__FUNCTION__ . ': start');
         try {
-            $config = $this->getAcumulus()->get_config();
+            $config = $this->getAcumulus()->getConfig();
             $invoiceId = $vars['invoiceid'];
             $paymentMethod = $vars['paymentmethod'];
             logActivity(__FUNCTION__ . "($invoiceId): changing payment method to $paymentMethod");
@@ -107,15 +100,13 @@ class Hooks
      * Hook 'invoiceCancelled'.
      * This hook is run when:
      * - An invoice is cancelled. This function reacts by creating a credit invoice.
-     *
-     * @param array $vars
      */
     public function invoiceCancelled(array $vars): void
     {
         logActivity(__FUNCTION__ . ': start');
         try {
             $invoiceId = $vars['invoiceid'];
-            $config = $this->getAcumulus()->get_config();
+            $config = $this->getAcumulus()->getConfig();
             if ($config['acumulus_hook_invoice_canceled_enabled'] === 'on') {
                 logActivity(__FUNCTION__ . "($invoiceId): creating credit invoice");
                 $this->getAcumulus()->invoiceCancelled($config, $invoiceId);
