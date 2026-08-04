@@ -38,9 +38,10 @@ class AcumulusEntryManagerTest extends TestCase
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
+        $acumulusEntryManager = static::getAcumulusEntryManager();
         $tableName = 'mod_acumulus_entries';
         if (!Capsule::schema()->hasTable($tableName)) {
-            static::assertTrue(static::getAcumulusEntryManager()->install());
+            static::assertTrue($acumulusEntryManager->install());
             static::$didCreateTable = true;
         }
     }
@@ -113,9 +114,15 @@ class AcumulusEntryManagerTest extends TestCase
      */
     public function testCreate(): Source
     {
-        $acumulusEntryManager = static::getAcumulusEntryManager();
         $this->ensureInvoice(static::testSourceId);
+        $acumulusEntryManager = static::getAcumulusEntryManager();
         $source = static::getContainer()->createSource(static::testSourceType, static::testSourceId);
+
+        $entry = $acumulusEntryManager->getByInvoiceSource($source);
+        if ($entry !== null) {
+            $acumulusEntryManager->delete($entry);
+        }
+
         $now = new DateTimeImmutable();
         self::assertTrue($acumulusEntryManager->save($source, static::testConceptId, null));
 
@@ -131,24 +138,32 @@ class AcumulusEntryManagerTest extends TestCase
         $diff = static::getDiffInSeconds($entry->getCreated(), $entry->getUpdated());
         self::assertSame(0, $diff);
 
+        // Now update from concept to an entry.
+        sleep(1);
+        $now2 = new DateTimeImmutable();
+        self::assertTrue($acumulusEntryManager->save($source, static::testEntryId, static::testToken));
+        $entry = $acumulusEntryManager->getByInvoiceSource($source);
+        self::assertInstanceOf(AcumulusEntry::class, $entry);
+        self::assertSame(static::testSourceType, $entry->getSourceType());
+        self::assertSame(static::testSourceId, $entry->getSourceId());
+        self::assertSame(static::testEntryId, $entry->getEntryId());
+        self::assertSame(static::testToken, $entry->getToken());
+        self::assertNull($entry->getConceptId());
+        // Checks that the timestamps are correct.
+        self::assertGreaterThan(0, static::getDiffInSeconds($entry->getCreated(), $now2));
+        self::assertSame(0, static::getDiffInSeconds($entry->getUpdated(), $now2));
+
         return $source;
     }
 
-    /*
-    public function testDelete(): void
+    /**
+     * @depends testCreate
+     */
+    public function testGetAndDeleteByEntryId(): void
     {
+        $acumulusEntryManager = static::getAcumulusEntryManager();
+        self::assertNotNull($acumulusEntryManager->getByEntryId(static::testEntryId));
+        self::assertTrue($acumulusEntryManager->deleteByEntryId(static::testEntryId));
+        self::assertNull($acumulusEntryManager->getByEntryId(static::testEntryId));
     }
-
-    public function testGetByInvoiceSource(): void
-    {
-    }
-
-    public function testDeleteByEntryId(): void
-    {
-    }
-
-    public function testGetByEntryId(): void
-    {
-    }
-    */
 }
