@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace Siel\Whmcs\Acumulus;
 
-use WHMCS\Database\Capsule;
-
+use Siel\Acumulus\Api;
+use Siel\Acumulus\Fld;
+use Siel\Acumulus\Invoice\Source;
+use Siel\Acumulus\Meta;
 use Throwable;
 
 /**
  * Hooks contains methods to react to hooks triggered by WHMCS.
+ *
+ * The public methods in this class get called by the hook functions in hook.php.
  */
 class Hooks
 {
-    /**
-     * Initialises the autoloader and returns an {@see \Siel\Whmcs\Acumulus\Acumulus} instance.
-     */
-    private function getAcumulus(): Acumulus
+    protected AcumulusHelper $acumulusHelper;
+
+    public function __construct()
     {
-        return Acumulus::getInstance();
+        $this->acumulusHelper = new AcumulusHelper();
     }
 
     /**
@@ -32,25 +35,12 @@ class Hooks
      */
     public function invoiceCreated(array $vars, string $hook): void
     {
-        logActivity(__FUNCTION__ . "('$hook'): start");
+        $this->acumulusHelper->logActivity('%s(%s): start', __FUNCTION__, $hook);
         try {
-            $invoiceId = $vars['invoiceid'];
-            $config = $this->getAcumulus()->getConfig();
-            if ($config['acumulus_hook_invoice_create_enabled'] === 'on') {
-                // Check if invoice id and invoice token are already stored and, if so,
-                // skip sending the invoice.
-                if (!Capsule::table('mod_acumulus_connect')->where('id', $invoiceId)->exists()) {
-                    // No token exists, send the invoice.
-                    logActivity(__FUNCTION__ . "($invoiceId, '$hook'): sending");
-                    $this->getAcumulus()->sendInvoice($config, $invoiceId);
-                } else {
-                    logActivity(__FUNCTION__ . "($invoiceId, '$hook'): not sending, already sent");
-                }
-            } else {
-                logActivity(__FUNCTION__ . "($invoiceId, '$hook'): not sending, hook disabled");
-            }
+            $source = $this->acumulusHelper->getAcumulusContainer()->createSource(Source::Invoice, $vars['invoiceid']);
+            $this->acumulusHelper->getAcumulusContainer()->getInvoiceManager()->invoiceCreate($source);
         } catch (Throwable $e) {
-            $this->getAcumulus()->logException($e);
+            $this->acumulusHelper->logException($e);
         }
     }
 
@@ -59,21 +49,19 @@ class Hooks
      * This hook is run when:
      * - An invoice is paid prior to any email or automation tasks associated with
      *   the payment action having been run.
+     *
+     * See: https://developers.whmcs.com/hooks-reference/invoices-and-quotes/#invoicepaid.
      */
     public function invoicePaid(array $vars): void
     {
-        logActivity(__FUNCTION__ . ': start');
+        $this->acumulusHelper->logActivity('%s: start', __FUNCTION__);
         try {
-            $invoiceId = $vars['invoiceid'];
-            $config = $this->getAcumulus()->getConfig();
-            if ($config['acumulus_hook_invoice_paid_enabled'] === 'on') {
-                logActivity(__FUNCTION__ . "($invoiceId): updating");
-                $this->getAcumulus()->updateInvoice($config, $invoiceId);
-            } else {
-                logActivity(__FUNCTION__ . "($invoiceId): not updating, hook disabled");
-            }
+            $source = $this->acumulusHelper->getAcumulusContainer()->createSource(Source::Invoice, $vars['invoiceid']);
+            // @todo: create  invoiceChange or invoiceUpdate event in the invoice manager
+            //  (this will include updating an existing invoice instead of resending and overwriting).
+            $this->acumulusHelper->getAcumulusContainer()->getInvoiceManager()->invoiceUpdate($source, [Fld::PaymentStatus => Api::PaymentStatus_Paid]);
         } catch (Throwable $e) {
-            $this->getAcumulus()->logException($e);
+            $this->acumulusHelper->logException($e);
         }
     }
 
@@ -81,18 +69,19 @@ class Hooks
      * Hook 'invoiceChangeGateway'.
      * This hook is run when:
      * - Changing the gateway on an invoice.
+     *
+     * See: https://developers.whmcs.com/hooks-reference/invoices-and-quotes/#invoicechangegateway.
      */
     public function invoiceChangeGateway(array $vars): void
     {
-        logActivity(__FUNCTION__ . ': start');
+        $this->acumulusHelper->logActivity('%s: start', __FUNCTION__);
         try {
-            $config = $this->getAcumulus()->getConfig();
-            $invoiceId = $vars['invoiceid'];
-            $paymentMethod = $vars['paymentmethod'];
-            logActivity(__FUNCTION__ . "($invoiceId): changing payment method to $paymentMethod");
-            $this->getAcumulus()->updateInvoicePaymentMethod($config, $invoiceId, $paymentMethod);
+            $source = $this->acumulusHelper->getAcumulusContainer()->createSource(Source::Invoice, $vars['invoiceid']);
+            // @todo: create  invoiceChange or invoiceUpdate event in the invoice manager
+            //  (this will include updating an existing invoice instead of resending and overwriting).
+            $this->acumulusHelper->getAcumulusContainer()->getInvoiceManager()->invoiceUpdate($source, [Meta::PaymentMethod => $vars['paymentmethod']]);
         } catch (Throwable $e) {
-            $this->getAcumulus()->logException($e);
+            $this->acumulusHelper->logException($e);
         }
     }
 
@@ -103,18 +92,40 @@ class Hooks
      */
     public function invoiceCancelled(array $vars): void
     {
-        logActivity(__FUNCTION__ . ': start');
+        $this->acumulusHelper->logActivity('%s: start', __FUNCTION__);
         try {
-            $invoiceId = $vars['invoiceid'];
-            $config = $this->getAcumulus()->getConfig();
-            if ($config['acumulus_hook_invoice_canceled_enabled'] === 'on') {
-                logActivity(__FUNCTION__ . "($invoiceId): creating credit invoice");
-                $this->getAcumulus()->invoiceCancelled($config, $invoiceId);
-            } else {
-                logActivity(__FUNCTION__ . "($invoiceId): not creating credit invoice, hook disabled");
-            }
+            // @todo: add support for credit notes: is a separate invoice created? What is its number?
+            $this->sourceStatusChange(Source::CreditNote, $vars['invoiceid']);
         } catch (Throwable $e) {
-            $this->getAcumulus()->logException($e);
+            $this->acumulusHelper->logException($e);
         }
     }
+
+    /**
+     * @param string $invoiceSourceType
+     *   The type of the invoice source to create.
+     * @param object|int|array $invoiceSourceOrId
+     *   The invoice source itself or its id to create a {@see Source} instance for.
+     *
+     * @throws \Throwable
+     */
+    private function sourceStatusChange(string $invoiceSourceType, object|int|array $invoiceSourceOrId): void
+    {
+        try {
+            $source = $this->acumulusHelper->getAcumulusContainer()->createSource($invoiceSourceType, $invoiceSourceOrId);
+            $this->acumulusHelper->getAcumulusContainer()->getInvoiceManager()->sourceStatusChange($source);
+        } catch (Throwable $e) {
+            try {
+                $crashReporter = $this->acumulusHelper->getAcumulusContainer()->getCrashReporter();
+                // We do not know if we are on the admin side, so we should not
+                // try to display the message returned by logAndMail().
+                $crashReporter->logAndMail($e);
+            } catch (Throwable) {
+                // We don't know if we have informed the user per mail or
+                // screen, so assume we didn't, and rethrow the original exception.
+                throw $e;
+            }
+        }
+    }
+
 }
