@@ -173,7 +173,7 @@ class Acumulus
     protected function processForm(string $action): string
     {
         $output = '';
-        // @todo.
+        // @todo implement.
         return $output;
     }
 }

@@ -17,11 +17,11 @@ use Throwable;
  */
 class Hooks
 {
-    protected AcumulusHelper $acumulusHelper;
+    protected AcumulusHelper $helper;
 
     public function __construct()
     {
-        $this->acumulusHelper = new AcumulusHelper();
+        $this->helper = new AcumulusHelper();
     }
 
     /**
@@ -35,12 +35,12 @@ class Hooks
      */
     public function invoiceCreated(array $vars, string $hook): void
     {
-        $this->acumulusHelper->logActivity('%s(%s): start', __FUNCTION__, $hook);
+        $this->helper->logActivity('%s(%s): start', __FUNCTION__, $hook);
         try {
-            $source = $this->acumulusHelper->getAcumulusContainer()->createSource(Source::Invoice, $vars['invoiceid']);
-            $this->acumulusHelper->getAcumulusContainer()->getInvoiceManager()->invoiceCreate($source);
+            $source = $this->helper->getAcumulusContainer()->createSource(Source::Invoice, $vars['invoiceid']);
+            $this->helper->getAcumulusContainer()->getInvoiceManager()->invoiceCreate($source);
         } catch (Throwable $e) {
-            $this->acumulusHelper->logException($e);
+            $this->helper->logException($e);
         }
     }
 
@@ -54,14 +54,13 @@ class Hooks
      */
     public function invoicePaid(array $vars): void
     {
-        $this->acumulusHelper->logActivity('%s: start', __FUNCTION__);
+        $this->helper->logActivity('%s: start', __FUNCTION__);
         try {
-            $source = $this->acumulusHelper->getAcumulusContainer()->createSource(Source::Invoice, $vars['invoiceid']);
-            // @todo: create  invoiceChange or invoiceUpdate event in the invoice manager
-            //  (this will include updating an existing invoice instead of resending and overwriting).
-            $this->acumulusHelper->getAcumulusContainer()->getInvoiceManager()->invoiceUpdate($source, [Fld::PaymentStatus => Api::PaymentStatus_Paid]);
+            $source = $this->helper->getAcumulusContainer()->createSource(Source::Invoice, $vars['invoiceid']);
+            // @todo: change of payment status should change template (if different per payment status)
+            $this->helper->getAcumulusContainer()->getInvoiceManager()->sourceChange($source, [Fld::PaymentStatus => Api::PaymentStatus_Paid]);
         } catch (Throwable $e) {
-            $this->acumulusHelper->logException($e);
+            $this->helper->logException($e);
         }
     }
 
@@ -74,14 +73,13 @@ class Hooks
      */
     public function invoiceChangeGateway(array $vars): void
     {
-        $this->acumulusHelper->logActivity('%s: start', __FUNCTION__);
+        $this->helper->logActivity('%s: start', __FUNCTION__);
         try {
-            $source = $this->acumulusHelper->getAcumulusContainer()->createSource(Source::Invoice, $vars['invoiceid']);
-            // @todo: create  invoiceChange or invoiceUpdate event in the invoice manager
-            //  (this will include updating an existing invoice instead of resending and overwriting).
-            $this->acumulusHelper->getAcumulusContainer()->getInvoiceManager()->invoiceUpdate($source, [Meta::PaymentMethod => $vars['paymentmethod']]);
+            $source = $this->helper->getAcumulusContainer()->createSource(Source::Invoice, $vars['invoiceid']);
+            // @todo: change of payment method can change cost center and account number.
+            $this->helper->getAcumulusContainer()->getInvoiceManager()->sourceChange($source, [Meta::PaymentMethod => $vars['paymentmethod']]);
         } catch (Throwable $e) {
-            $this->acumulusHelper->logException($e);
+            $this->helper->logException($e);
         }
     }
 
@@ -92,12 +90,12 @@ class Hooks
      */
     public function invoiceCancelled(array $vars): void
     {
-        $this->acumulusHelper->logActivity('%s: start', __FUNCTION__);
+        $this->helper->logActivity('%s: start', __FUNCTION__);
         try {
             // @todo: add support for credit notes: is a separate invoice created? What is its number?
             $this->sourceStatusChange(Source::CreditNote, $vars['invoiceid']);
         } catch (Throwable $e) {
-            $this->acumulusHelper->logException($e);
+            $this->helper->logException($e);
         }
     }
 
@@ -112,11 +110,11 @@ class Hooks
     private function sourceStatusChange(string $invoiceSourceType, object|int|array $invoiceSourceOrId): void
     {
         try {
-            $source = $this->acumulusHelper->getAcumulusContainer()->createSource($invoiceSourceType, $invoiceSourceOrId);
-            $this->acumulusHelper->getAcumulusContainer()->getInvoiceManager()->sourceStatusChange($source);
+            $source = $this->helper->getAcumulusContainer()->createSource($invoiceSourceType, $invoiceSourceOrId);
+            $this->helper->getAcumulusContainer()->getInvoiceManager()->sourceStatusChange($source);
         } catch (Throwable $e) {
             try {
-                $crashReporter = $this->acumulusHelper->getAcumulusContainer()->getCrashReporter();
+                $crashReporter = $this->helper->getAcumulusContainer()->getCrashReporter();
                 // We do not know if we are on the admin side, so we should not
                 // try to display the message returned by logAndMail().
                 $crashReporter->logAndMail($e);

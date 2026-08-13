@@ -8,7 +8,7 @@ composer.lock
 
 # Ignore some files we keep just for reference.
 /config.json
-src/AcumulusOld.php
+src/*Old.php
 
 # PHPStorm and PHPUnit
 .idea/*
