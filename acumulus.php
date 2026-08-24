@@ -100,16 +100,6 @@ function acumulus_upgrade($vars): void
  * Module Additional functions. These functions are called by WHMCS based on
  * naming patterns.
  */
-/**
- * Return HTML to add to the sidebar.
- *
- * @noinspection PhpUnused  Called by WHMCS to render something in the sidebar.
- * @todo: position, needed at all?
- */
-function acumulus_sidebar(array $vars): string
-{
-    return acumulus_get()->sidebar($vars);
-}
 
 /**
  * Renders the main screen: the Acumulus send invoice(s) form.

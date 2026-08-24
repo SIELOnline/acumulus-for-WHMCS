@@ -170,7 +170,15 @@ namespace WHMCS {
 
     class Application
     {
-        public static function getVersion(): string
+        public function getVersion(): string
+        {
+        }
+
+        public function getCurrentFilename(): string
+        {
+        }
+
+        public function get_req_var(string $var): string
         {
         }
     }

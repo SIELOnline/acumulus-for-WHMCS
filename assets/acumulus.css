@@ -1,0 +1,75 @@
+/*
+ * Form elements
+ */
+
+[id^="acumulus-"] {
+    color: #333;
+}
+
+[id^="acumulus-"] fieldset,
+[id^="acumulus-"] details {
+    margin-top: 1em;
+}
+
+[id^="acumulus-"] fieldset:first-child,
+[id^="acumulus-"] details:first-child {
+    margin-top: 0;
+}
+
+[id^="acumulus-"] .form-element {
+    margin-bottom: 1em
+}
+
+[id^="acumulus-"] .form-element label {
+    display: inline-block;
+    min-width: 10em;
+    vertical-align: top;
+}
+
+[id^="acumulus-"] .form-element .description {
+    display: block;
+    font-style: italic;
+    margin-top: 0.5em;
+    padding-left: 10em;
+}
+
+[id^="acumulus-"] .form-element .radio,
+[id^="acumulus-"] .form-element .checkbox {
+    display: inline-block;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+[id^="acumulus-"] details summary {
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    width: 100%;
+    padding: 0;
+    cursor: pointer;
+}
+
+[id^="acumulus-"] details summary span {
+    display: inline-block;
+    font-weight: lighter;
+    font-size: smaller;
+    padding-left: 1em;
+}
+
+[id^="acumulus-"] .radio input,
+[id^="acumulus-"] .checkbox input {
+    position: relative;
+    display: inline-block;
+    width: 1em;
+    margin-left: 0;
+}
+
+[id^="acumulus-"] .radio label,
+[id^="acumulus-"] .checkbox label {
+    display: inline-block;
+    width: calc(100% - 1em);
+    text-align: left;
+    font-weight: normal;
+    padding-left: 0.5em;
+    padding-bottom: 6px;
+}

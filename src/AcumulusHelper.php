@@ -8,7 +8,10 @@ use Siel\Acumulus\Config\Config;
 use Siel\Acumulus\Helpers\Container;
 use Siel\Acumulus\Helpers\Log;
 use Siel\Acumulus\Helpers\Severity;
+use Siel\Acumulus\Whmcs\Helpers\LocalApiTrait;
 use Throwable;
+use WHMCS\App;
+use WHMCS\Application;
 use WHMCS\Config\Setting;
 
 use function in_array;
@@ -18,6 +21,8 @@ use function in_array;
  */
 class AcumulusHelper
 {
+    use LocalApiTrait;
+
     private static Container $acumulusContainer;
 
     /**
@@ -55,10 +60,10 @@ class AcumulusHelper
                 $language = 'en';
             }
             self::$acumulusContainer = new Container($shopNameSpace, $language);
+            // Start with a high log level, will be corrected when the config is
+            // loaded.
+            self::$acumulusContainer->getLog()->setLogLevel(Severity::Log);
         }
-        // Start with a high log level, will be corrected when the config is
-        // loaded.
-        $this->getAcumulusContainer()->getLog()->setLogLevel(Severity::Log);
     }
 
     /**
@@ -103,5 +108,25 @@ class AcumulusHelper
     public function logException(Throwable $e, bool $includeTrace = true): void
     {
         $this->getLog()->exception($e, $includeTrace);
+    }
+
+    /**
+     * Returns whether we are on our own addon page (rendered with acumulus_output()).
+     */
+    public function isOwnAddOnAdminPage(string $addOnName = 'acumulus'): bool
+    {
+        /** @var Application $whmcs */
+        global $whmcs;
+        return $whmcs->getCurrentFilename() === 'addonmodules' && $whmcs->get_req_var('module') === $addOnName;
+    }
+
+    /**
+     * Returns the page parameter passed to our own addon page.
+     */
+    public function getAddOnPageType(): string
+    {
+        /** @var Application $whmcs */
+        global $whmcs;
+        return $whmcs->get_req_var('page');
     }
 }

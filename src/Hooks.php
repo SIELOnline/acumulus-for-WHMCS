@@ -10,6 +10,10 @@ use Siel\Acumulus\Invoice\Source;
 use Siel\Acumulus\Meta;
 use Throwable;
 
+use WHMCS\Application;
+
+use function sprintf;
+
 /**
  * Hooks contains methods to react to hooks triggered by WHMCS.
  *
@@ -126,4 +130,22 @@ class Hooks
         }
     }
 
+    public function adminAreaHeadOutput(array $vars): string
+    {
+        $output = '';
+        try {
+            // @todo: implement: find out on which page we are and if on our own output page, add our own CSS and JS
+            if ($this->helper->isOwnAddOnAdminPage()) {
+                $this->helper->logActivity('%s: start', __FUNCTION__);
+                /** @noinspection HtmlUnknownTarget */
+                $output = sprintf(
+                        '<link href="%s/assets/acumulus.css" rel="stylesheet">',
+                        $this->helper->getAcumulusContainer()->getShopCapabilities()->getLink('moduleUri')
+                    ) . "\n";
+            }
+        } catch (Throwable $e) {
+            $this->helper->logException($e);
+        }
+        return $output;
+    }
 }
