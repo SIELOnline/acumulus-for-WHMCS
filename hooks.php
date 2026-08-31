@@ -4,6 +4,8 @@
  *
  * This file will be detected and loaded by WHMCS on every page load,
  * {@see https://developers.whmcs.com/hooks/module-hooks/}
+ *
+ * @noinspection StaticClosureCanBeUsedInspection
  */
 
 declare(strict_types=1);
@@ -89,6 +91,5 @@ add_hook('InvoiceCancelled', 1, function (array $vars): void {
  * Response: Accepts HTML to be output within the head tag of the admin area output.
  */
 add_hook('AdminAreaHeadOutput', 500, function (array $vars): string {
-    file_put_contents('C:/Projecten/Acumulus/WHMCS/www/modules/addons/acumulus/vars.json', json_encode($vars));
     return getAcumulusHooks()->adminAreaHeadOutput($vars);
 });

@@ -1,9 +1,16 @@
 /*
  * Form elements
  */
+:root {
+    --label-width: 20%; /* main label width */
+    --element-width: calc(100% - var(--label-width));
+    --border-color: #ddd;
+    --active-color: #333;
+    --button-active-background-color: #1a4d80;
+}
 
 [id^="acumulus-"] {
-    color: #333;
+    color: var(--active-color);
 }
 
 [id^="acumulus-"] fieldset,
@@ -11,37 +18,8 @@
     margin-top: 1em;
 }
 
-[id^="acumulus-"] fieldset:first-child,
-[id^="acumulus-"] details:first-child {
-    margin-top: 0;
-}
-
-[id^="acumulus-"] .form-element {
-    margin-bottom: 1em
-}
-
-[id^="acumulus-"] .form-element label {
-    display: inline-block;
-    min-width: 10em;
-    vertical-align: top;
-}
-
-[id^="acumulus-"] .form-element .description {
-    display: block;
-    font-style: italic;
-    margin-top: 0.5em;
-    padding-left: 10em;
-}
-
-[id^="acumulus-"] .form-element .radio,
-[id^="acumulus-"] .form-element .checkbox {
-    display: inline-block;
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
 [id^="acumulus-"] details summary {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 15px;
     font-size: 1.5rem;
     width: 100%;
@@ -56,20 +34,107 @@
     padding-left: 1em;
 }
 
-[id^="acumulus-"] .radio input,
-[id^="acumulus-"] .checkbox input {
+[id^="acumulus-"] fieldset:first-child,
+[id^="acumulus-"] details:first-child {
+    margin-top: 0;
+}
+
+[id^="acumulus-"] .form-element {
+    margin-bottom: 1.5em;
+}
+
+[id^="acumulus-"] .form-element label {
+    display: inline-block;
+    width: var(--label-width);
+    vertical-align: top;
+}
+
+[id^="acumulus-"] .form-element textarea,
+[id^="acumulus-"] .form-element select,
+[id^="acumulus-"] .form-element input {
+    max-width: var(--element-width);
+    margin: 0 auto 0 0;
+}
+
+[id^="acumulus-"] .form-element .radio,
+[id^="acumulus-"] .form-element .checkbox {
+    width: var(--element-width);
+    margin: 0;
+}
+
+[id^="acumulus-"] .form-element .radio,
+[id^="acumulus-"] .form-element .checkbox {
+    display: inline-block;
+}
+
+[id^="acumulus-"] .form-element .radio input,
+[id^="acumulus-"] .form-element .checkbox input {
     position: relative;
+    top: 1px;
     display: inline-block;
     width: 1em;
     margin-left: 0;
 }
 
-[id^="acumulus-"] .radio label,
-[id^="acumulus-"] .checkbox label {
+[id^="acumulus-"] .form-element .radio label,
+[id^="acumulus-"] .form-element .checkbox label {
     display: inline-block;
     width: calc(100% - 1em);
     text-align: left;
     font-weight: normal;
     padding-left: 0.5em;
     padding-bottom: 6px;
+}
+
+[id^="acumulus-"] .form-element .description,
+[id^="acumulus-"] .fieldset-description {
+    display: block;
+    font-style: italic;
+    margin-top: 0.5em;
+    margin-bottom: 1em;
+    width: 100%;
+}
+
+[id^="acumulus-"] .form-element .description {
+    padding-left: var(--label-width);
+}
+
+/*
+ * Acumulus page header
+ */
+.acumulus-page-header {
+    display: flex;
+    margin-bottom: 3em;
+}
+
+.acumulus-page-header-button {
+    padding: 1em;
+    width: 100%;
+    border: 1px solid var(--border-color);
+    border-bottom-color: var(--active-color);
+    border-radius: 4px;
+}
+
+.acumulus-page-header-button.acumulus-form-active {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: var(--active-color);
+    border-bottom-color: transparent;
+}
+
+.acumulus-page-header-button > * {
+    display: block;
+}
+
+.acumulus-page-header-button > a {
+    padding: 2em 0.25em;
+}
+
+.acumulus-page-header-button.acumulus-form-active > a {
+    background-color: var(--button-active-background-color);
+}
+
+.acumulus-page-header-button > span {
+    text-align: center;
+    margin: .667em .1em 0;
 }

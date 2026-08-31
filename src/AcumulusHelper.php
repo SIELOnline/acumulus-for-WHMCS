@@ -10,7 +10,6 @@ use Siel\Acumulus\Helpers\Log;
 use Siel\Acumulus\Helpers\Severity;
 use Siel\Acumulus\Whmcs\Helpers\LocalApiTrait;
 use Throwable;
-use WHMCS\App;
 use WHMCS\Application;
 use WHMCS\Config\Setting;
 

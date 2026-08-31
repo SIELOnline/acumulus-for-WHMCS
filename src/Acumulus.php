@@ -183,6 +183,7 @@ class Acumulus
      * @throws \Throwable
      *
      * @noinspection PhpFunctionCyclomaticComplexityInspection
+     * @noinspection PhpUnusedParameterInspection
      */
     public function output(array $vars): void
     {
@@ -266,12 +267,7 @@ class Acumulus
         $type = $form->getType();
         $id = "acumulus-$type";
         $wait = $this->t('wait');
-
-        $addOnName = 'acumulus';
-        $rootUri = $this->localApi()->getConfig('SystemURL');
-        $addOnAdminPage = "$rootUri/admin/addonmodules.php?module=$addOnName"; // @todo: test
-        $addOnFolderUri = "$rootUri/modules/addons/$addOnName";
-        $url = "$addOnAdminPage&page=$type";
+        $url = $this->getHelper()->getAcumulusContainer()->getShopCapabilities()->getLink($type);
 
         $output .= $this->renderAcumulusPageHeader($type);
         $output .= $this->showNotices($form);
@@ -290,7 +286,7 @@ class Acumulus
                 }
                 $output .= $formOutput;
                 if ($wrap) {
-//                    $output .= get_submit_button($this->t("button_submit_$type"));
+                    $output .= sprintf('<input class="btn btn-primary" type="submit" value="%s">', $this->t("button_submit_$type"));
                     $output .= '</form></div>';
                 } else {
                     $output .= '</div>';
@@ -298,15 +294,20 @@ class Acumulus
                 break;
             case 'rate':
             case 'message':
-                $extraAttributes = [
-                    'class' => 'acumulus acumulus-area',
+                $noticeType = $type === 'rate' ? Severity::Success : Severity::Info;
+                $attributesList = [
+                    'id' => $id,
+                    'class' => $this->severityToNoticeClass($noticeType) . ' acumulus acumulus-area',
                     'data-acumulus-wait' => $wait,
                 ];
-//                if ($this->isOwnPage()) {
-//                    $extraAttributes['class'] .= ' inline';
-//                }
-                $noticeType = $type === 'rate' ? 'success' : 'info';
-//                $output .= $this->renderNotice($formOutput, $noticeType, $id, $extraAttributes, true);
+                if ($this->getHelper()->isOwnAddOnAdminPage()) {
+                    $attributesList['class'] .= ' inline';
+                }
+                $attributes = '';
+                foreach ($attributesList as $attribute => $value) {
+                    $attributes .= " $attribute=\"$value\"";
+                }
+                $output .= sprintf("<div%s>\n%s\n</div>", $attributes, $formOutput);
                 break;
         }
 
@@ -323,23 +324,23 @@ class Acumulus
             $translator->add(new ConfigFormTranslations());
             $buttons['register'] = [
                 sprintf($this->t('button_link'), $this->t('register_form_link_text'), $shopCapabilities->getLink('register')),
-                $this->t('config_form_register')
+                $this->t('config_form_register'),
             ];
         }
         if ($accountStatus === true) {
             $translator->add(new BatchFormTranslations());
             $buttons['batch'] = [
                 sprintf($this->t('button_link'), $this->t('batch_form_link_text'), $shopCapabilities->getLink('batch')),
-                $this->t('batch_field_header')
+                $this->t('batch_form_header'),
             ];
         }
         $buttons['settings'] = [
             sprintf($this->t('button_link'), $this->t('settings_form_link_text'), $shopCapabilities->getLink('settings')),
-            ''
+            '',
         ];
         $buttons['mappings'] = [
             sprintf($this->t('button_link'), $this->t('mappings_form_link_text'), $shopCapabilities->getLink('mappings')),
-            ''
+            '',
         ];
         $myData = $this->getHelper()->getAcumulusContainer()->getAboutBlockForm()->getMyData($accountStatus);
         if (is_array($myData) && count($myData) > 0) {
@@ -349,7 +350,7 @@ class Acumulus
         }
         $buttons['activate'] = [
             sprintf($this->t('button_link'), $this->t('activate_form_link_text'), $shopCapabilities->getLink('activate')),
-            $supportDescription
+            $supportDescription,
         ];
         $output = '<div class="acumulus-page-header">';
         $output .= $this->renderAcumulusPageHeaderButtons($buttons, $activeType);
@@ -375,7 +376,7 @@ class Acumulus
 
     protected function renderAcumulusPageHeaderButton(array $texts): string
     {
-        return sprintf('%s<span class="page-description">%s</span>', ...$texts);
+        return vsprintf('%s<span class="page-description">%s</span>', $texts);
     }
 
     /**
@@ -386,6 +387,7 @@ class Acumulus
      *     <strong><span class="title">Succesvol doorgevoerd</span></strong><br>
      *     De wijzigingen die u heeft doorgevoerd zijn succesvol opgeslagen in het systeem.
      * </div>
+     * @noinspection GrazieInspection
      */
     protected function showNotices(Form $form): string
     {
@@ -394,7 +396,7 @@ class Acumulus
 
     protected function renderNotice(Message $message): string
     {
-        $boxClass = $this->severityToNoticeClass($message->getSeverity());
+        $noticeClass = $this->severityToNoticeClass($message->getSeverity());
         $messageBefore = '';
         $messageAfter = '';
         if ($message->getField() !== '') {
@@ -402,7 +404,7 @@ class Acumulus
             $messageAfter = '</label>';
         }
         $text = $message->getText();
-        return sprintf('<div class="%s">%s%s%s<div>', $boxClass, $messageBefore, $text, $messageAfter);
+        return sprintf('<div class="%s">%s%s%s</div>', $noticeClass, $messageBefore, $text, $messageAfter);
     }
 
     protected function severityToNoticeClass(int $severity): string
@@ -412,9 +414,7 @@ class Acumulus
             Severity::Log,
             Severity::Info,
             Severity::Notice => 'infobox',
-            Severity::Warning,
-            Severity::Error,
-            Severity::Exception => 'errorbox',
+            // Warning, Error, Exception
             default => 'errorbox',
         };
     }

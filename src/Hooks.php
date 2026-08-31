@@ -10,8 +10,6 @@ use Siel\Acumulus\Invoice\Source;
 use Siel\Acumulus\Meta;
 use Throwable;
 
-use WHMCS\Application;
-
 use function sprintf;
 
 /**
@@ -130,11 +128,11 @@ class Hooks
         }
     }
 
+    /** @noinspection PhpUnusedParameterInspection */
     public function adminAreaHeadOutput(array $vars): string
     {
         $output = '';
         try {
-            // @todo: implement: find out on which page we are and if on our own output page, add our own CSS and JS
             if ($this->helper->isOwnAddOnAdminPage()) {
                 $this->helper->logActivity('%s: start', __FUNCTION__);
                 /** @noinspection HtmlUnknownTarget */
