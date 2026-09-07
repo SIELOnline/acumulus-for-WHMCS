@@ -13,6 +13,8 @@ use Throwable;
 use WHMCS\Application;
 use WHMCS\Config\Setting;
 
+use WHMCS\User\Admin;
+
 use function in_array;
 
 /**
@@ -53,14 +55,31 @@ class AcumulusHelper
     {
         if (!isset(self::$acumulusContainer)) {
             $shopNameSpace = 'Whmcs';
-            $language = $_SESSION['Language'] ?? $_SESSION['adminlang'] ?? Setting::getValue('Language');
-            if (!in_array($language, ['en', 'nl'])) {
+            $languageCodes = [
+                'dutch' => 'nl',
+                'english' => 'en',
+            ];
+            global $_LANG;
+            if (!empty($_LANG['locale'])) {
+                $language = substr($_LANG['locale'], 0, 2);
+            } else {
+                $admin = Admin::getAuthenticatedUser();
+                if ($admin !== null) {
+                    $languageName = strtolower($admin->language); // Returns preferred display language (e.g., 'english', 'dutch')
+                } else {
+                    // No admin user is currently authenticated in this context
+                    $languageName = Setting::getValue('Language');
+                }
+                if (isset($languageCodes[$languageName])) {
+                    $language = $languageCodes[$languageName];
+                }
+            }
+            if (!isset($language) || !in_array($language, ['en', 'nl'])) {
                 // Unsupported language: fall back to English.
                 $language = 'en';
             }
             self::$acumulusContainer = new Container($shopNameSpace, $language);
-            // Start with a high log level, will be corrected when the config is
-            // loaded.
+            // Start with a high log level, will be corrected when the config is loaded.
             self::$acumulusContainer->getLog()->setLogLevel(Severity::Log);
         }
     }
@@ -110,7 +129,7 @@ class AcumulusHelper
     }
 
     /**
-     * Returns whether we are on our own addon page (rendered with acumulus_output()).
+     * Returns whether we are on our own page (rendered via {@see acumulus_output()}).
      */
     public function isOwnAddOnAdminPage(string $addOnName = 'acumulus'): bool
     {
