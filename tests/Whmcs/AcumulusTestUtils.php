@@ -19,6 +19,6 @@ trait AcumulusTestUtils
 
     protected static function getTestsPath(): string
     {
-        return dirname(__FILE__, 3);
+        return dirname(__FILE__, 2);
     }
 }
