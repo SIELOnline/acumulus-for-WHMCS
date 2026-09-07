@@ -30,6 +30,9 @@ if (!defined('WHMCS')) {
 
 use Siel\Whmcs\Acumulus\Acumulus;
 
+const DEBUG_LOG = 'C:/Projecten/Acumulus/WHMCS/www/modules/addons/acumulus/test-debug.log';
+//file_put_contents(DEBUG_LOG, json_encode(..., JSON_PRETTY_PRINT) . "\n", FILE_APPEND);
+
 /**
  * Initialises the autoloader and returns an {@see \Siel\Whmcs\Acumulus\Acumulus} instance.
  */

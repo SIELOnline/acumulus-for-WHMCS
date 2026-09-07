@@ -207,9 +207,23 @@ namespace WHMCS\Config {
     }
 }
 
+namespace WHMCS\User {
+
+    class Admin
+    {
+        public static function getAuthenticatedUser(): ?Admin
+        {
+        }
+
+        public string $language;
+    }
+}
+
 namespace WHMCS\Database {
 
-    class Capsule extends \Illuminate\Database\Capsule\Manager
+    use Illuminate\Database\Capsule\Manager;
+
+    class Capsule extends Manager
     {
     }
 }

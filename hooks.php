@@ -42,7 +42,7 @@ add_hook('InvoiceCreated', 500, function (array $vars): void {
 
 /**
  * Hook 'InvoiceCreationPreEmail'.
- * @todo is this necessary
+ * @todo is this necessary?
  */
 add_hook('InvoiceCreationPreEmail', 500, function (array $vars): void {
     getAcumulusHooks()->invoiceCreated($vars, 'InvoiceCreationPreEmail');
@@ -75,7 +75,7 @@ add_hook('InvoiceChangeGateway', 1, function (array $vars): void {
  *
  * Executes when an invoice is being cancelled.
  *
- * Note: We should react by creating a credit note.
+ * Note: We should react by creating and sending a credit note.
  */
 add_hook('InvoiceCancelled', 1, function (array $vars): void {
     getAcumulusHooks()->invoiceCancelled($vars);
