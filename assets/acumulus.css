@@ -1,16 +1,24 @@
-/*
- * Form elements
- */
 :root {
     --label-width: 20%; /* main label width */
     --element-width: calc(100% - var(--label-width));
     --border-color: #ddd;
-    --active-color: #333;
+    --default-color: #333;
     --button-active-background-color: #1a4d80;
 }
 
+/*
+ * Messages:
+ * - Form field errors are placed in a label to easily navigate to the field. Add a visual hint.
+ */
+.errorbox label[for] {
+    cursor: pointer;
+}
+
+/*
+ * Acumulus Forms
+ */
 [id^="acumulus-"] {
-    color: var(--active-color);
+    color: var(--default-color);
 }
 
 [id^="acumulus-"] fieldset,
@@ -18,10 +26,15 @@
     margin-top: 1em;
 }
 
-[id^="acumulus-"] details summary {
+[id^="acumulus-"] fieldset legend {
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 15px;
-    font-size: 1.5rem;
+}
+
+[id^="acumulus-"] details summary {
+    color: var(--default-color);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+    font-size: 21px;
     width: 100%;
     padding: 0;
     cursor: pointer;
@@ -30,7 +43,7 @@
 [id^="acumulus-"] details summary span {
     display: inline-block;
     font-weight: lighter;
-    font-size: smaller;
+    font-size: small;
     padding-left: 1em;
 }
 
@@ -41,6 +54,10 @@
 
 [id^="acumulus-"] .form-element {
     margin-bottom: 1.5em;
+}
+
+[id^="acumulus-"] .form-element.hidden {
+    display: none;
 }
 
 [id^="acumulus-"] .form-element label {
@@ -100,7 +117,15 @@
 }
 
 /*
- * Acumulus page header
+ * Sub headers in our About block.
+ */
+[id^="acumulus-"] .form-element h3 {
+    font-size: larger;
+    font-weight: bolder;
+}
+
+/*
+ * Acumulus page header (should look like tabs for all our forms).
  */
 .acumulus-page-header {
     display: flex;
@@ -111,14 +136,16 @@
     padding: 1em;
     width: 100%;
     border: 1px solid var(--border-color);
-    border-bottom-color: var(--active-color);
-    border-radius: 4px;
+    border-bottom: 2px solid var(--default-color);
+    border-radius: 4px 4px 0 0;
+}
+
+.acumulus-page-header-button:first-child {
+    margin-left: 0;
 }
 
 .acumulus-page-header-button.acumulus-form-active {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-color: var(--active-color);
+    border: 2px solid var(--default-color);
     border-bottom-color: transparent;
 }
 
@@ -137,4 +164,47 @@
 .acumulus-page-header-button > span {
     text-align: center;
     margin: .667em .1em 0;
+}
+
+/*
+ * EU Commerce threshold progress bar (copied from Acumulus for WooCommerce CSS).
+ */
+.acumulus-progressbar, .acumulus-progress, .acumulus-threshold {
+    display: inline-block;
+}
+
+.acumulus-progressbar {
+    box-sizing: border-box;
+    position: relative;
+    width: 75%;
+    max-width: 20em;
+    height: 2em;
+    border-radius: 16px;
+    background-color: lightgrey;
+}
+
+.acumulus-progress {
+    box-sizing: border-box;
+    padding: 2px 0.5em 0;
+    border-radius: inherit;
+    height: 100%;
+}
+
+/*
+ * Pro support button (copied from Acumulus for WooCommerce CSS).
+ */
+.button-pro-support {
+    display: inline-block;
+    transition: background-color 0.5s ease;
+    background-color: #f0fff0;
+    border-color: #000000;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 12px;
+    padding: 6px 20px;
+    margin-top: 5px;
+}
+
+.button-pro-support:hover {
+    background: #01a6d4;
 }

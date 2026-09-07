@@ -336,11 +336,11 @@ class Acumulus
         }
         $buttons['settings'] = [
             sprintf($this->t('button_link'), $this->t('settings_form_link_text'), $shopCapabilities->getLink('settings')),
-            '',
+            $this->t('settings_form_description'),
         ];
         $buttons['mappings'] = [
             sprintf($this->t('button_link'), $this->t('mappings_form_link_text'), $shopCapabilities->getLink('mappings')),
-            '',
+            $this->t('mappings_form_description'),
         ];
         $myData = $this->getHelper()->getAcumulusContainer()->getAboutBlockForm()->getMyData($accountStatus);
         if (is_array($myData) && count($myData) > 0) {
@@ -400,7 +400,7 @@ class Acumulus
         $messageBefore = '';
         $messageAfter = '';
         if ($message->getField() !== '') {
-            $messageBefore = sprintf('<label for="%s>', $message->getField());
+            $messageBefore = sprintf('<label for="%s">', $message->getField());
             $messageAfter = '</label>';
         }
         $text = $message->getText();
