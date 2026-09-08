@@ -217,6 +217,17 @@ namespace WHMCS\User {
 
         public string $language;
     }
+
+    class Client
+    {
+        public static function find(int $id): Client
+        {
+        }
+
+        public function getCountryNameAttribute(): string
+        {
+        }
+    }
 }
 
 namespace WHMCS\Database {
