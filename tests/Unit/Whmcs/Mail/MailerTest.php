@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Whmcs\Mail;
+namespace Siel\Acumulus\Tests\Unit\Whmcs\Mail;
 
 use Siel\Acumulus\Tests\Whmcs\TestCase;
 use Siel\Acumulus\Whmcs\Mail\Mailer;

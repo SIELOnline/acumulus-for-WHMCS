@@ -34,10 +34,12 @@ class InvoiceCreateTest extends TestCase
         self::getContainer()->getConfig()->set('emailAsPdf', self::$emailAsPdf ?? true);
     }
 
-    public static function InvoiceDataProviderWithPricesInc(): array
+    public static function InvoiceDataProvider(): array
     {
         return [
-            'NL consument' => [Source::Invoice, 2,],
+            'NL consument prijs inc btw' => [Source::Invoice, 2,],
+            'NL consument prijs ex btw' => [Source::Invoice, 3,],
+            'FR consument met FR btw' => [Source::Invoice, 4,],
         ];
     }
 
@@ -45,29 +47,10 @@ class InvoiceCreateTest extends TestCase
      * Tests the Creation process, i.e. collecting and completing an
      * {@see \Siel\Acumulus\Data\Invoice}.
      *
-     * @dataProvider InvoiceDataProviderWithPricesInc
+     * @dataProvider InvoiceDataProvider
      * @throws \JsonException
      */
-    public function testCreateWithPricesInc(string $type, int $id, array $excludeFields = []): void
-    {
-        $this->_testCreate($type, $id, $excludeFields);
-    }
-
-    public static function InvoiceDataProviderWithPricesEx(): array
-    {
-        return [
-            'NL consument' => [Source::Invoice, 3,],
-        ];
-    }
-
-    /**
-     * Tests the Creation process, i.e. collecting and completing an
-     * {@see \Siel\Acumulus\Data\Invoice}.
-     *
-     * @dataProvider InvoiceDataProviderWithPricesEx
-     * @throws \JsonException
-     */
-    public function testCreateWithPricesEx(string $type, int $id, array $excludeFields = []): void
+    public function testCreate(string $type, int $id, array $excludeFields = []): void
     {
         $this->_testCreate($type, $id, $excludeFields);
     }

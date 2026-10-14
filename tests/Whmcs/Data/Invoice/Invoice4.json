@@ -1,0 +1,71 @@
+{
+    "customer": {
+        "vattypeid": 1,
+        "contactyourid": "5",
+        "contactstatus": 1,
+        "email": "consument.frankrijk@example.com",
+        "overwriteifexists": 1,
+        "disableduplicates": 0,
+        "fullname": "Consument Frankrijk",
+        "address1": "Chemin de la Bastille",
+        "postalcode": "65000",
+        "city": "Tours",
+        "countrycode": "FR",
+        "countryautoname": 1,
+        "meta-sub-type": "InvoiceAddress",
+        "meta-shop-country-name": "France",
+        "altcountrycode": "NL",
+        "altcountryautoname": 1,
+        "altmeta-sub-type": "ShippingAddress",
+        "meta-shop-vat-based-on": "InvoiceAddress",
+        "meta-main-address-type": "InvoiceAddress",
+        "invoice": {
+            "concept": 0,
+            "vattype": 6,
+            "issuedate": "2026-10-12",
+            "paymentstatus": 1,
+            "description": "Factuur ACU20264",
+            "line": [
+                {
+                    "product": "Enregistrement de domaine - depechetoi.eu - 1 An(s) (12/10/2026 - 11/10/2027)",
+                    "nature": "Service",
+                    "unitprice": 10.0,
+                    "vatrate": 20.0,
+                    "quantity": 1.0,
+                    "meta-sub-type": "ItemLine",
+                    "meta-id": 9,
+                    "meta-product-id": null,
+                    "meta-vatrate-source": "exact",
+                    "unitpriceinc": 12.0,
+                    "meta-taxed": 1,
+                    "meta-unitpriceinc-precision": 0.0001,
+                    "meta-fields-calculated": "['unitprice','vatamount (from vatrate)']",
+                    "vatamount": 2.0
+                }
+            ],
+            "emailaspdf": {
+                "emailto": "consument.frankrijk@example.com",
+                "subject": "Factuur voor factuur ACU20264",
+                "ubl": 0,
+                "meta-sub-type": "EmailInvoiceAsPdf"
+            },
+            "meta-source-type": "Invoice",
+            "meta-source-id": 4,
+            "meta-source-reference": "ACU20264",
+            "meta-source-date": "2026-10-12",
+            "meta-source-status": "Unpaid",
+            "meta-payment-method": "banktransfer",
+            "meta-shop-invoice-id": 4,
+            "meta-shop-invoice-reference": "ACU20264",
+            "meta-shop-invoice-date": "2026-10-12",
+            "meta-currency": "{'currency':'EUR','rate':1.0,'doConvert':false}",
+            "meta-totals": "{'amountEx':10.0,'amountInc':12.0,'amountVat':2.0,'calculated':[]}",
+            "meta-prices-include-vat": true,
+            "meta-add-emailaspdf-section": true,
+            "meta-lines-amount": 10.0,
+            "meta-lines-amountinc": 12.0,
+            "meta-lines-vatamount": 2.0,
+            "meta-vattype-source": "Completor::checkForKnownVatType: only 1 possible vat type"
+        }
+    }
+}
