@@ -37,9 +37,11 @@ class InvoiceCreateTest extends TestCase
     public static function InvoiceDataProvider(): array
     {
         return [
-            'NL consument prijs inc btw' => [Source::Invoice, 2,],
-            'NL consument prijs ex btw' => [Source::Invoice, 3,],
-            'FR consument met FR btw' => [Source::Invoice, 4,],
+            'NL consumer, invoice prices inc' => [Source::Invoice, 2,],
+            'NL consumer, invoice prices ex' => [Source::Invoice, 3,],
+            'FR consumer, FR VAT' => [Source::Invoice, 4,],
+            'BE consumer, BE VAT (21%)' => [Source::Invoice, 5,],
+            'FR company, reversed VAT' => [Source::Invoice, 7,],
         ];
     }
 
