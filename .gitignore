@@ -10,6 +10,9 @@ composer.lock
 /config.json
 src/*Old.php
 
+# Debug logs
+test-debug.log
+
 # PHPStorm and PHPUnit
 .idea/*
 /tests/.phpunit.result.cache
