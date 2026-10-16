@@ -42,6 +42,8 @@ class InvoiceCreateTest extends TestCase
             'FR consumer, FR VAT' => [Source::Invoice, 4,],
             'BE consumer, BE VAT (21%)' => [Source::Invoice, 5,],
             'FR company, reversed VAT' => [Source::Invoice, 7,],
+            'NL consumer, 5% reduction' => [Source::Invoice, 8,],
+            'NL consumer, 5€ reduction' => [Source::Invoice, 9,],
         ];
     }
 
