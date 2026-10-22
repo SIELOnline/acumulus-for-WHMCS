@@ -44,6 +44,12 @@ class InvoiceCreateTest extends TestCase
             'FR company, reversed VAT' => [Source::Invoice, 7,],
             'NL consumer, 5% reduction' => [Source::Invoice, 8,],
             'NL consumer, 5€ reduction' => [Source::Invoice, 9,],
+            // Multi-currency should not be used due to absence of historical information
+            // about which currency and at what rate it was used on an invoice.
+            // Therefore, we cannot reliably generate an invoice-add message to send to
+            // Acumulus.
+            //'UK consumer, 5€ reduction' => [Source::Invoice, 10,],
+            'UK consumer, hosting options, setup fees' => [Source::Invoice, 11,],
         ];
     }
 

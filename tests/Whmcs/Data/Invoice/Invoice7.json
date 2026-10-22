@@ -1,31 +1,42 @@
 {
     "customer": {
-        "vattypeid": 1,
+        "vattypeid": 2,
         "contactyourid": "4",
         "contactstatus": 1,
         "vatnumber": "FR05502086580",
+        "telephone": "33612345678",
         "email": "bedrijf.frankrijk@example.com",
         "overwriteifexists": 1,
         "disableduplicates": 0,
+        "companyname1": "SARL Pro",
         "fullname": "Bedrijf Frankrijk",
-        "address1": "Allée d&#039;Ailleurs",
+        "address1": "Allée d'Ailleurs 5",
+        "address2": "2eme étage",
         "postalcode": "75100",
         "city": "Paris",
         "countrycode": "FR",
         "countryautoname": 1,
         "meta-sub-type": "InvoiceAddress",
         "meta-shop-country-name": "France",
-        "altcountrycode": "NL",
+        "altcompanyname1": "SARL Pro",
+        "altfullname": "Bedrijf Frankrijk",
+        "altaddress1": "Allée d'Ailleurs 5",
+        "altaddress2": "2eme étage",
+        "altpostalcode": "75100",
+        "altcity": "Paris",
+        "altcountrycode": "FR",
         "altcountryautoname": 1,
-        "altmeta-sub-type": "ShippingAddress",
+        "altmeta-sub-type": "InvoiceAddress",
+        "altmeta-shop-country-name": "France",
         "meta-shop-vat-based-on": "InvoiceAddress",
         "meta-main-address-type": "InvoiceAddress",
         "invoice": {
             "concept": 0,
-            "vattype": 6,
+            "vattype": 3,
             "issuedate": "2026-10-15",
-            "paymentstatus": 1,
-            "description": "Factuur ACU20267",
+            "paymentstatus": 2,
+            "paymentdate": "2026-10-16",
+            "description": "Factuur ACU20269",
             "line": [
                 {
                     "product": "Domeinnamen voor Dummies",
@@ -41,7 +52,8 @@
                     "meta-unitprice-precision": 0.0001,
                     "unitpriceinc": 8.0,
                     "meta-fields-calculated": "['unitpriceinc','vatamount (from vatrate)']",
-                    "vatamount": 0.0
+                    "vatamount": 0.0,
+                    "meta-vattypes-possible": "[3]"
                 },
                 {
                     "product": "Hosting voor Dummies",
@@ -57,7 +69,8 @@
                     "meta-unitprice-precision": 0.0001,
                     "unitpriceinc": 7.25,
                     "meta-fields-calculated": "['unitpriceinc','vatamount (from vatrate)']",
-                    "vatamount": 0.0
+                    "vatamount": 0.0,
+                    "meta-vattypes-possible": "[3]"
                 },
                 {
                     "product": "Hosting voor Dummies",
@@ -73,7 +86,8 @@
                     "meta-unitprice-precision": 0.0001,
                     "unitpriceinc": 7.25,
                     "meta-fields-calculated": "['unitpriceinc','vatamount (from vatrate)']",
-                    "vatamount": 0.0
+                    "vatamount": 0.0,
+                    "meta-vattypes-possible": "[3]"
                 },
                 {
                     "product": "Pro (15/10/2026 - 14/11/2026)",
@@ -89,7 +103,8 @@
                     "meta-unitprice-precision": 0.0001,
                     "unitpriceinc": 8.4,
                     "meta-fields-calculated": "['unitpriceinc','vatamount (from vatrate)']",
-                    "vatamount": 0.0
+                    "vatamount": 0.0,
+                    "meta-vattypes-possible": "[3]"
                 },
                 {
                     "product": "Enregistrement de domaine - allerdailleurs.com - 1 An(s) (15/10/2026 - 14/10/2027)\n + Gestion DNS\n + Redirection des e-mails",
@@ -105,23 +120,24 @@
                     "meta-unitprice-precision": 0.0001,
                     "unitpriceinc": 15.0,
                     "meta-fields-calculated": "['unitpriceinc','vatamount (from vatrate)']",
-                    "vatamount": 0.0
+                    "vatamount": 0.0,
+                    "meta-vattypes-possible": "[3]"
                 }
             ],
             "emailaspdf": {
                 "emailto": "bedrijf.frankrijk@example.com",
-                "subject": "Factuur voor factuur ACU20267",
+                "subject": "Factuur voor factuur ACU20269",
                 "ubl": 0,
                 "meta-sub-type": "EmailInvoiceAsPdf"
             },
             "meta-source-type": "Invoice",
             "meta-source-id": 7,
-            "meta-source-reference": "ACU20267",
+            "meta-source-reference": "ACU20269",
             "meta-source-date": "2026-10-15",
-            "meta-source-status": "Unpaid",
+            "meta-source-status": "Paid",
             "meta-payment-method": "banktransfer",
             "meta-shop-invoice-id": 7,
-            "meta-shop-invoice-reference": "ACU20267",
+            "meta-shop-invoice-reference": "ACU20269",
             "meta-shop-invoice-date": "2026-10-15",
             "meta-currency": "{'currency':'EUR','rate':1.0,'doConvert':false}",
             "meta-totals": "{'amountEx':45.9,'amountInc':45.9,'amountVat':0.0,'calculated':[]}",
@@ -131,7 +147,10 @@
             "meta-lines-amount": 45.9,
             "meta-lines-amountinc": 45.9,
             "meta-lines-vatamount": 0.0,
-            "meta-vattype-source": "Completor::checkForKnownVatType: only 1 possible vat type"
+            "meta-vattype-source": "Completor::completeVatType: Only 1 choice fits all",
+            "meta-vattypes-possible-invoice": "[6,3]",
+            "meta-vattypes-possible-lines-intersection": "[3]",
+            "meta-vattypes-possible-lines-union": "[3]"
         }
     }
 }
