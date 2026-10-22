@@ -45,7 +45,8 @@
                     "meta-unitprice-precision": 0.0001,
                     "unitpriceinc": 100.8,
                     "meta-fields-calculated": "['unitpriceinc','vatamount (from vatrate)']",
-                    "vatamount": 16.8
+                    "vatamount": 16.8,
+                    "meta-vattypes-possible": "[7]"
                 },
                 {
                     "product": "Hosting - Pro Instapkosten",
@@ -61,7 +62,8 @@
                     "meta-unitprice-precision": 0.0001,
                     "unitpriceinc": 18.0,
                     "meta-fields-calculated": "['unitpriceinc','vatamount (from vatrate)']",
-                    "vatamount": 3.0
+                    "vatamount": 3.0,
+                    "meta-vattypes-possible": "[7]"
                 },
                 {
                     "product": "Hosting - Pro - consumer-england.com (19/10/2026 - 18/10/2027)\nOS: Windows\nMemory: SSM",
@@ -77,7 +79,8 @@
                     "meta-unitprice-precision": 0.0001,
                     "unitpriceinc": 180.0,
                     "meta-fields-calculated": "['unitpriceinc','vatamount (from vatrate)']",
-                    "vatamount": 30.0
+                    "vatamount": 30.0,
+                    "meta-vattypes-possible": "[7]"
                 },
                 {
                     "product": "Domeinregistratie - consumer-england.com - 1 Jaar (19/10/2026 - 18/10/2027)\n + DNS-beheer\n + E-mail doorsturen",
@@ -93,7 +96,8 @@
                     "meta-unitprice-precision": 0.0001,
                     "unitpriceinc": 18.0,
                     "meta-fields-calculated": "['unitpriceinc','vatamount (from vatrate)']",
-                    "vatamount": 3.0
+                    "vatamount": 3.0,
+                    "meta-vattypes-possible": "[7]"
                 }
             ],
             "emailaspdf": {
@@ -119,7 +123,10 @@
             "meta-lines-amount": 264.0,
             "meta-lines-amountinc": 316.8,
             "meta-lines-vatamount": 52.8,
-            "meta-vattype-source": "Completor::checkForKnownVatType: only 1 possible vat type"
+            "meta-vattype-source": "Completor::completeVatType: Only 1 choice fits all",
+            "meta-vattypes-possible-invoice": "[1,7,4]",
+            "meta-vattypes-possible-lines-intersection": "[7]",
+            "meta-vattypes-possible-lines-union": "[7]"
         }
     }
 }

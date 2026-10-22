@@ -3,6 +3,7 @@
         "vattypeid": 1,
         "contactyourid": "5",
         "contactstatus": 1,
+        "telephone": "+33.698766789",
         "email": "consument.frankrijk@example.com",
         "overwriteifexists": 1,
         "disableduplicates": 0,

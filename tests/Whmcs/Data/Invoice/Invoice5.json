@@ -3,6 +3,7 @@
         "vattypeid": 1,
         "contactyourid": "6",
         "contactstatus": 1,
+        "telephone": "+32.698765432",
         "email": "consument.belgie@example.com",
         "overwriteifexists": 1,
         "disableduplicates": 0,
